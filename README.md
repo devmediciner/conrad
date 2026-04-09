@@ -1,3 +1,1 @@
-# Welcome to your Lovable project
-
-TODO: Document your project here
+#GALERIA RADIOLÓGICA DA LIGA DE RADIOLOGIA DA UFSJ-CCO
