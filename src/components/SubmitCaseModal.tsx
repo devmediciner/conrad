@@ -18,7 +18,8 @@ import {
 } from '@/components/ui/select';
 import { Upload, X, Loader2 } from 'lucide-react';
 import { useSubmitCase, uploadCaseImage } from '@/hooks/useCases';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/authContent';
+import { useDiseases } from '@/hooks/useGame';
 import { toast } from 'sonner';
 import type { ExamType } from '@/types/case';
 
@@ -30,6 +31,7 @@ interface SubmitCaseModalProps {
 export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
   const { user } = useAuth();
   const submitCase = useSubmitCase();
+  const { data: diseases } = useDiseases();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [images, setImages] = useState<File[]>([]);
@@ -41,6 +43,13 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
   const [diagnosis, setDiagnosis] = useState('');
   const [source, setSource] = useState('');
   const [uploading, setUploading] = useState(false);
+  
+  // Game fields
+  const [isMinigame, setIsMinigame] = useState(false);
+  const [disease, setDisease] = useState('');
+  const [clue1, setClue1] = useState('');
+  const [clue2, setClue2] = useState('');
+  const [clue3, setClue3] = useState('');
 
   const handleFiles = (files: FileList | null) => {
     if (!files) return;
@@ -67,15 +76,28 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
     setClinicalCase('');
     setDiagnosis('');
     setSource('');
+    setIsMinigame(false);
+    setDisease('');
+    setClue1('');
+    setClue2('');
+    setClue3('');
   };
 
   const handleSubmit = async () => {
     if (!user) {
-      toast.error('Faça login para enviar um caso');
+      toast.error('Sessão expirada. Faça login novamente.');
       return;
     }
     if (!examType || !clinicalCase.trim() || !diagnosis.trim()) {
-      toast.error('Preencha todos os campos obrigatórios');
+      toast.error('Preencha todos os campos obrigatórios da galeria.');
+      return;
+    }
+    if (isMinigame && !disease) {
+      toast.error('Selecione o diagnóstico para o minigame.');
+      return;
+    }
+    if (isMinigame && images.length === 0) {
+      toast.error('O minigame exige que o caso tenha pelo menos uma imagem.');
       return;
     }
 
@@ -91,9 +113,14 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
         clinical_case: clinicalCase,
         diagnosis,
         source: source.trim() || undefined,
-      });
-
-      toast.success('Caso enviado com sucesso! Aguarde aprovação.');
+        status: 'approved',
+        disease: isMinigame ? disease : null,
+        clue1: isMinigame ? (clue1.trim() || clinicalCase) : null,
+        clue2: isMinigame ? clue2 : null,
+        clue3: isMinigame ? clue3 : null
+      } as any);
+      
+      toast.success('Caso adicionado à galeria e ao minigame!');
       resetForm();
       onOpenChange(false);
     } catch (err) {
@@ -109,7 +136,7 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
         <DialogHeader>
           <DialogTitle className="font-heading text-foreground">Enviar Caso Clínico</DialogTitle>
           <DialogDescription className="text-muted-foreground">
-            Envie um caso para revisão. Ele será publicado após aprovação.
+            Adicione um caso diretamente para a Galeria e para o Minigame.
           </DialogDescription>
         </DialogHeader>
 
@@ -215,6 +242,55 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
               placeholder="Ex: Radiopaedia, caso próprio, acervo institucional..."
               className="bg-card border-border"
             />
+          </div>
+
+          {/* Seção Minigame */}
+          <div className="pt-4 border-t border-border mt-4">
+            <div className="flex items-center gap-3 mb-4">
+              <input
+                type="checkbox"
+                id="isMinigameToggle"
+                checked={isMinigame}
+                onChange={(e) => setIsMinigame(e.target.checked)}
+                className="w-4 h-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
+              />
+              <label htmlFor="isMinigameToggle" className="font-heading text-primary font-semibold cursor-pointer select-none">
+                Adicionar este caso ao Quiz
+              </label>
+            </div>
+            
+            {isMinigame && (
+              <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-1 block">Diagnóstico no Jogo *</label>
+                  <Select value={disease} onValueChange={setDisease}>
+                    <SelectTrigger className="bg-card border-border">
+                      <SelectValue placeholder="Selecione a doença correspondente" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-card border-border max-h-48">
+                      {diseases?.map(d => (
+                        <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-1 block">Dica 1 (Após 1º erro)</label>
+                  <Input value={clue1} onChange={e => setClue1(e.target.value)} placeholder="Sintoma principal (opcional, usa caso clínico por padrão)" className="bg-card border-border" />
+                </div>
+                
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-1 block">Dica 2 (Após 2º erro)</label>
+                  <Input value={clue2} onChange={e => setClue2(e.target.value)} placeholder="Sintoma associado (opcional)" className="bg-card border-border" />
+                </div>
+                
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-1 block">Dica 3 (Após 3º erro)</label>
+                  <Input value={clue3} onChange={e => setClue3(e.target.value)} placeholder="Laboratório ou história (opcional)" className="bg-card border-border" />
+                </div>
+              </div>
+            )}
           </div>
 
           <Button onClick={handleSubmit} disabled={uploading} className="w-full">

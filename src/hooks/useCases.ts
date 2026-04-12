@@ -9,7 +9,6 @@ export function useCases(filters?: { search?: string; examType?: string }) {
       let query = supabase
         .from('cases')
         .select('*')
-        .eq('status', 'approved')
         .order('created_at', { ascending: false });
 
       if (filters?.examType && filters.examType !== 'all') {

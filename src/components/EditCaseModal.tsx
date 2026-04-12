@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/select';
 import { Loader2, X, Plus, ImagePlus } from 'lucide-react';
 import { useUpdateCase, uploadCaseImage } from '@/hooks/useCases';
+import { useDiseases } from '@/hooks/useGame';
 import { toast } from 'sonner';
 import type { Case, ExamType } from '@/types/case';
 
@@ -35,6 +36,14 @@ export function EditCaseModal({ caseData, open, onOpenChange }: EditCaseModalPro
   const [diagnosis, setDiagnosis] = useState('');
   const [images, setImages] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
+  
+  // Game fields
+  const [isMinigame, setIsMinigame] = useState(false);
+  const { data: diseases } = useDiseases();
+  const [disease, setDisease] = useState('');
+  const [clue1, setClue1] = useState('');
+  const [clue2, setClue2] = useState('');
+  const [clue3, setClue3] = useState('');
 
   useEffect(() => {
     if (caseData) {
@@ -44,6 +53,11 @@ export function EditCaseModal({ caseData, open, onOpenChange }: EditCaseModalPro
       setClinicalCase(caseData.clinical_case);
       setDiagnosis(caseData.diagnosis);
       setImages(caseData.images ?? []);
+      setIsMinigame(!!(caseData as any).disease);
+      setDisease((caseData as any).disease ?? '');
+      setClue1((caseData as any).clue1 ?? '');
+      setClue2((caseData as any).clue2 ?? '');
+      setClue3((caseData as any).clue3 ?? '');
     }
   }, [caseData]);
 
@@ -75,6 +89,15 @@ export function EditCaseModal({ caseData, open, onOpenChange }: EditCaseModalPro
   };
 
   const handleSave = async () => {
+    if (isMinigame && !disease) {
+      toast.error('Selecione o diagnóstico para o minigame.');
+      return;
+    }
+    if (isMinigame && images.length === 0) {
+      toast.error('O minigame exige que o caso tenha pelo menos uma imagem.');
+      return;
+    }
+
     try {
       await updateCase.mutateAsync({
         id: caseData.id,
@@ -84,7 +107,11 @@ export function EditCaseModal({ caseData, open, onOpenChange }: EditCaseModalPro
         clinical_case: clinicalCase,
         diagnosis,
         images,
-      });
+        disease: isMinigame ? disease : null,
+        clue1: isMinigame ? (clue1.trim() || clinicalCase) : null,
+        clue2: isMinigame ? clue2 : null,
+        clue3: isMinigame ? clue3 : null
+      } as any);
       toast.success('Caso atualizado com sucesso');
       onOpenChange(false);
     } catch {
@@ -189,6 +216,55 @@ export function EditCaseModal({ caseData, open, onOpenChange }: EditCaseModalPro
               onChange={(e) => setDiagnosis(e.target.value)}
               className="bg-card border-border min-h-[80px]"
             />
+          </div>
+
+          {/* Seção Minigame */}
+          <div className="pt-4 border-t border-border mt-4">
+            <div className="flex items-center gap-3 mb-4">
+              <input
+                type="checkbox"
+                id="editIsMinigameToggle"
+                checked={isMinigame}
+                onChange={(e) => setIsMinigame(e.target.checked)}
+                className="w-4 h-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
+              />
+              <label htmlFor="editIsMinigameToggle" className="font-heading text-primary font-semibold cursor-pointer select-none">
+                Disponível no Quiz
+              </label>
+            </div>
+            
+            {isMinigame && (
+              <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-1 block">Diagnóstico no Jogo *</label>
+                  <Select value={disease} onValueChange={setDisease}>
+                    <SelectTrigger className="bg-card border-border">
+                      <SelectValue placeholder="Selecione a doença" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-card border-border max-h-48">
+                      {diseases?.map(d => (
+                        <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-1 block">Dica 1 (Após 1º erro)</label>
+                  <Input value={clue1} onChange={e => setClue1(e.target.value)} className="bg-card border-border" />
+                </div>
+                
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-1 block">Dica 2 (Após 2º erro)</label>
+                  <Input value={clue2} onChange={e => setClue2(e.target.value)} className="bg-card border-border" />
+                </div>
+                
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-1 block">Dica 3 (Após 3º erro)</label>
+                  <Input value={clue3} onChange={e => setClue3(e.target.value)} className="bg-card border-border" />
+                </div>
+              </div>
+            )}
           </div>
 
           <Button onClick={handleSave} disabled={updateCase.isPending || uploading} className="w-full">

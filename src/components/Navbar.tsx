@@ -5,11 +5,7 @@ import { useAuth } from '@/hooks/authContent';
 import { Menu, X, LogOut, Shield } from 'lucide-react';
 import logo from '@/assets/logo.png';
 
-interface NavbarProps {
-  onSubmitClick: () => void;
-}
-
-export function Navbar({ onSubmitClick }: NavbarProps) {
+export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { user, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
@@ -28,9 +24,6 @@ export function Navbar({ onSubmitClick }: NavbarProps) {
 
         {/* Desktop menu */}
         <div className="hidden md:flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={onSubmitClick}>
-            Enviar caso
-          </Button>
           <Link to="/sobre" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
             Sobre
           </Link>
@@ -65,9 +58,6 @@ export function Navbar({ onSubmitClick }: NavbarProps) {
       {/* Mobile menu */}
       {menuOpen && (
         <div className="md:hidden bg-background border-b border-border px-4 py-4 space-y-3">
-          <Button variant="ghost" className="w-full justify-start" onClick={() => { onSubmitClick(); setMenuOpen(false); }}>
-            Enviar caso
-          </Button>
           <Link to="/sobre" className="block text-sm text-muted-foreground px-4 py-2" onClick={() => setMenuOpen(false)}>Sobre</Link>
           <a href="#contato" className="block text-sm text-muted-foreground px-4 py-2" onClick={() => setMenuOpen(false)}>Contato</a>
           <Link to="/privacidade" className="block text-sm text-muted-foreground px-4 py-2" onClick={() => setMenuOpen(false)}>Privacidade</Link>

@@ -4,24 +4,25 @@ import { Navbar } from '@/components/Navbar';
 import { FiltersBar } from '@/components/FiltersBar';
 import { CaseCard } from '@/components/CaseCard';
 import { CaseModal } from '@/components/CaseModal';
-import { SubmitCaseModal } from '@/components/SubmitCaseModal';
 import { useCases } from '@/hooks/useCases';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { Activity, Search } from 'lucide-react';
 import type { Case } from '@/types/case';
 import heroImage from '@/assets/hero-radiology.jpg';
-import logo from '@/assets/logo.png';
+import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
   const [search, setSearch] = useState('');
   const [examType, setExamType] = useState('all');
   const [selectedCase, setSelectedCase] = useState<Case | null>(null);
-  const [submitOpen, setSubmitOpen] = useState(false);
+  const navigate = useNavigate();
 
   const { data: cases, isLoading } = useCases({ search, examType });
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar onSubmitClick={() => setSubmitOpen(true)} />
+      <Navbar />
 
       {/* Hero*/}
       <section className="relative pt-16 pb-12">
@@ -54,17 +55,43 @@ const Index = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
-            className="flex justify-center gap-3 pt-2"
+            className="flex flex-col items-center pt-8 gap-8"
           >
-            <div className="h-px w-16 bg-gradient-to-r from-transparent to-primary/50 self-center" />
-            <span className="text-xs text-muted-foreground uppercase tracking-widest">Acervo de casos radiológicos da Liga Acadêmica de Radiologia — UFSJ Campus CCO</span>
-            <div className="h-px w-16 bg-gradient-to-l from-transparent to-primary/50 self-center" />
+            <div className="flex justify-center gap-3 w-full max-w-2xl px-4">
+              <div className="h-px flex-1 bg-gradient-to-r from-transparent to-muted-foreground/30 self-center" />
+              <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-widest text-center px-2">
+                Acervo de casos da Liga Acadêmica de Radiologia — UFSJ
+              </span>
+              <div className="h-px flex-1 bg-gradient-to-l from-transparent to-muted-foreground/30 self-center" />
+            </div>
+            
+            <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 w-full sm:w-auto px-4">
+              <Button 
+                variant="default" 
+                size="lg" 
+                className="w-full sm:w-auto gap-2 rounded-full h-14 px-8 text-base font-semibold shadow-[0_0_20px_-5px_hsl(var(--primary))] hover:shadow-[0_0_25px_-5px_hsl(var(--primary))] transition-all" 
+                onClick={() => navigate('/game')}
+              >
+                <Activity className="w-5 h-5" /> 
+                Jogar Quiz
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                size="lg" 
+                className="w-full sm:w-auto gap-2 rounded-full h-14 px-8 text-base font-medium bg-background/50 backdrop-blur-md border-border hover:bg-muted" 
+                onClick={() => document.getElementById('galeria')?.scrollIntoView({ behavior: 'smooth' })}
+              >
+                <Search className="w-5 h-5" /> 
+                Explorar Acervo
+              </Button>
+            </div>
           </motion.div>
         </div>
       </section>
 
       {/* Filters */}
-      <section className="px-4 pb-8">
+      <section id="galeria" className="px-4 pb-8 scroll-mt-24">
         <FiltersBar
           search={search}
           onSearchChange={setSearch}
@@ -139,7 +166,6 @@ const Index = () => {
         open={!!selectedCase}
         onOpenChange={(o) => !o && setSelectedCase(null)}
       />
-      <SubmitCaseModal open={submitOpen} onOpenChange={setSubmitOpen} />
     </div>
   );
 };
