@@ -11,6 +11,7 @@ import RadioGame from "./pages/RadioGame.tsx";
 import Privacy from "./pages/Privacy.tsx";
 import Sobre from "./pages/Sobre.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import { Analytics } from "@vercel/analytics/next"
 
 const queryClient = new QueryClient();
 
@@ -29,11 +30,13 @@ const App = () => (
             <Route path="/sobre" element={<Sobre />} />
             <Route path="/privacidade" element={<Privacy />} />
             <Route path="*" element={<NotFound />} />
+            <Analytics />
           </Routes>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
+  
 );
 
 export default App;
