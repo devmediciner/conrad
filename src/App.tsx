@@ -30,7 +30,7 @@ const App = () => (
             <Route path="/sobre" element={<Sobre />} />
             <Route path="/privacidade" element={<Privacy />} />
             <Route path="*" element={<NotFound />} />
-            <Analytics />
+            
           </Routes>
         </AuthProvider>
       </BrowserRouter>

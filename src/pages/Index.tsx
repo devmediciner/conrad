@@ -7,9 +7,10 @@ import { CaseModal } from '@/components/CaseModal';
 import { useCases } from '@/hooks/useCases';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { Activity, Search } from 'lucide-react';
+import { Activity, Instagram, Mail } from 'lucide-react';
 import type { Case } from '@/types/case';
-import heroImage from '@/assets/hero-radiology.jpg';
+import backImage from '@/assets/back.jpg';
+import logo from '@/assets/logo.png';
 import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
@@ -21,71 +22,105 @@ const Index = () => {
   const { data: cases, isLoading } = useCases({ search, examType });
 
   return (
+    
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      {/* Hero*/}
-      <section className="relative pt-16 pb-12">
-        <div className="absolute inset-0 overflow-hidden">
-          <img src={heroImage} alt="" width={1920} height={640} className="w-full h-full object-cover opacity-20" />
-          <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/70 to-background" />
+      {/* Hero */}
+      <section className="relative min-h-[90vh] flex flex-col items-center justify-center pt-28 pb-20 overflow-hidden">
+        {/* Background elements */}
+        <div className="absolute inset-0 z-0 bg-background">
+          <img src={backImage} alt="" className="absolute inset-0 w-full h-full object-cover opacity-[0.05] sm:opacity-[0.1] mix-blend-luminosity pointer-events-none" />
+          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/20 blur-[120px] mix-blend-normal pointer-events-none" />
+          <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-blue-500/20 blur-[120px] mix-blend-normal pointer-events-none" />
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/90 to-transparent pointer-events-none" />
         </div>
-        <div className="relative container mx-auto px-4 text-center space-y-2 py-10">
+
+        <div className="relative container mx-auto px-4 text-center z-10 flex flex-col items-center">
           <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
-            className="flex justify-center mb-2"
-          >
-            
-          </motion.div>
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="text-4xl md:text-6xl font-bold tracking-tight"
-            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+            transition={{ duration: 0.7, ease: "easeOut" }}
+            className="flex flex-col items-center mb-16"
           >
-            <span className="text-foreground">Galeria</span>{' '}
-            <span className="text-foreground">Radiológica</span>{' - '}
-            <span className="text-gold-gradient">CONRAD</span>
-          </motion.h1>
-         
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="flex flex-col items-center pt-8 gap-8"
-          >
-            <div className="flex justify-center gap-3 w-full max-w-2xl px-4">
-              <div className="h-px flex-1 bg-gradient-to-r from-transparent to-muted-foreground/30 self-center" />
-              <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-widest text-center px-2">
-                Acervo de casos da Liga Acadêmica de Radiologia — UFSJ
-              </span>
-              <div className="h-px flex-1 bg-gradient-to-l from-transparent to-muted-foreground/30 self-center" />
-            </div>
             
-            <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 w-full sm:w-auto px-4">
-              <Button 
-                variant="default" 
+
+            <h1 className="flex flex-col items-center gap-3 text-5xl md:text-7xl font-extrabold tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              <span className="text-2xl md:text-3xl font-medium text-muted-foreground tracking-normal uppercase">Bem-vindo à</span>
+              <span className="flex items-center justify-center mt-2 text-7xl md:text-8xl lg:text-[9rem] text-foreground drop-shadow-sm">
+                <span>C</span>
+                <img src={logo} alt="O" className="w-[0.9em] h-[0.9em] object-contain mx-1 select-none pointer-events-none drop-shadow-lg" />
+                <span>NRAD</span>
+              </span>
+            </h1>
+            <p className="mt-6 text-muted-foreground text-lg md:text-xl max-w-2xl text-center font-normal leading-relaxed">
+              Liga Acadêmica de Radiologia e Diagnóstico por Imagem da UFSJ CCO. 
+            </p>
+          </motion.div>
+
+          {/* Action Buttons / Modalities */}
+          <motion.div 
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" }}
+            className="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-6 max-w-5xl mx-auto w-full"
+          >
+            {[
+              { id: 'RX', title: 'RX', desc: 'Raio-X' },
+              { id: 'TC', title: 'TC', desc: 'Tomografia' },
+              { id: 'USG', title: 'USG', desc: 'Ultrassom' },
+              { id: 'RM', title: 'RM', desc: 'Ressonância' },
+            ].map((mod) => (
+              <button
+                key={mod.id}
+                onClick={() => {
+                  setExamType(mod.id);
+                  document.getElementById('galeria')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="group relative flex flex-col items-center justify-center p-6 sm:p-8 rounded-3xl bg-card border border-border/60 shadow-sm hover:shadow-xl hover:border-primary/50 transition-all duration-500 hover:-translate-y-1 overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <span className="relative z-10 text-4xl sm:text-5xl font-bold text-foreground group-hover:text-primary transition-colors duration-300">
+                  {mod.title}
+                </span>
+                <span className="relative z-10 text-xs sm:text-sm text-muted-foreground mt-3 font-semibold uppercase tracking-widest group-hover:text-foreground transition-colors duration-300">
+                  {mod.desc}
+                </span>
+              </button>
+            ))}
+
+            {/* CASOS Button */}
+            <div className="relative flex flex-col items-center justify-center p-6 sm:p-8 rounded-3xl bg-muted/30 border border-border/30 overflow-hidden col-span-2 md:col-span-1 opacity-70 cursor-default">
+              <div className="absolute top-4 right-4">
+                <span className="bg-background/80 backdrop-blur-md text-muted-foreground text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider border border-border/50 shadow-sm">
+                  Em breve
+                </span>
+              </div>
+              <span className="relative z-10 text-4xl sm:text-5xl font-bold text-foreground/80">
+                CASOS
+              </span>
+              <span className="relative z-10 text-[10px] sm:text-xs text-muted-foreground/80 mt-3 font-semibold uppercase tracking-widest text-center">
+                Artigos &<br />Discussões
+              </span>
+            </div>
+          </motion.div>
+          
+          {/* Jogar Quiz Action */}
+          <motion.div
+             initial={{ opacity: 0 }}
+             animate={{ opacity: 1 }}
+             transition={{ duration: 1, delay: 0.8 }}
+             className="mt-16 flex justify-center w-full"
+          >
+            <Button 
                 size="lg" 
-                className="w-full sm:w-auto gap-2 rounded-full h-14 px-8 text-base font-semibold shadow-[0_0_20px_-5px_hsl(var(--primary))] hover:shadow-[0_0_25px_-5px_hsl(var(--primary))] transition-all" 
+                className="h-14 px-8 rounded-full bg-primary text-primary-foreground hover:scale-105 transition-all duration-300 font-semibold text-base gap-3 shadow-[0_0_30px_-5px_hsl(var(--primary))] hover:shadow-[0_0_40px_-5px_hsl(var(--primary))]" 
                 onClick={() => navigate('/game')}
               >
                 <Activity className="w-5 h-5" /> 
-                Jogar Quiz
-              </Button>
-              
-              <Button 
-                variant="outline" 
-                size="lg" 
-                className="w-full sm:w-auto gap-2 rounded-full h-14 px-8 text-base font-medium bg-background/50 backdrop-blur-md border-border hover:bg-muted" 
-                onClick={() => document.getElementById('galeria')?.scrollIntoView({ behavior: 'smooth' })}
-              >
-                <Search className="w-5 h-5" /> 
-                Explorar Acervo
-              </Button>
-            </div>
+                Desafie-se no Quiz Radiológico
+            </Button>
           </motion.div>
         </div>
       </section>
@@ -135,21 +170,22 @@ const Index = () => {
       </section>
 
       {/* Contact section */}
-      <section id="contato" className="px-4 py-16 border-t border-border">
-        <div className="container mx-auto max-w-2xl text-center space-y-4">
-          <h2 className="font-heading text-2xl font-bold text-foreground">Contato</h2>
-          <p className="text-muted-foreground">
-            E-mail:{' '}
-            <a href="mailto:conradufsj@gmail.com" className="text-primary hover:underline">
-              conradufsj@gmail.com
-            </a>
+      <section id="contato" className="px-4 py-24 border-t border-border bg-muted/20">
+        <div className="container mx-auto max-w-3xl text-center space-y-8">
+          <h2 className="font-heading text-3xl font-bold text-foreground">Acompanhe a CONRAD</h2>
+          <p className="text-muted-foreground text-lg">
+            Fique por dentro das nossas discussões de casos, aulas e eventos acadêmicos.
           </p>
-          <p className="text-muted-foreground">
-            Instagram:{' '}
-            <a href="https://www.instagram.com/conradufsj/" className="text-primary hover:underline">
-              @conradufsj
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+            <a href="https://www.instagram.com/conradufsj/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 px-6 py-3 rounded-full bg-card border border-border hover:border-primary/50 hover:shadow-md transition-all">
+              <Instagram className="w-5 h-5 text-pink-500" />
+              <span className="font-medium text-foreground">@conradufsj</span>
             </a>
-          </p>
+            <a href="mailto:conradufsj@gmail.com" className="flex items-center gap-3 px-6 py-3 rounded-full bg-card border border-border hover:border-primary/50 hover:shadow-md transition-all">
+              <Mail className="w-5 h-5 text-blue-500" />
+              <span className="font-medium text-foreground">conradufsj@gmail.com</span>
+            </a>
+          </div>
         </div>
       </section>
 
@@ -167,6 +203,7 @@ const Index = () => {
         onOpenChange={(o) => !o && setSelectedCase(null)}
       />
     </div>
+    
   );
 };
 
