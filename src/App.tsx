@@ -5,6 +5,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from '@/hooks/authContent';  // ← movido para o topo
 import Index from "./pages/Index.tsx";
+import ListaArtigos from "./pages/ListaArtigos.tsx";
+import LerArtigo from "./pages/LerArtigo.tsx";
 import Login from "./pages/Login.tsx";
 import Admin from "./pages/Admin.tsx";
 import RadioGame from "./pages/RadioGame.tsx";
@@ -24,6 +26,9 @@ const App = () => (
         <AuthProvider>  {/* envolva as rotas aqui */}
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/artigos" element={<ListaArtigos />} />
+            <Route path="/artigos/:categoria" element={<ListaArtigos />} />
+            <Route path="/artigo/:id" element={<LerArtigo />} />
             <Route path="/login" element={<Login />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/game" element={<RadioGame />} />

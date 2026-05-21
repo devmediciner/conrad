@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/authContent';
-import { Menu, X, LogOut, Shield } from 'lucide-react';
+import { Menu, X, LogOut, Shield, User } from 'lucide-react';
 import logo from '@/assets/logo.png';
 
 export function Navbar() {
@@ -33,9 +33,9 @@ export function Navbar() {
           <Link to="/privacidade" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
             Privacidade
           </Link>
-          {isAdmin && (
+          {user && (
             <Button variant="outline" size="sm" onClick={() => navigate('/admin')}>
-              <Shield className="w-4 h-4 mr-1" /> Admin
+              {isAdmin ? <Shield className="w-4 h-4 mr-1" /> : <User className="w-4 h-4 mr-1" />} Painel
             </Button>
           )}
           {user ? (
@@ -61,9 +61,9 @@ export function Navbar() {
           <Link to="/sobre" className="block text-sm text-muted-foreground px-4 py-2" onClick={() => setMenuOpen(false)}>Sobre</Link>
           <a href="#contato" className="block text-sm text-muted-foreground px-4 py-2" onClick={() => setMenuOpen(false)}>Contato</a>
           <Link to="/privacidade" className="block text-sm text-muted-foreground px-4 py-2" onClick={() => setMenuOpen(false)}>Privacidade</Link>
-          {isAdmin && (
+          {user && (
             <Button variant="outline" className="w-full justify-start" onClick={() => { navigate('/admin'); setMenuOpen(false); }}>
-              <Shield className="w-4 h-4 mr-1" /> Admin
+              {isAdmin ? <Shield className="w-4 h-4 mr-1" /> : <User className="w-4 h-4 mr-1" />} Painel
             </Button>
           )}
           {user ? (

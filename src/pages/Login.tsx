@@ -21,7 +21,7 @@ const Login = () => {
       toast.error('Credenciais inválidas');
     } else {
       toast.success('Login realizado!');
-      navigate('/');
+      navigate('/admin');
     }
   };
 

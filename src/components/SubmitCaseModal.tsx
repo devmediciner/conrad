@@ -29,7 +29,7 @@ interface SubmitCaseModalProps {
 }
 
 export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const submitCase = useSubmitCase();
   const { data: diseases } = useDiseases();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -113,14 +113,14 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
         clinical_case: clinicalCase,
         diagnosis,
         source: source.trim() || undefined,
-        status: 'approved',
+        status: isAdmin ? 'approved' : 'pending',
         disease: isMinigame ? disease : null,
         clue1: isMinigame ? (clue1.trim() || clinicalCase) : null,
         clue2: isMinigame ? clue2 : null,
         clue3: isMinigame ? clue3 : null
       } as any);
       
-      toast.success('Caso adicionado à galeria e ao minigame!');
+      toast.success(isAdmin ? 'Caso adicionado à galeria!' : 'Caso enviado para aprovação!');
       resetForm();
       onOpenChange(false);
     } catch (err) {

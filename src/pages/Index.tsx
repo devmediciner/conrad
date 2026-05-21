@@ -90,20 +90,16 @@ const Index = () => {
               </button>
             ))}
 
-            {/* CASOS Button */}
-            <div className="relative flex flex-col items-center justify-center p-6 sm:p-8 rounded-3xl bg-muted/30 border border-border/30 overflow-hidden col-span-2 md:col-span-1 opacity-70 cursor-default">
-              <div className="absolute top-4 right-4">
-                <span className="bg-background/80 backdrop-blur-md text-muted-foreground text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider border border-border/50 shadow-sm">
-                  Em breve
-                </span>
-              </div>
-              <span className="relative z-10 text-4xl sm:text-5xl font-bold text-foreground/80">
-                CASOS
+            {/* ARTIGOS Button */}
+            <button onClick={() => navigate('/artigos')} className="group relative flex flex-col items-center justify-center p-6 sm:p-8 rounded-3xl bg-card border border-border/60 shadow-sm hover:shadow-xl hover:border-primary/50 transition-all duration-500 hover:-translate-y-1 overflow-hidden col-span-2 md:col-span-1">
+              <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <span className="relative z-10 text-3xl sm:text-4xl font-bold text-foreground group-hover:text-primary transition-colors duration-300">
+                ARTIGOS
               </span>
-              <span className="relative z-10 text-[10px] sm:text-xs text-muted-foreground/80 mt-3 font-semibold uppercase tracking-widest text-center">
-                Artigos &<br />Discussões
+              <span className="relative z-10 text-[10px] sm:text-xs text-muted-foreground mt-3 font-semibold uppercase tracking-widest text-center group-hover:text-foreground transition-colors duration-300">
+                & Discussões
               </span>
-            </div>
+            </button>
           </motion.div>
           
           {/* Jogar Quiz Action */}
