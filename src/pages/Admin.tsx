@@ -41,6 +41,11 @@ const Admin = () => {
   const [newUserPassword, setNewUserPassword] = useState('');
   const [newUserRole, setNewUserRole] = useState('user');
 
+  // Estados para edição de usuário
+  const [editingUserId, setEditingUserId] = useState<string | null>(null);
+  const [editUserEmail, setEditUserEmail] = useState('');
+  const [editUserRole, setEditUserRole] = useState('user');
+
   useEffect(() => {
     const fetchArticles = async () => {
       setLoadingArticles(true);
@@ -132,6 +137,43 @@ const Admin = () => {
       setRefreshKey(prev => prev + 1);
     } catch (e: any) {
       toast.error(e.message || 'Erro ao criar usuário.');
+    }
+  };
+
+  const handleUpdateUser = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('user_roles')
+        .update({
+          email: editUserEmail || null,
+          role: editUserRole as any,
+        })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast.success('Usuário atualizado com sucesso!');
+      setEditingUserId(null);
+      setRefreshKey(prev => prev + 1);
+    } catch (e: any) {
+      toast.error(e.message || 'Erro ao atualizar usuário.');
+    }
+  };
+
+  const handleDeleteUser = async (id: string) => {
+    if (!window.confirm('Tem certeza que deseja excluir este usuário? Esta ação não pode ser desfeita.')) return;
+    try {
+      const { error } = await supabase
+        .from('user_roles')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast.success('Usuário excluído com sucesso!');
+      setRefreshKey(prev => prev + 1);
+    } catch (e: any) {
+      toast.error(e.message || 'Erro ao excluir usuário.');
     }
   };
 
@@ -406,14 +448,101 @@ const Admin = () => {
               <div className="bg-card border border-border p-5 rounded-xl shadow-sm space-y-3 mt-6">
                 <h3 className="text-sm font-semibold flex items-center gap-2"><Users className="w-4 h-4 text-primary" /> Usuários Cadastrados</h3>
                 <div className="space-y-2 max-h-64 overflow-y-auto">
-                  {users.length === 0 ? <p className="text-xs text-muted-foreground text-center py-4">Nenhum perfil carregado.</p> : users.map(u => (
-                    <div key={u.id} className="flex items-center justify-between p-3 bg-background border border-border rounded-lg">
-                      <span className="text-sm">{u.email}</span>
-                      <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase font-bold tracking-wider ${u.role === 'admin' ? 'bg-primary/10 text-primary border border-primary/20' : 'bg-muted text-muted-foreground border border-border'}`}>
-                        {u.role}
-                      </span>
-                    </div>
-                  ))}
+                  {users.length === 0 ? (
+                    <p className="text-xs text-muted-foreground text-center py-4">Nenhum perfil carregado.</p>
+                  ) : (
+                    users.map(u => {
+                      const isSelf = u.user_id === user?.id;
+                      const isEditing = editingUserId === u.id;
+                      const userDisplayEmail = u.email || `ID: ${(u.user_id as string)?.substring(0, 8)}...`;
+                      
+                      return (
+                        <div key={u.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-background border border-border rounded-lg gap-2">
+                          {isEditing ? (
+                            <>
+                              <div className="flex-1 flex gap-2 flex-col sm:flex-row">
+                                <Input 
+                                  placeholder="E-mail" 
+                                  value={editUserEmail} 
+                                  onChange={e => setEditUserEmail(e.target.value)} 
+                                  className="h-8 text-xs max-w-xs"
+                                />
+                                <select 
+                                  className="border border-input rounded-md px-2 text-xs bg-background h-8"
+                                  value={editUserRole}
+                                  onChange={e => setEditUserRole(e.target.value)}
+                                  disabled={isSelf}
+                                >
+                                  <option value="user">Usuário Comum</option>
+                                  <option value="admin">Administrador</option>
+                                </select>
+                              </div>
+                              <div className="flex gap-1.5 shrink-0">
+                                <Button 
+                                  size="icon" 
+                                  className="h-8 w-8 bg-emerald-500 hover:bg-emerald-600 text-white" 
+                                  onClick={() => handleUpdateUser(u.id as string)}
+                                  title="Salvar"
+                                >
+                                  <Check className="w-4 h-4" />
+                                </Button>
+                                <Button 
+                                  size="icon" 
+                                  variant="ghost" 
+                                  className="h-8 w-8 text-muted-foreground" 
+                                  onClick={() => setEditingUserId(null)}
+                                  title="Cancelar"
+                                >
+                                  <X className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </>
+                          ) : (
+                            <>
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-medium">{userDisplayEmail as string}</span>
+                                {isSelf && (
+                                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-primary/20 text-primary border border-primary/20 font-semibold">
+                                    Você
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase font-bold tracking-wider ${u.role === 'admin' ? 'bg-primary/10 text-primary border border-primary/20' : 'bg-muted text-muted-foreground border border-border'}`}>
+                                  {u.role as string}
+                                </span>
+                                <div className="flex gap-1.5">
+                                  <Button 
+                                    size="icon" 
+                                    variant="secondary" 
+                                    className="h-7 w-7" 
+                                    onClick={() => {
+                                      setEditingUserId(u.id as string);
+                                      setEditUserEmail((u.email as string) || '');
+                                      setEditUserRole((u.role as string) || 'user');
+                                    }}
+                                    title="Editar usuário"
+                                  >
+                                    <Pencil className="w-3.5 h-3.5" />
+                                  </Button>
+                                  <Button 
+                                    size="icon" 
+                                    variant="destructive" 
+                                    className="h-7 w-7" 
+                                    onClick={() => handleDeleteUser(u.id as string)}
+                                    disabled={isSelf}
+                                    title={isSelf ? "Você não pode se excluir" : "Excluir usuário"}
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </Button>
+                                </div>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
               </div>
             </div>
