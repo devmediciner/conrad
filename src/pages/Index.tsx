@@ -54,7 +54,7 @@ const Index = () => {
                 <span>NRAD</span>
               </span>
             </h1>
-            <p className="mt-6 text-muted-foreground text-lg md:text-xl max-w-2xl text-center font-normal leading-relaxed">
+            <p className="mt-0 text-[1.2rem] text-muted-foreground max-w-2xl text-center font-normal leading-relaxed">
               Liga Acadêmica de Radiologia e Diagnóstico por Imagem da UFSJ CCO. 
             </p>
           </motion.div>
