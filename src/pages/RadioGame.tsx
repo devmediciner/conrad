@@ -6,6 +6,7 @@ import { Stethoscope, ArrowLeft, CheckCircle2, XCircle, Trophy, Share2, Activity
 import { toast } from 'sonner';
 import { useCases } from '@/hooks/useCases';
 import { useDiseases } from '@/hooks/useGame';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface QuizStats {
   totalGames: number;
@@ -173,15 +174,50 @@ export default function RadioGame() {
     return guesses.filter(g => g !== '__hint__');
   }, [guesses]);
 
+  const highlightMatch = (text: string, query: string) => {
+    if (!query) return <span>{text}</span>;
+    const parts = text.split(new RegExp(`(${query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')})`, 'gi'));
+    return (
+      <span>
+        {parts.map((part, i) => 
+          part.toLowerCase() === query.toLowerCase() 
+            ? <strong key={i} className="text-primary font-extrabold">{part}</strong> 
+            : <span key={i} className="opacity-80">{part}</span>
+        )}
+      </span>
+    );
+  };
+
   const handleShare = () => {
     if (!currentCase) return;
     const score = getScore();
-    const stars = hasWon ? '⭐'.repeat(4 - guesses.length) : '💀';
+    
+    // Constrói a grade de emojis Wordle-style: 🟦 (Dica), 🟥 (Erro), 🟩 (Acerto), ⬜ (Restante)
+    const grid: string[] = [];
+    guesses.forEach(g => {
+      if (g === '__hint__') {
+        grid.push('🟦');
+      } else {
+        grid.push('🟥');
+      }
+    });
+    
+    if (hasWon) {
+      grid.push('🟩');
+    }
+    
+    while (grid.length < 4) {
+      grid.push('⬜');
+    }
+    
+    const emojiGrid = grid.join(' ');
+    const scoreTxt = hasWon ? `${score}pts` : '0pts';
     const attemptsTxt = hasWon ? `${guesses.length + 1}/4` : 'X/4';
-    const text = `Quiz #${currentCase.case_number || currentCase.id} — ${stars} ${score}pts — ${attemptsTxt} tentativas 🩻\nJogue na Galeria Radiológica CONRAD`;
+    
+    const text = `Quiz CONRAD Caso #${currentCase.case_number || currentCase.id} 🩻\n${emojiGrid} (${scoreTxt}) — ${attemptsTxt} tentativas\nJogue na Galeria Radiológica CONRAD`;
     
     navigator.clipboard.writeText(text);
-    toast.success("Resultado copiado para a área de transferência!");
+    toast.success("Resultado copiado em formato de grade! Compartilhe com colegas! 📊");
   };
 
   return (
@@ -309,24 +345,95 @@ export default function RadioGame() {
                 </div>
               </div>
 
-              <div className="space-y-4 bg-card p-5 rounded-2xl border border-border shadow-sm">
-                <div className="flex items-center justify-between font-medium text-muted-foreground mb-2">
-                  <span className="text-sm">Histórico do Desafio</span>
-                  <span className="text-sm bg-muted px-2.5 py-1 rounded-md">Tentativa {guesses.length + 1}/4</span>
+              <div className="space-y-5 bg-card p-5 rounded-2xl border border-border shadow-sm">
+                <div className="flex items-center justify-between font-medium text-muted-foreground mb-1">
+                  <span className="text-sm font-bold text-foreground">Sua Jornada Clínica</span>
+                  <span className="text-xs bg-muted px-2 py-0.5 rounded-md font-mono">Tentativa {guesses.length + 1}/4</span>
+                </div>
+
+                {/* Linha do Tempo Visual de Tentativas */}
+                <div className="grid grid-cols-4 gap-2.5">
+                  {Array.from({ length: 4 }).map((_, i) => {
+                    const guess = guesses[i];
+                    const isActive = i === guesses.length;
+                    
+                    if (guess === undefined) {
+                      return (
+                        <div 
+                          key={i} 
+                          className={`h-14 rounded-xl border flex flex-col items-center justify-center transition-all duration-300 ${
+                            isActive 
+                              ? 'border-primary bg-primary/5 text-primary shadow-sm ring-1 ring-primary/20' 
+                              : 'border-border/60 border-dashed text-muted-foreground/35'
+                          }`}
+                        >
+                          <span className="text-[9px] uppercase font-bold tracking-wider">{isActive ? 'Atual' : `${i + 1}ª`}</span>
+                          <span className="text-[11px] font-semibold">{isActive ? 'Chute' : 'Bloqueado'}</span>
+                        </div>
+                      );
+                    }
+                    
+                    if (guess === '__hint__') {
+                      return (
+                        <motion.div 
+                          key={i} 
+                          initial={{ scale: 0.92, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          className="h-14 rounded-xl bg-blue-500/10 border border-blue-500/30 text-blue-500 flex flex-col items-center justify-center font-bold"
+                        >
+                          <span className="text-[9px] uppercase font-bold tracking-wider opacity-85">Tentativa {i + 1}</span>
+                          <span className="text-xs flex items-center gap-1">💡 Dica</span>
+                        </motion.div>
+                      );
+                    }
+                    
+                    return (
+                      <motion.div 
+                        key={i} 
+                        initial={{ scale: 0.92, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className="h-14 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 flex flex-col items-center justify-center px-1 text-center font-bold overflow-hidden"
+                      >
+                        <span className="text-[8px] uppercase font-bold tracking-wider opacity-85 line-through">Chute {i + 1}</span>
+                        <span className="text-[10px] font-semibold truncate w-full" title={guess}>{guess}</span>
+                      </motion.div>
+                    );
+                  })}
                 </div>
 
                 {/* Dicas Obtidas */}
-                <div className="space-y-2.5">
+                <div className="space-y-2.5 pt-2 border-t border-border/40">
                   <span className="text-xs font-bold text-blue-500 uppercase tracking-wider block mb-1">💡 Dicas Reveladas</span>
                   {clues.filter(c => c.unlocked).length === 0 ? (
                     <p className="text-sm text-muted-foreground py-2 italic pl-1 animate-in fade-in">Nenhuma dica revelada ainda. Clique em "Pedir Dica" ou faça uma tentativa!</p>
                   ) : (
-                    <div className="space-y-2.5">
-                      {clues.map((c, i) => c.unlocked && (
-                        <div key={i} className="text-sm bg-blue-500/10 text-blue-500 px-4 py-3 rounded-lg border border-blue-500/20 animate-in slide-in-from-top-2">
-                          <span className="font-semibold block mb-0.5">Dica {i + 1}</span> {c.text}
-                        </div>
-                      ))}
+                    <div className="space-y-3">
+                      {clues.map((c, i) => {
+                        const isMostRecent = i === guesses.length - 1;
+                        return c.unlocked && (
+                          <motion.div 
+                            key={i} 
+                            initial={{ x: -10, opacity: 0 }}
+                            animate={{ x: 0, opacity: 1 }}
+                            transition={{ duration: 0.3, delay: i * 0.05 }}
+                            className={`text-sm p-4 rounded-2xl border transition-all duration-300 relative overflow-hidden ${
+                              isMostRecent 
+                                ? 'bg-primary/5 border-primary/50 shadow-[0_0_15px_rgba(var(--primary-rgb),0.05)] ring-1 ring-primary/20' 
+                                : 'bg-blue-500/5 border-blue-500/20 text-blue-500/90'
+                            }`}
+                          >
+                            {isMostRecent && (
+                              <span className="absolute top-2.5 right-3 text-[9px] px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground font-bold tracking-wider uppercase animate-pulse">
+                                Nova
+                              </span>
+                            )}
+                            <span className="font-bold block mb-1 text-primary flex items-center gap-1.5">
+                              💡 Dica {i + 1}
+                            </span> 
+                            <p className="leading-relaxed text-foreground/80">{c.text}</p>
+                          </motion.div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -354,23 +461,36 @@ export default function RadioGame() {
                     onChange={(e) => { setCurrentInput(e.target.value); setShowDropdown(true); }}
                     onFocus={() => setShowDropdown(true)}
                     placeholder="Pesquise o diagnóstico..."
-                    className="w-full bg-background text-base h-12"
+                    className="w-full bg-background text-base h-12 rounded-xl"
                   />
-                  {showDropdown && currentInput && filteredDiseases.length > 0 && (
-                    <ul className="absolute bottom-full mb-2 z-10 w-full bg-card border border-border rounded-xl max-h-48 overflow-y-auto shadow-2xl p-1">
-                      {filteredDiseases.map(d => (
-                        <li key={d} className="p-3 hover:bg-muted rounded-lg cursor-pointer text-sm font-medium transition-colors" onClick={() => { setCurrentInput(d); setShowDropdown(false); }}>
-                          {d}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
+                  <AnimatePresence>
+                    {showDropdown && currentInput && filteredDiseases.length > 0 && (
+                      <motion.ul 
+                        initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.98 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute bottom-full mb-2 z-20 w-full bg-card/95 backdrop-blur-md border border-border rounded-2xl max-h-48 overflow-y-auto shadow-2xl p-1.5 custom-scrollbar"
+                      >
+                        {filteredDiseases.map(d => (
+                          <li 
+                            key={d} 
+                            className="p-3 hover:bg-primary/10 hover:text-primary rounded-xl cursor-pointer text-sm font-medium transition-all duration-200 flex items-center justify-between group" 
+                            onClick={() => { setCurrentInput(d); setShowDropdown(false); }}
+                          >
+                            <span>{highlightMatch(d, currentInput)}</span>
+                            <span className="text-[10px] text-muted-foreground/60 border border-border px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity">Selecionar</span>
+                          </li>
+                        ))}
+                      </motion.ul>
+                    )}
+                  </AnimatePresence>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <Button 
                     variant="outline"
                     size="lg" 
-                    className="flex-1 h-12 text-base gap-2" 
+                    className="flex-1 h-12 text-base gap-2 rounded-xl" 
                     onClick={handleRequestHint}
                     disabled={guesses.length >= 3}
                   >
@@ -383,7 +503,7 @@ export default function RadioGame() {
                   </Button>
                   <Button 
                     size="lg" 
-                    className="flex-1 h-12 text-base" 
+                    className="flex-1 h-12 text-base rounded-xl" 
                     onClick={handleGuess} 
                     disabled={!currentInput}
                   >
