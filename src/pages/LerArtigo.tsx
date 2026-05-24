@@ -6,10 +6,11 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, Calendar, User, Loader2, FileText, ArrowRight, X, ZoomIn, ZoomOut, Sun, Contrast, ChevronLeft, ChevronRight, Eye, EyeOff } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { supabase } from '@/integrations/supabase/client';
+import { slugify } from '@/lib/utils';
 import 'react-quill/dist/quill.snow.css';
 
 export default function LerArtigo() {
-  const { id } = useParams();
+  const { slug } = useParams();
   const [artigo, setArtigo] = useState<Article | null>(null);
   const [casosRelacionados, setCasosRelacionados] = useState<Case[]>([]);
   const [activeCaseModal, setActiveCaseModal] = useState<Case | null>(null);
@@ -39,26 +40,52 @@ export default function LerArtigo() {
 
   useEffect(() => {
     const fetchArtigo = async () => {
-      const { data, error } = await supabase
-        .from('articles')
-        .select('*')
-        .eq('id', id)
-        .single();
+      setLoading(true);
+      let data: Article | null = null;
 
-      if (!error && data) {
+      // 1. Tenta carregar por ID caso o parâmetro seja um UUID (Retrocompatibilidade)
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug || '');
+      if (isUUID) {
+        const { data: byId } = await supabase
+          .from('articles')
+          .select('*')
+          .eq('id', slug)
+          .single();
+        if (byId) {
+          data = byId;
+        }
+      }
+
+      // 2. Se não for UUID ou não foi encontrado por ID, busca por slug do título
+      if (!data && slug) {
+        const { data: allArticles } = await supabase
+          .from('articles')
+          .select('*');
+        
+        if (allArticles) {
+          data = allArticles.find(a => slugify(a.titulo) === slug) || null;
+        }
+      }
+
+      if (data) {
         setArtigo(data);
         
         // Se o artigo tiver casos vinculados, busque todos eles da base de dados
         if (data.related_cases_ids && data.related_cases_ids.length > 0) {
-          const { data: casosData } = await supabase.from('cases').select('*').in('id', data.related_cases_ids);
+          const { data: casosData } = await supabase
+            .from('cases')
+            .select('*')
+            .in('id', data.related_cases_ids);
           if (casosData) setCasosRelacionados(casosData);
         }
+      } else {
+        setArtigo(null);
       }
       setLoading(false);
     };
 
-    if (id) fetchArtigo();
-  }, [id]);
+    if (slug) fetchArtigo();
+  }, [slug]);
 
   if (loading) {
     return (

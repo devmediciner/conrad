@@ -6,6 +6,7 @@ import { Navbar } from '@/components/Navbar';
 import { Search, Calendar, User, ArrowLeft, Filter, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
+import { slugify } from '@/lib/utils';
 
 function getPreviewText(html: string): string {
   if (!html) return '';
@@ -125,7 +126,7 @@ const ListaArtigos = () => {
             ) : artigosFiltrados.length > 0 ? (
                 <div className="grid gap-6">
                   {artigosFiltrados.map((artigo) => (
-                    <Link key={artigo.id} to={`/artigo/${artigo.id}`}>
+                    <Link key={artigo.id} to={`/artigo/${slugify(artigo.titulo)}`}>
                       <div className="flex flex-col sm:flex-row gap-6 p-5 rounded-3xl bg-card border border-border/40 hover:border-primary/45 shadow-sm hover:shadow-[0_12px_30px_rgba(0,0,0,0.3)] hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden group">
                         {/* Imagem de Capa */}
                         <div className="w-full sm:w-48 h-44 sm:h-36 flex-shrink-0 overflow-hidden rounded-2xl bg-muted border border-border/50 relative">
