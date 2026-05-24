@@ -123,34 +123,54 @@ const ListaArtigos = () => {
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
               </div>
             ) : artigosFiltrados.length > 0 ? (
-              <div className="grid gap-6">
-                {artigosFiltrados.map((artigo) => (
-                  <Link key={artigo.id} to={`/artigo/${artigo.id}`}>
-                    <div className="flex flex-col sm:flex-row gap-6 p-4 sm:p-6 rounded-2xl bg-card border border-border/60 shadow-sm hover:shadow-md hover:border-primary/50 hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden group">
-                      <div className="w-full sm:w-48 h-48 sm:h-36 flex-shrink-0 overflow-hidden rounded-xl bg-muted relative">
-                        {artigo.imagem_capa ? (
-                          <img src={artigo.imagem_capa} alt={artigo.titulo} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-secondary text-muted-foreground text-xs uppercase">{artigo.categoria}</div>
-                        )}
-                        <div className="absolute top-2 left-2 sm:hidden bg-background/90 backdrop-blur-sm px-2 py-1 rounded text-xs font-bold uppercase tracking-wider text-primary border border-primary/20">{artigo.categoria}</div>
-                      </div>
-                      <div className="flex-1 flex flex-col justify-between py-1">
-                        <div>
-                          <div className="hidden sm:inline-block mb-2 px-2 py-0.5 rounded bg-primary/10 text-xs font-bold uppercase tracking-wider text-primary border border-primary/20">{artigo.categoria}</div>
-                          <h2 className="text-xl sm:text-2xl font-bold mb-2 text-foreground group-hover:text-primary transition-colors">{artigo.titulo}</h2>
-                          {/* Renderiza uma prévia do conteúdo já que agora não temos o campo 'desc' (opcional) */}
-                          <p className="text-muted-foreground text-sm line-clamp-2">{getPreviewText(artigo.conteudo).substring(0, 150)}...</p>
+                <div className="grid gap-6">
+                  {artigosFiltrados.map((artigo) => (
+                    <Link key={artigo.id} to={`/artigo/${artigo.id}`}>
+                      <div className="flex flex-col sm:flex-row gap-6 p-5 rounded-3xl bg-card border border-border/40 hover:border-primary/45 shadow-sm hover:shadow-[0_12px_30px_rgba(0,0,0,0.3)] hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden group">
+                        {/* Imagem de Capa */}
+                        <div className="w-full sm:w-48 h-44 sm:h-36 flex-shrink-0 overflow-hidden rounded-2xl bg-muted border border-border/50 relative">
+                          {artigo.imagem_capa ? (
+                            <img 
+                              src={artigo.imagem_capa} 
+                              alt={artigo.titulo} 
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-secondary text-muted-foreground text-xs uppercase font-bold tracking-wider">{artigo.categoria}</div>
+                          )}
                         </div>
-                        <div className="flex items-center gap-4 mt-4 pt-4 border-t border-border/50 text-xs text-muted-foreground font-medium">
-                          <span className="flex items-center gap-1.5"><User className="w-4 h-4" /> {artigo.autor}</span>
-                          <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4" /> {new Date(artigo.data_publicacao).toLocaleDateString('pt-BR')}</span>
+
+                        {/* Informações do Artigo */}
+                        <div className="flex-1 flex flex-col justify-between py-1">
+                          <div>
+                            <h2 className="text-xl sm:text-2xl font-bold mb-2.5 text-foreground group-hover:text-primary transition-colors tracking-tight line-clamp-2">
+                              {artigo.titulo}
+                            </h2>
+                            {/* Prévia do conteúdo */}
+                            <p className="text-muted-foreground/80 text-sm leading-relaxed line-clamp-2">
+                              {getPreviewText(artigo.conteudo).substring(0, 155)}...
+                            </p>
+                          </div>
+
+                          {/* Metadados e Badge de Modalidade (Embaixo) */}
+                          <div className="flex items-center justify-between mt-4 pt-4 border-t border-border/40">
+                            <div className="flex items-center gap-4 text-xs text-muted-foreground font-medium">
+                              <span className="flex items-center gap-1.5">
+                                <User className="w-3.5 h-3.5 text-primary/70" /> {artigo.autor}
+                              </span>
+                              <span className="flex items-center gap-1.5">
+                                <Calendar className="w-3.5 h-3.5" /> {new Date(artigo.data_publicacao).toLocaleDateString('pt-BR')}
+                              </span>
+                            </div>
+                            <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/25 uppercase font-bold tracking-widest shadow-sm shrink-0">
+                              {artigo.categoria}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
+                    </Link>
+                  ))}
+                </div>
             ) : (
               <div className="text-center py-20 rounded-2xl border border-dashed border-border">
                 <p className="text-muted-foreground text-lg">Nenhum artigo encontrado com estes filtros.</p>
