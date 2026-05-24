@@ -99,7 +99,7 @@ export function ArticleEditor({
         HTMLAttributes: { class: 'text-primary underline underline-offset-4 cursor-pointer' },
       }),
       ResizableImage.configure({
-        HTMLAttributes: { class: 'rounded-2xl mx-auto shadow-xl my-8 max-w-full border border-border/20 object-cover' },
+        HTMLAttributes: { class: 'rounded-2xl mx-auto shadow-xl mt-8 mb-2 max-w-full border border-border/20 object-cover' },
       }),
       Placeholder.configure({ placeholder }),
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
@@ -120,7 +120,7 @@ export function ArticleEditor({
           '[&_li]:mb-1 ' +
           '[&_blockquote]:border-l-4 [&_blockquote]:border-primary [&_blockquote]:pl-5 [&_blockquote]:py-2 [&_blockquote]:my-6 [&_blockquote]:italic [&_blockquote]:text-foreground/70 [&_blockquote]:bg-muted/30 [&_blockquote]:rounded-r-xl ' +
           '[&_a]:text-primary [&_a]:underline [&_a]:underline-offset-4 ' +
-          '[&_img]:rounded-2xl [&_img]:mx-auto [&_img]:shadow-xl [&_img]:my-8 [&_img]:max-w-full [&_img]:border [&_img]:border-border/20 ' +
+          '[&_img]:rounded-2xl [&_img]:mx-auto [&_img]:shadow-xl [&_img]:mt-8 [&_img]:mb-2 [&_img]:max-w-full [&_img]:border [&_img]:border-border/20 ' +
           '[&_mark]:bg-primary/20 [&_mark]:text-foreground [&_mark]:rounded-sm [&_mark]:px-1 ' +
           '[&_hr]:border-border/50 [&_hr]:my-8',
       },
