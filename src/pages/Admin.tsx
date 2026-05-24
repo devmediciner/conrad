@@ -1,11 +1,11 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/authContent';
 import { useAllCases, useDeleteCase } from '@/hooks/useCases';
 import { EXAM_TYPE_COLORS } from '@/types/case';
-import { Trash2, ArrowLeft, Loader2, Pencil, Plus, Gamepad2, List, FileText, ImagePlus, Save, X, Bold, Italic, Link2, CheckCircle, Settings, Users, UserPlus, Check, XCircle } from 'lucide-react';
+import { Trash2, ArrowLeft, Loader2, Pencil, Plus, Gamepad2, List, FileText, ImagePlus, Save, X, Bold, Italic, Link2, CheckCircle, Settings, Users, UserPlus, Check, XCircle, Heading, ListOrdered, TextQuote, Eye, Edit, Palette } from 'lucide-react';
 import { toast } from 'sonner';
 import { EditCaseModal } from '@/components/EditCaseModal';
 import { SubmitCaseModal } from '@/components/SubmitCaseModal';
@@ -16,6 +16,8 @@ import type { Case } from '@/types/case';
 // Importe seu client do Supabase (Ajuste o caminho se a sua configuração estiver em outro local)
 import { supabase } from '@/integrations/supabase/client'; 
 import { createClient } from '@supabase/supabase-js'; // ← Adicione esta importação
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 const Admin = () => {
   const { user, isAdmin, loading: authLoading } = useAuth(); // Certifique-se de que o useAuth retorne o 'user' logado
@@ -26,6 +28,7 @@ const Admin = () => {
   const [submitOpen, setSubmitOpen] = useState(false);
   const [diseaseModalOpen, setDiseaseModalOpen] = useState(false);
   const [articleModalOpen, setArticleModalOpen] = useState(false);
+  const [editingArticle, setEditingArticle] = useState<any>(null);
   
   const [activeTab, setActiveTab] = useState<'casos' | 'minigame' | 'artigos' | 'aprovacao' | 'config'>('casos');
   const [articles, setArticles] = useState<any[]>([]);
@@ -274,7 +277,7 @@ const Admin = () => {
             <div className="space-y-4 max-w-4xl">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold font-heading text-foreground">Artigos (Todos)</h2>
-                <Button variant="secondary" className="gap-2" onClick={() => setArticleModalOpen(true)}>
+                <Button variant="secondary" className="gap-2" onClick={() => { setEditingArticle(null); setArticleModalOpen(true); }}>
                   <FileText className="w-4 h-4" /> Novo Artigo
                 </Button>
               </div>
@@ -304,6 +307,7 @@ const Admin = () => {
                       </div>
                       {isAdmin && (
                         <div className="flex gap-1 flex-shrink-0">
+                          <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary" onClick={() => { setEditingArticle(artigo); setArticleModalOpen(true); }}><Pencil className="w-4 h-4" /></Button>
                           <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive" onClick={async () => {
                             if (confirm('Deseja excluir este artigo permanentemente?')) {
                               await handleRejectArticle(artigo.id);
@@ -345,6 +349,7 @@ const Admin = () => {
                         <p className="text-xs text-muted-foreground mt-0.5">Enviado por: {a.autor}</p>
                       </div>
                       <div className="flex gap-2">
+                        <Button size="icon" variant="secondary" onClick={() => { setEditingArticle(a); setArticleModalOpen(true); }} title="Editar / Visualizar"><Pencil className="w-4 h-4" /></Button>
                         <Button size="icon" onClick={() => handleApproveArticle(a.id)} className="bg-emerald-500 hover:bg-emerald-600 text-white"><Check className="w-4 h-4" /></Button>
                         <Button size="icon" onClick={() => handleRejectArticle(a.id)} variant="destructive"><XCircle className="w-4 h-4" /></Button>
                       </div>
@@ -362,6 +367,7 @@ const Admin = () => {
                         <p className="text-sm text-foreground font-semibold">{c.clinical_case}</p>
                       </div>
                       <div className="flex gap-2">
+                        <Button size="icon" variant="secondary" onClick={() => setEditingCase(c)} title="Editar / Visualizar"><Pencil className="w-4 h-4" /></Button>
                         <Button size="icon" onClick={async () => {
                           await supabase.from('cases').update({ status: 'approved' }).eq('id', c.id);
                           toast.success('Caso aprovado! (Atualize a página para refleti-lo)');
@@ -422,13 +428,13 @@ const Admin = () => {
       />
       <SubmitCaseModal open={submitOpen} onOpenChange={setSubmitOpen} />
       <DiseaseModal open={diseaseModalOpen} onOpenChange={setDiseaseModalOpen} />
-      <ArticleModal open={articleModalOpen} onOpenChange={setArticleModalOpen} isAdmin={isAdmin} onSuccess={() => setRefreshKey(prev => prev + 1)} />
+      <ArticleModal open={articleModalOpen} onOpenChange={setArticleModalOpen} isAdmin={isAdmin} onSuccess={() => setRefreshKey(prev => prev + 1)} articleToEdit={editingArticle} cases={approvedCases} />
     </div>
   );
 };
 
 /* --- Modal de Adição/Edição de Artigo Interno --- */
-const ArticleModal = ({ open, onOpenChange, isAdmin, onSuccess }: { open: boolean; onOpenChange: (open: boolean) => void; isAdmin: boolean; onSuccess: () => void; }) => {
+const ArticleModal = ({ open, onOpenChange, isAdmin, onSuccess, articleToEdit, cases }: { open: boolean; onOpenChange: (open: boolean) => void; isAdmin: boolean; onSuccess: () => void; articleToEdit?: any; cases?: any[] }) => {
   // Estados para o formulário
   const [titulo, setTitulo] = useState('');
   const [categoria, setCategoria] = useState('rx');
@@ -436,10 +442,97 @@ const ArticleModal = ({ open, onOpenChange, isAdmin, onSuccess }: { open: boolea
   const [dataPub, setDataPub] = useState('');
   const [imagemUrl, setImagemUrl] = useState('');
   const [conteudo, setConteudo] = useState('');
+  const [relatedCases, setRelatedCases] = useState<string[]>([]);
+  const [caseToAdd, setCaseToAdd] = useState('none');
   
   const [isUploading, setIsUploading] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploadingContentImg, setIsUploadingContentImg] = useState(false);
+  const quillRef = useRef<ReactQuill>(null);
+
+  // Preenche os dados do modal quando abrir para editar
+  useEffect(() => {
+    if (open) {
+      if (articleToEdit) {
+        setTitulo(articleToEdit.titulo || '');
+        setCategoria(articleToEdit.categoria || 'rx');
+        setAutor(articleToEdit.autor || '');
+        setDataPub(articleToEdit.data_publicacao ? articleToEdit.data_publicacao.split('T')[0] : '');
+        setImagemUrl(articleToEdit.imagem_capa || '');
+        setConteudo(articleToEdit.conteudo || '');
+        setRelatedCases(articleToEdit.related_cases_ids || []);
+        setCaseToAdd('none');
+      } else {
+        setTitulo('');
+        setCategoria('rx');
+        setAutor('');
+        setDataPub('');
+        setImagemUrl('');
+        setConteudo('');
+        setRelatedCases([]);
+        setCaseToAdd('none');
+      }
+    }
+  }, [open, articleToEdit]);
+
+  // Adiciona o caso à lista de casos relacionados do artigo
+  const handleAddCase = () => {
+    if (caseToAdd !== 'none' && !relatedCases.includes(caseToAdd)) {
+      setRelatedCases([...relatedCases, caseToAdd]);
+    }
+    setCaseToAdd('none');
+  };
+
+  // Upload de imagem do PC diretamente para o corpo do texto (Rich Text)
+  const imageHandler = useCallback(() => {
+    const input = document.createElement('input');
+    input.setAttribute('type', 'file');
+    input.setAttribute('accept', 'image/*');
+    input.click();
+
+    input.onchange = async () => {
+      if (input.files && input.files[0]) {
+        const file = input.files[0];
+        setIsUploadingContentImg(true);
+        try {
+          const fileExt = file.name.split('.').pop();
+          const fileName = `content-${Math.random()}.${fileExt}`;
+          const filePath = `articles/${fileName}`;
+
+          const { error: uploadError } = await supabase.storage.from('images').upload(filePath, file);
+          if (uploadError) throw uploadError;
+
+          const { data } = supabase.storage.from('images').getPublicUrl(filePath);
+          const quill = quillRef.current?.getEditor();
+          if (quill) {
+            const range = quill.getSelection(true);
+            quill.insertEmbed(range.index, 'image', data.publicUrl);
+          }
+          toast.success('Imagem inserida no artigo!');
+        } catch (error) {
+          console.error(error);
+          toast.error('Erro ao enviar imagem para o texto.');
+        } finally {
+          setIsUploadingContentImg(false);
+        }
+      }
+    };
+  }, []);
+
+  const modules = useMemo(() => ({
+    toolbar: {
+      container: [
+        [{ 'header': [1, 2, 3, false] }],
+        ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+        [{'list': 'ordered'}, {'list': 'bullet'}],
+        ['link', 'image'],
+        [{ 'color': [] }, { 'background': [] }],
+        ['clean']
+      ],
+      handlers: { image: imageHandler }
+    }
+  }), [imageHandler]);
 
   // Lida com o Upload de imagem para o Supabase Storage
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -475,12 +568,35 @@ const ArticleModal = ({ open, onOpenChange, isAdmin, onSuccess }: { open: boolea
     }
     try {
       setIsPublishing(true);
-      // Certifique-se que você tenha uma tabela 'articles' criada no Supabase
-      const { error } = await supabase.from('articles').insert([{
-        titulo, categoria, autor, data_publicacao: dataPub || new Date().toISOString(), imagem_capa: imagemUrl, conteudo
-      }]);
-      if (error) throw error;
-      toast.success('Artigo publicado com sucesso!');
+      
+      if (articleToEdit) {
+        // Modo de Edição
+        const { error } = await supabase.from('articles').update({
+          titulo, 
+          categoria, 
+          autor, 
+          data_publicacao: dataPub || new Date().toISOString(), 
+          imagem_capa: imagemUrl, 
+          conteudo,
+          related_cases_ids: relatedCases.length > 0 ? relatedCases : null
+        }).eq('id', articleToEdit.id);
+        if (error) throw error;
+        toast.success('Artigo atualizado com sucesso!');
+      } else {
+        // Modo de Criação
+        const { error } = await supabase.from('articles').insert([{
+          titulo, 
+          categoria, 
+          autor, 
+          data_publicacao: dataPub || new Date().toISOString(), 
+          imagem_capa: imagemUrl, 
+          conteudo, 
+          status: isAdmin ? 'approved' : 'pending',
+          related_cases_ids: relatedCases.length > 0 ? relatedCases : null
+        }]);
+        if (error) throw error;
+        toast.success('Artigo publicado com sucesso!');
+      }
       onSuccess();
       onOpenChange(false); // Fecha o modal
     } catch (error) {
@@ -500,7 +616,7 @@ const ArticleModal = ({ open, onOpenChange, isAdmin, onSuccess }: { open: boolea
             <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary">
               <FileText className="w-5 h-5" />
             </div>
-            <h2 className="text-2xl font-bold font-heading text-foreground">Novo Artigo</h2>
+            <h2 className="text-2xl font-bold font-heading text-foreground">{articleToEdit ? 'Editar Artigo' : 'Novo Artigo'}</h2>
           </div>
           <Button variant="ghost" size="icon" onClick={() => onOpenChange(false)} className="rounded-full hover:bg-destructive/10 hover:text-destructive">
             <X className="w-5 h-5" />
@@ -530,6 +646,34 @@ const ArticleModal = ({ open, onOpenChange, isAdmin, onSuccess }: { open: boolea
               <label className="text-sm font-semibold text-foreground">Data de Publicação</label>
               <Input type="date" className="h-11 bg-background block" value={dataPub} onChange={e => setDataPub(e.target.value)} />
             </div>
+            <div className="space-y-3 md:col-span-2">
+              <label className="text-sm font-semibold text-foreground">Casos Clínicos Relacionados (Opcional)</label>
+              <div className="flex gap-2">
+                <select className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2" value={caseToAdd} onChange={e => setCaseToAdd(e.target.value)}>
+                  <option value="none">Selecione para adicionar...</option>
+                  {cases?.filter(c => !relatedCases.includes(c.id)).map(c => (
+                    <option key={c.id} value={c.id}>
+                      #{c.case_number} - {c.exam_type} - {c.diagnosis}
+                    </option>
+                  ))}
+                </select>
+                <Button type="button" onClick={handleAddCase} className="h-11 w-11 px-0 shrink-0 bg-secondary hover:bg-secondary/80 text-secondary-foreground"><Plus className="w-5 h-5" /></Button>
+              </div>
+              {relatedCases.length > 0 && (
+                <div className="flex flex-col gap-2 mt-3">
+                  {relatedCases.map(id => {
+                    const c = cases?.find(x => x.id === id);
+                    if (!c) return null;
+                    return (
+                      <div key={id} className="flex items-center justify-between bg-muted/50 p-2.5 rounded-lg border border-border shadow-sm">
+                        <span className="text-sm font-medium text-foreground">#{c.case_number} - {c.exam_type} - {c.diagnosis}</span>
+                        <Button type="button" variant="ghost" size="sm" onClick={() => setRelatedCases(relatedCases.filter(rid => rid !== id))} className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"><X className="w-4 h-4" /></Button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="space-y-3">
@@ -548,23 +692,20 @@ const ArticleModal = ({ open, onOpenChange, isAdmin, onSuccess }: { open: boolea
           </div>
 
           <div className="space-y-3">
-            <label className="text-sm font-semibold text-foreground">Conteúdo do Artigo</label>
-            <div className="border border-input rounded-xl overflow-hidden flex flex-col bg-background shadow-sm focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:border-primary transition-all">
-              <div className="bg-muted/50 border-b border-input p-2 flex flex-wrap gap-1 items-center">
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"><Bold className="w-4 h-4" /></Button>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"><Italic className="w-4 h-4" /></Button>
-                <div className="w-px h-5 bg-border mx-1" />
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"><List className="w-4 h-4" /></Button>
-                <div className="w-px h-5 bg-border mx-1" />
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"><Link2 className="w-4 h-4" /></Button>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"><ImagePlus className="w-4 h-4" /></Button>
-              </div>
-              <textarea 
-                className="w-full min-h-[350px] p-5 bg-transparent text-sm resize-y focus:outline-none leading-relaxed"
-                placeholder="Escreva o conteúdo detalhado do seu artigo aqui...&#10;&#10;Dica: Você pode usar formatação Markdown para criar tópicos, tabelas e enfatizar textos."
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-semibold text-foreground">Conteúdo do Artigo</label>
+              {isUploadingContentImg && <span className="text-xs text-primary flex items-center"><Loader2 className="w-3 h-3 animate-spin mr-1"/> Processando imagem...</span>}
+            </div>
+            
+            <div className="bg-background rounded-xl overflow-hidden [&_.ql-toolbar]:rounded-t-xl [&_.ql-container]:rounded-b-xl [&_.ql-editor]:min-h-[350px] [&_.ql-editor]:text-base [&_.ql-editor]:text-foreground [&_.ql-toolbar]:bg-muted/50 [&_.ql-stroke]:stroke-foreground [&_.ql-fill]:fill-foreground [&_.ql-picker]:text-foreground">
+              <ReactQuill 
+                ref={quillRef}
+                theme="snow"
                 value={conteudo}
-                onChange={e => setConteudo(e.target.value)}
-              ></textarea>
+                onChange={setConteudo}
+                modules={modules}
+                placeholder="Escreva o conteúdo detalhado do seu artigo aqui..."
+              />
             </div>
           </div>
         </div>
@@ -573,7 +714,7 @@ const ArticleModal = ({ open, onOpenChange, isAdmin, onSuccess }: { open: boolea
           <Button variant="ghost" className="font-semibold" onClick={() => onOpenChange(false)}>Cancelar</Button>
           <Button className="gap-2 font-semibold h-11 px-8" onClick={handlePublish} disabled={isPublishing}>
             {isPublishing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />} 
-            {isPublishing ? 'Publicando...' : 'Publicar Artigo'}
+            {isPublishing ? 'Salvando...' : (articleToEdit ? 'Salvar Alterações' : 'Publicar Artigo')}
           </Button>
         </div>
       </div>
