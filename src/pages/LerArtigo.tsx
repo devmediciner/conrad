@@ -147,27 +147,45 @@ export default function LerArtigo() {
                 <h3 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2 border-b border-border/50 pb-4">
                   <FileText className="w-5 h-5 text-primary" /> Estude {casosRelacionados.length > 1 ? 'estes Casos Práticos' : 'este Caso Prático'}
                 </h3>
-                <div className="grid grid-cols-1 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   {casosRelacionados.map((caso) => (
-                    <div key={caso.id} onClick={() => setActiveCaseModal(caso)} className="block p-6 md:p-8 bg-muted/30 hover:bg-muted/50 rounded-3xl border border-border hover:border-primary/50 shadow-sm hover:shadow-md transition-all group cursor-pointer text-left">
-                      <div className="flex flex-col md:flex-row gap-6 items-center md:items-stretch">
-                        <div className="w-full md:w-48 aspect-square rounded-2xl overflow-hidden bg-background border border-border shadow-inner shrink-0">
-                          {caso.images?.[0] ? (
-                            <img src={caso.images[0]} className="w-full h-full object-cover" alt="Imagem do Caso" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-muted-foreground uppercase font-bold text-lg">{caso.exam_type}</div>
-                          )}
+                    <div 
+                      key={caso.id} 
+                      onClick={() => setActiveCaseModal(caso)} 
+                      className="group flex flex-col p-4 bg-muted/20 hover:bg-muted/45 rounded-3xl border border-border hover:border-primary/45 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer text-left"
+                    >
+                      {/* Imagem do Caso */}
+                      <div className="w-full h-40 rounded-2xl overflow-hidden bg-background border border-border/50 shadow-inner shrink-0 relative mb-4">
+                        {caso.images?.[0] ? (
+                          <img src={caso.images[0]} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Imagem do Caso" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-muted-foreground bg-muted/30 uppercase font-bold text-lg">{caso.exam_type}</div>
+                        )}
+                        <span className="absolute top-2.5 right-2.5 text-[9px] px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-white border border-white/10 uppercase font-bold tracking-wider">
+                          {caso.exam_type}
+                        </span>
+                      </div>
+
+                      {/* Conteúdo e Informações */}
+                      <div className="flex-1 flex flex-col justify-between">
+                        <div>
+                          {/* Idade e Sexo */}
+                          <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                            <span>{caso.age} anos</span>
+                            <span className="text-border/80">•</span>
+                            <span>{caso.sex}</span>
+                          </div>
+                          
+                          {/* Caso Clínico */}
+                          <p className="text-sm text-foreground/85 font-medium leading-relaxed line-clamp-3 mt-2 group-hover:text-foreground transition-colors duration-200">
+                            {caso.clinical_case}
+                          </p>
                         </div>
-                        <div className="flex-1 space-y-4 flex flex-col justify-center w-full">
-                          <div className="flex items-center justify-between">
-                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 uppercase font-bold tracking-wider">{caso.exam_type}</span>
-                            <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-all group-hover:translate-x-1" />
-                          </div>
-                          <p className="text-foreground font-medium leading-relaxed line-clamp-3">{caso.clinical_case}</p>
-                          <div className="bg-background p-3.5 rounded-xl border border-border flex items-center justify-between">
-                            <span className="text-xs text-muted-foreground uppercase tracking-wider font-bold mb-1">Diagnóstico Oculto</span>
-                            <span className="text-xs font-semibold text-primary underline underline-offset-2">Clique para revelar o caso completo</span>
-                          </div>
+
+                        {/* Botão de Rodapé */}
+                        <div className="mt-4 pt-3 border-t border-border/40 flex items-center justify-between text-xs text-primary font-semibold group-hover:underline decoration-primary/40 underline-offset-2">
+                          <span>Estudar Caso</span>
+                          <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                         </div>
                       </div>
                     </div>
