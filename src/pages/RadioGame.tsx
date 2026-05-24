@@ -411,7 +411,7 @@ export default function RadioGame() {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 5, scale: 0.99 }}
                         transition={{ duration: 0.1 }}
-                        className="absolute bottom-full mb-2 z-20 w-full bg-card/98 border border-border rounded-xl max-h-48 overflow-y-auto shadow-xl p-1.5 custom-scrollbar"
+                        className="absolute bottom-full mb-2 z-20 w-full bg-popover border border-border rounded-xl max-h-48 overflow-y-auto shadow-2xl p-1.5 custom-scrollbar"
                       >
                         {filteredDiseases.map(d => (
                           <li 
