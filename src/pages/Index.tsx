@@ -11,7 +11,7 @@ import { Activity, Instagram, Mail } from 'lucide-react';
 import type { Case } from '@/types/case';
 import backImage from '@/assets/back.jpg';
 import logo from '@/assets/logo.png';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 const Index = () => {
   const [search, setSearch] = useState('');
@@ -186,9 +186,23 @@ const Index = () => {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border px-4 py-6">
-        <div className="container mx-auto text-center text-sm text-muted-foreground">
-          © {new Date().getFullYear()} Liga Acadêmica de Radiologia — UFSJ CCO
+      <footer className="border-t border-border px-4 py-10 bg-gradient-to-t from-primary/5 to-transparent">
+        <div className="container mx-auto">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-3">
+              <img src={logo} alt="CONRAD" className="w-8 h-8 rounded-lg opacity-60" />
+              <span className="text-sm text-muted-foreground">Feito com ❤️ pela <span className="text-foreground font-semibold">CONRAD</span></span>
+            </div>
+            <div className="flex items-center gap-6 text-sm text-muted-foreground">
+              <Link to="/sobre" className="hover:text-foreground transition-colors">Sobre</Link>
+              <Link to="/game" className="hover:text-foreground transition-colors">Quiz</Link>
+              <Link to="/artigos" className="hover:text-foreground transition-colors">Artigos</Link>
+              <Link to="/privacidade" className="hover:text-foreground transition-colors">Privacidade</Link>
+            </div>
+          </div>
+          <div className="mt-6 pt-6 border-t border-border/50 text-center text-xs text-muted-foreground">
+            © {new Date().getFullYear()} Liga Acadêmica de Radiologia — UFSJ CCO
+          </div>
         </div>
       </footer>
 

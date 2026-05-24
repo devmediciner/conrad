@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import type { Article } from '@/types/article';
+import type { Case } from '@/types/case';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Calendar, User, Loader2, FileText, ArrowRight, X, ZoomIn, ZoomOut, Sun, Contrast, ChevronLeft, ChevronRight, Eye, EyeOff } from 'lucide-react';
@@ -8,9 +10,9 @@ import 'react-quill/dist/quill.snow.css';
 
 export default function LerArtigo() {
   const { id } = useParams();
-  const [artigo, setArtigo] = useState<any>(null);
-  const [casosRelacionados, setCasosRelacionados] = useState<any[]>([]);
-  const [activeCaseModal, setActiveCaseModal] = useState<any>(null);
+  const [artigo, setArtigo] = useState<Article | null>(null);
+  const [casosRelacionados, setCasosRelacionados] = useState<Case[]>([]);
+  const [activeCaseModal, setActiveCaseModal] = useState<Case | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Estados Avançados do Modal de Imagem

@@ -7,7 +7,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
-import { Maximize2, X, ZoomIn, ZoomOut, Sun, Contrast, RotateCcw } from 'lucide-react';
+import { Maximize2, X, ZoomIn, ZoomOut, Sun, Contrast, RotateCcw, RotateCw, FlipHorizontal2 } from 'lucide-react';
 import type { Case } from '@/types/case';
 import { EXAM_TYPE_COLORS, EXAM_TYPE_LABELS } from '@/types/case';
 
@@ -23,6 +23,8 @@ function ImageViewer({ src, alt }: { src: string; alt: string }) {
   const [brightness, setBrightness] = useState(100);
   const [contrast, setContrast] = useState(100);
   const [invert, setInvert] = useState(false);
+  const [rotation, setRotation] = useState(0);
+  const [flipH, setFlipH] = useState(false);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
   const dragStart = useRef({ x: 0, y: 0, panX: 0, panY: 0 });
@@ -47,7 +49,7 @@ function ImageViewer({ src, alt }: { src: string; alt: string }) {
   useEffect(() => { setPan({ x: 0, y: 0 }); }, [zoom, src]);
 
   const resetControls = () => {
-    setZoom(1); setBrightness(100); setContrast(100); setInvert(false); setPan({ x: 0, y: 0 });
+    setZoom(1); setBrightness(100); setContrast(100); setInvert(false); setRotation(0); setFlipH(false); setPan({ x: 0, y: 0 });
   };
 
   const filterStyle = `brightness(${brightness}%) contrast(${contrast}%)${invert ? ' invert(1)' : ''}`;
@@ -69,7 +71,7 @@ function ImageViewer({ src, alt }: { src: string; alt: string }) {
           draggable={false}
           className="w-full h-full object-contain transition-transform duration-200 select-none"
           style={{
-            transform: `scale(${zoom}) translate(${pan.x / zoom}px, ${pan.y / zoom}px)`,
+            transform: `scale(${zoom}) rotate(${rotation}deg) scaleX(${flipH ? -1 : 1}) translate(${pan.x / zoom}px, ${pan.y / zoom}px)`,
             filter: filterStyle,
           }}
         />
@@ -96,6 +98,12 @@ function ImageViewer({ src, alt }: { src: string; alt: string }) {
           <Button variant={invert ? 'default' : 'outline'} size="sm" className="text-xs h-7" onClick={() => setInvert(!invert)}>
             Inverter
           </Button>
+          <Button variant="outline" size="sm" className="text-xs h-7" onClick={() => setRotation((r) => (r + 90) % 360)}>
+            <RotateCw className="w-3 h-3 mr-1" /> Rotacionar
+          </Button>
+          <Button variant={flipH ? 'default' : 'outline'} size="sm" className="text-xs h-7" onClick={() => setFlipH(!flipH)}>
+            <FlipHorizontal2 className="w-3 h-3 mr-1" /> Espelhar
+          </Button>
           <Button variant="outline" size="sm" className="text-xs h-7" onClick={resetControls}>
             <RotateCcw className="w-3 h-3 mr-1" /> Resetar
           </Button>
@@ -112,6 +120,8 @@ export function CaseModal({ caseData, open, onOpenChange }: CaseModalProps) {
   const [fsBrightness, setFsBrightness] = useState(100);
   const [fsContrast, setFsContrast] = useState(100);
   const [fsInvert, setFsInvert] = useState(false);
+  const [fsRotation, setFsRotation] = useState(0);
+  const [fsFlipH, setFsFlipH] = useState(false);
 
   if (!caseData) return null;
 
@@ -225,6 +235,18 @@ export function CaseModal({ caseData, open, onOpenChange }: CaseModalProps) {
                 >
                   Inverter
                 </button>
+                <button
+                  onClick={() => setFsRotation((r) => (r + 90) % 360)}
+                  className="text-xs px-3 py-1 rounded bg-white/10 text-white/80 hover:bg-white/20 flex items-center gap-1"
+                >
+                  <RotateCw className="w-3 h-3" /> Rotacionar
+                </button>
+                <button
+                  onClick={() => setFsFlipH(!fsFlipH)}
+                  className={`text-xs px-3 py-1 rounded flex items-center gap-1 ${fsFlipH ? 'bg-white text-black' : 'bg-white/10 text-white/80 hover:bg-white/20'}`}
+                >
+                  <FlipHorizontal2 className="w-3 h-3" /> Espelhar
+                </button>
                 <label className="text-white/60 text-xs flex items-center gap-1">
                   <Sun className="w-3 h-3" />
                   <input type="range" min={20} max={300} value={fsBrightness} onChange={(e) => setFsBrightness(Number(e.target.value))} className="w-20 accent-primary" />
@@ -249,6 +271,7 @@ export function CaseModal({ caseData, open, onOpenChange }: CaseModalProps) {
               className="max-w-full max-h-full object-contain"
               style={{
                 filter: `brightness(${fsBrightness}%) contrast(${fsContrast}%)${fsInvert ? ' invert(1)' : ''}`,
+                transform: `rotate(${fsRotation}deg) scaleX(${fsFlipH ? -1 : 1})`,
               }}
             />
           </div>

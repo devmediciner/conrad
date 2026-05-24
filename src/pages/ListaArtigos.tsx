@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import type { Article } from '@/types/article';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Navbar } from '@/components/Navbar';
@@ -12,7 +13,7 @@ const ListaArtigos = () => {
   const [selectedCategory, setSelectedCategory] = useState(categoria ? categoria.toLowerCase() : 'todos');
   const [searchTerm, setSearchTerm] = useState('');
   const [sortByDate, setSortByDate] = useState('desc');
-  const [artigos, setArtigos] = useState<any[]>([]);
+  const [artigos, setArtigos] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Busca artigos do Supabase ao abrir a página ou trocar a categoria

@@ -12,6 +12,7 @@ import { SubmitCaseModal } from '@/components/SubmitCaseModal';
 import { DiseaseModal } from '@/components/DiseaseModal';
 import { useDiseases, useDeleteDisease } from '@/hooks/useGame';
 import type { Case } from '@/types/case';
+import type { Article } from '@/types/article';
 
 // Importe seu client do Supabase (Ajuste o caminho se a sua configuração estiver em outro local)
 import { supabase } from '@/integrations/supabase/client'; 
@@ -28,11 +29,11 @@ const Admin = () => {
   const [submitOpen, setSubmitOpen] = useState(false);
   const [diseaseModalOpen, setDiseaseModalOpen] = useState(false);
   const [articleModalOpen, setArticleModalOpen] = useState(false);
-  const [editingArticle, setEditingArticle] = useState<any>(null);
+  const [editingArticle, setEditingArticle] = useState<Article | null>(null);
   
   const [activeTab, setActiveTab] = useState<'casos' | 'minigame' | 'artigos' | 'aprovacao' | 'config'>('casos');
-  const [articles, setArticles] = useState<any[]>([]);
-  const [users, setUsers] = useState<any[]>([]);
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [users, setUsers] = useState<Record<string, unknown>[]>([]);
   const [loadingArticles, setLoadingArticles] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0); // Força um refetch ao postar artigo novo
   
@@ -434,7 +435,7 @@ const Admin = () => {
 };
 
 /* --- Modal de Adição/Edição de Artigo Interno --- */
-const ArticleModal = ({ open, onOpenChange, isAdmin, onSuccess, articleToEdit, cases }: { open: boolean; onOpenChange: (open: boolean) => void; isAdmin: boolean; onSuccess: () => void; articleToEdit?: any; cases?: any[] }) => {
+const ArticleModal = ({ open, onOpenChange, isAdmin, onSuccess, articleToEdit, cases }: { open: boolean; onOpenChange: (open: boolean) => void; isAdmin: boolean; onSuccess: () => void; articleToEdit?: Article | null; cases?: Case[] }) => {
   // Estados para o formulário
   const [titulo, setTitulo] = useState('');
   const [categoria, setCategoria] = useState('rx');

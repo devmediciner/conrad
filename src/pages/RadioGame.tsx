@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,6 +6,42 @@ import { Stethoscope, ArrowLeft, CheckCircle2, XCircle, Trophy, Share2, Activity
 import { toast } from 'sonner';
 import { useCases } from '@/hooks/useCases';
 import { useDiseases } from '@/hooks/useGame';
+
+interface QuizStats {
+  totalGames: number;
+  totalWins: number;
+  totalScore: number;
+  currentStreak: number;
+  bestStreak: number;
+  perfectGames: number;
+  history: { date: string; won: boolean; score: number; attempts: number }[];
+}
+
+const STATS_KEY = 'conrad-quiz-stats';
+
+const defaultStats: QuizStats = {
+  totalGames: 0,
+  totalWins: 0,
+  totalScore: 0,
+  currentStreak: 0,
+  bestStreak: 0,
+  perfectGames: 0,
+  history: [],
+};
+
+function getStats(): QuizStats {
+  try {
+    const raw = localStorage.getItem(STATS_KEY);
+    if (!raw) return { ...defaultStats };
+    return { ...defaultStats, ...JSON.parse(raw) };
+  } catch {
+    return { ...defaultStats };
+  }
+}
+
+function saveStats(stats: QuizStats) {
+  localStorage.setItem(STATS_KEY, JSON.stringify(stats));
+}
 
 export default function RadioGame() {
   const navigate = useNavigate();
@@ -15,6 +51,8 @@ export default function RadioGame() {
   const [currentInput, setCurrentInput] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
   const [hasWon, setHasWon] = useState(false);
+  const [stats, setStats] = useState<QuizStats>(getStats);
+  const [statsRecorded, setStatsRecorded] = useState(false);
 
   const { data: cases, isLoading: loadingCases } = useCases({ search: '', examType: 'all' });
   const { data: diseasesData } = useDiseases();
@@ -36,6 +74,7 @@ export default function RadioGame() {
     setGuesses([]);
     setCurrentInput('');
     setHasWon(false);
+    setStatsRecorded(false);
     setStep('playing');
   };
 
@@ -54,6 +93,7 @@ export default function RadioGame() {
     if (currentInput.toLowerCase() === currentCase.disease.toLowerCase()) {
       setHasWon(true);
       setStep('result');
+      recordStats(true, guesses.length + 1);
       toast.success("Diagnóstico correto! 🎉");
     } else {
       const newGuesses = [...guesses, currentInput];
@@ -62,11 +102,38 @@ export default function RadioGame() {
       
       if (newGuesses.length >= 4) {
         setStep('result');
+        recordStats(false, newGuesses.length);
       } else {
         toast.error("Diagnóstico incorreto!");
       }
     }
   };
+
+  const recordStats = useCallback((won: boolean, attempts: number) => {
+    const current = getStats();
+    const score = won
+      ? attempts === 1 ? 100 : attempts === 2 ? 75 : attempts === 3 ? 50 : 25
+      : 0;
+
+    const updated: QuizStats = {
+      totalGames: current.totalGames + 1,
+      totalWins: current.totalWins + (won ? 1 : 0),
+      totalScore: current.totalScore + score,
+      currentStreak: won ? current.currentStreak + 1 : 0,
+      bestStreak: won
+        ? Math.max(current.bestStreak, current.currentStreak + 1)
+        : current.bestStreak,
+      perfectGames: current.perfectGames + (won && attempts === 1 ? 1 : 0),
+      history: [
+        ...current.history,
+        { date: new Date().toISOString(), won, score, attempts },
+      ],
+    };
+
+    saveStats(updated);
+    setStats(updated);
+    setStatsRecorded(true);
+  }, []);
 
   const getScore = () => {
     if (!hasWon) return 0;
@@ -133,6 +200,52 @@ export default function RadioGame() {
                   <Grid className="w-5 h-5" /> Escolher um Caso
                 </Button>
               </div>
+
+              {stats.totalGames > 0 && (
+                <div className="mt-6 border border-border rounded-xl bg-muted/30 p-5 space-y-4 animate-in fade-in">
+                  <p className="text-sm font-semibold text-foreground text-center">📊 Suas Estatísticas</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-card border border-border rounded-lg p-3 text-center">
+                      <p className="text-2xl font-bold text-foreground">{stats.totalGames}</p>
+                      <p className="text-xs text-muted-foreground">Total de Jogos</p>
+                    </div>
+                    <div className="bg-card border border-border rounded-lg p-3 text-center">
+                      <p className="text-2xl font-bold text-foreground">{Math.round((stats.totalWins / stats.totalGames) * 100) || 0}%</p>
+                      <p className="text-xs text-muted-foreground">Taxa de Acerto</p>
+                    </div>
+                    <div className="bg-card border border-border rounded-lg p-3 text-center">
+                      <p className="text-2xl font-bold text-foreground">{stats.totalScore}</p>
+                      <p className="text-xs text-muted-foreground">Pontuação Total</p>
+                    </div>
+                    <div className="bg-card border border-border rounded-lg p-3 text-center">
+                      <p className="text-2xl font-bold text-foreground">{stats.bestStreak}</p>
+                      <p className="text-xs text-muted-foreground">Melhor Sequência</p>
+                    </div>
+                  </div>
+
+                  {/* Achievement Badges */}
+                  {(() => {
+                    const badges: { emoji: string; label: string }[] = [];
+                    if (stats.perfectGames > 0) badges.push({ emoji: '🎯', label: 'Olho de Águia' });
+                    if (stats.currentStreak >= 3) badges.push({ emoji: '🔥', label: 'Em Chamas' });
+                    if (stats.totalWins >= 10) badges.push({ emoji: '🧠', label: 'Radiologista' });
+                    if (stats.totalScore >= 500) badges.push({ emoji: '🏆', label: 'Lenda' });
+                    if (badges.length === 0) return null;
+                    return (
+                      <div className="flex flex-wrap gap-2 justify-center pt-1">
+                        {badges.map((b) => (
+                          <span
+                            key={b.label}
+                            className="text-xs px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 font-semibold"
+                          >
+                            {b.emoji} {b.label}
+                          </span>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
             </div>
           )}
 
