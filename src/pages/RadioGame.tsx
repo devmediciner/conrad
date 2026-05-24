@@ -345,169 +345,108 @@ export default function RadioGame() {
                 </div>
               </div>
 
-              <div className="space-y-5 bg-card p-5 rounded-2xl border border-border shadow-sm">
-                <div className="flex items-center justify-between font-medium text-muted-foreground mb-1">
-                  <span className="text-sm font-bold text-foreground">Sua Jornada Clínica</span>
-                  <span className="text-xs bg-muted px-2 py-0.5 rounded-md font-mono">Tentativa {guesses.length + 1}/4</span>
+              <div className="space-y-4 bg-card p-5 rounded-2xl border border-border shadow-sm">
+                {/* Cabeçalho Compacto com Timeline de Dots */}
+                <div className="flex items-center justify-between border-b border-border/40 pb-3 mb-1">
+                  <span className="text-sm font-bold text-foreground uppercase tracking-wider">Histórico Clínico</span>
+                  <div className="flex items-center gap-1.5 bg-muted/50 px-2.5 py-1 rounded-full border border-border/50">
+                    <span className="text-[10px] text-muted-foreground font-mono font-bold mr-1.5">Tentativas:</span>
+                    {Array.from({ length: 4 }).map((_, idx) => {
+                      const guess = guesses[idx];
+                      if (guess === undefined) {
+                        return <span key={idx} className="w-2.5 h-2.5 rounded-full bg-border" />;
+                      }
+                      if (guess === '__hint__') {
+                        return <span key={idx} className="w-2.5 h-2.5 rounded-full bg-blue-500/80 animate-pulse" title="Dica pedida" />;
+                      }
+                      return <span key={idx} className="w-2.5 h-2.5 rounded-full bg-red-500/80" title={`Palpite errado: ${guess}`} />;
+                    })}
+                  </div>
                 </div>
 
-                {/* Linha do Tempo Visual de Tentativas */}
-                <div className="grid grid-cols-4 gap-2.5">
-                  {Array.from({ length: 4 }).map((_, i) => {
-                    const guess = guesses[i];
-                    const isActive = i === guesses.length;
-                    
-                    if (guess === undefined) {
-                      return (
-                        <div 
-                          key={i} 
-                          className={`h-14 rounded-xl border flex flex-col items-center justify-center transition-all duration-300 ${
-                            isActive 
-                              ? 'border-primary bg-primary/5 text-primary shadow-sm ring-1 ring-primary/20' 
-                              : 'border-border/60 border-dashed text-muted-foreground/35'
-                          }`}
-                        >
-                          <span className="text-[9px] uppercase font-bold tracking-wider">{isActive ? 'Atual' : `${i + 1}ª`}</span>
-                          <span className="text-[11px] font-semibold">{isActive ? 'Chute' : 'Bloqueado'}</span>
-                        </div>
-                      );
-                    }
-                    
-                    if (guess === '__hint__') {
-                      return (
+                {/* Feed de Dicas Unificado */}
+                <div className="space-y-4 pt-1">
+                  {clues.filter(c => c.unlocked).length === 0 ? (
+                    <p className="text-sm text-muted-foreground/75 py-2 italic pl-1 animate-in fade-in">Nenhuma dica revelada ainda. Clique em "Dica" ou dê um palpite!</p>
+                  ) : (
+                    <div className="space-y-4">
+                      {clues.map((c, i) => c.unlocked && (
                         <motion.div 
                           key={i} 
-                          initial={{ scale: 0.92, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          className="h-14 rounded-xl bg-blue-500/10 border border-blue-500/30 text-blue-500 flex flex-col items-center justify-center font-bold"
+                          initial={{ x: -6, opacity: 0 }}
+                          animate={{ x: 0, opacity: 1 }}
+                          transition={{ duration: 0.2 }}
+                          className="text-sm border-l-2 border-primary/40 pl-3.5 py-0.5 space-y-1"
                         >
-                          <span className="text-[9px] uppercase font-bold tracking-wider opacity-85">Tentativa {i + 1}</span>
-                          <span className="text-xs flex items-center gap-1">💡 Dica</span>
-                        </motion.div>
-                      );
-                    }
-                    
-                    return (
-                      <motion.div 
-                        key={i} 
-                        initial={{ scale: 0.92, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        className="h-14 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 flex flex-col items-center justify-center px-1 text-center font-bold overflow-hidden"
-                      >
-                        <span className="text-[8px] uppercase font-bold tracking-wider opacity-85 line-through">Chute {i + 1}</span>
-                        <span className="text-[10px] font-semibold truncate w-full" title={guess}>{guess}</span>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-
-                {/* Dicas Obtidas */}
-                <div className="space-y-2.5 pt-2 border-t border-border/40">
-                  <span className="text-xs font-bold text-blue-500 uppercase tracking-wider block mb-1">💡 Dicas Reveladas</span>
-                  {clues.filter(c => c.unlocked).length === 0 ? (
-                    <p className="text-sm text-muted-foreground py-2 italic pl-1 animate-in fade-in">Nenhuma dica revelada ainda. Clique em "Pedir Dica" ou faça uma tentativa!</p>
-                  ) : (
-                    <div className="space-y-3">
-                      {clues.map((c, i) => {
-                        const isMostRecent = i === guesses.length - 1;
-                        return c.unlocked && (
-                          <motion.div 
-                            key={i} 
-                            initial={{ x: -10, opacity: 0 }}
-                            animate={{ x: 0, opacity: 1 }}
-                            transition={{ duration: 0.3, delay: i * 0.05 }}
-                            className={`text-sm p-4 rounded-2xl border transition-all duration-300 relative overflow-hidden ${
-                              isMostRecent 
-                                ? 'bg-primary/5 border-primary/50 shadow-[0_0_15px_rgba(var(--primary-rgb),0.05)] ring-1 ring-primary/20' 
-                                : 'bg-blue-500/5 border-blue-500/20 text-blue-500/90'
-                            }`}
-                          >
-                            {isMostRecent && (
-                              <span className="absolute top-2.5 right-3 text-[9px] px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground font-bold tracking-wider uppercase animate-pulse">
-                                Nova
+                          <div className="flex items-center justify-between text-xs text-muted-foreground font-bold tracking-wide">
+                            <span className="text-primary flex items-center gap-1">💡 DICA {i + 1}</span>
+                            {guesses[i] && guesses[i] !== '__hint__' && (
+                              <span className="text-[10px] text-red-500/90 line-through bg-red-500/5 border border-red-500/10 px-2 py-0.5 rounded font-medium">
+                                Chute: {guesses[i]}
                               </span>
                             )}
-                            <span className="font-bold block mb-1 text-primary flex items-center gap-1.5">
-                              💡 Dica {i + 1}
-                            </span> 
-                            <p className="leading-relaxed text-foreground/80">{c.text}</p>
-                          </motion.div>
-                        );
-                      })}
+                          </div>
+                          <p className="text-foreground/85 leading-relaxed font-medium pl-0.5">{c.text}</p>
+                        </motion.div>
+                      ))}
                     </div>
                   )}
                 </div>
-
-                {/* Tentativas Incorretas */}
-                {wrongGuesses.length > 0 && (
-                  <div className="pt-3 border-t border-border/50 space-y-2">
-                    <span className="text-xs font-bold text-red-500 uppercase tracking-wider block mb-1">❌ Palpites Errados</span>
-                    <div className="flex flex-wrap gap-2">
-                      {wrongGuesses.map((g, i) => (
-                        <div key={i} className="flex items-center gap-1.5 text-xs text-red-500 bg-red-500/10 px-3 py-1.5 rounded-full border border-red-500/20 line-through font-medium animate-in zoom-in-90">
-                          <XCircle className="w-3.5 h-3.5 flex-shrink-0" />
-                          <span>{g}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
 
-              <div className="space-y-3 bg-card p-5 rounded-2xl border border-border shadow-sm">
+              {/* Controles Compactos h-11 */}
+              <div className="space-y-3 bg-card p-4 rounded-2xl border border-border shadow-sm">
                 <div className="relative">
                   <Input
                     value={currentInput}
                     onChange={(e) => { setCurrentInput(e.target.value); setShowDropdown(true); }}
                     onFocus={() => setShowDropdown(true)}
                     placeholder="Pesquise o diagnóstico..."
-                    className="w-full bg-background text-base h-12 rounded-xl"
+                    className="w-full bg-background text-base h-11 rounded-lg"
                   />
                   <AnimatePresence>
                     {showDropdown && currentInput && filteredDiseases.length > 0 && (
                       <motion.ul 
-                        initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                        initial={{ opacity: 0, y: 5, scale: 0.99 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 10, scale: 0.98 }}
-                        transition={{ duration: 0.15 }}
-                        className="absolute bottom-full mb-2 z-20 w-full bg-card/95 backdrop-blur-md border border-border rounded-2xl max-h-48 overflow-y-auto shadow-2xl p-1.5 custom-scrollbar"
+                        exit={{ opacity: 0, y: 5, scale: 0.99 }}
+                        transition={{ duration: 0.1 }}
+                        className="absolute bottom-full mb-2 z-20 w-full bg-card/98 border border-border rounded-xl max-h-48 overflow-y-auto shadow-xl p-1.5 custom-scrollbar"
                       >
                         {filteredDiseases.map(d => (
                           <li 
                             key={d} 
-                            className="p-3 hover:bg-primary/10 hover:text-primary rounded-xl cursor-pointer text-sm font-medium transition-all duration-200 flex items-center justify-between group" 
+                            className="p-2.5 hover:bg-primary/10 hover:text-primary rounded-lg cursor-pointer text-sm font-medium transition-colors flex items-center justify-between group" 
                             onClick={() => { setCurrentInput(d); setShowDropdown(false); }}
                           >
                             <span>{highlightMatch(d, currentInput)}</span>
-                            <span className="text-[10px] text-muted-foreground/60 border border-border px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity">Selecionar</span>
+                            <span className="text-[10px] text-muted-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity">Selecionar</span>
                           </li>
                         ))}
                       </motion.ul>
                     )}
                   </AnimatePresence>
                 </div>
-                <div className="flex flex-col sm:flex-row gap-3">
+                <div className="flex gap-3">
                   <Button 
                     variant="outline"
-                    size="lg" 
-                    className="flex-1 h-12 text-base gap-2 rounded-xl" 
+                    className="flex-1 h-11 text-sm gap-1.5 rounded-lg shrink-0" 
                     onClick={handleRequestHint}
                     disabled={guesses.length >= 3}
                   >
-                    <span>💡 Pedir Dica</span>
+                    <span>💡 Dica</span>
                     {guesses.length < 3 && (
-                      <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full border border-primary/20">
-                        {3 - guesses.length} restam
+                      <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.2 rounded font-mono">
+                        {3 - guesses.length}
                       </span>
                     )}
                   </Button>
                   <Button 
-                    size="lg" 
-                    className="flex-1 h-12 text-base rounded-xl" 
+                    className="flex-[2] h-11 text-sm rounded-lg" 
                     onClick={handleGuess} 
                     disabled={!currentInput}
                   >
-                    Confirmar diagnóstico
+                    Confirmar
                   </Button>
                 </div>
               </div>
