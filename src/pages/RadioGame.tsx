@@ -2,11 +2,15 @@ import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Stethoscope, ArrowLeft, CheckCircle2, XCircle, Trophy, Share2, Activity, Play, Grid, Loader2 } from 'lucide-react';
+import { 
+  Stethoscope, ArrowLeft, CheckCircle2, XCircle, Trophy, Share2, Activity, Play, Grid, Loader2,
+  Sparkles, BookOpen, Target, HelpCircle, Award, Flame
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { useCases } from '@/hooks/useCases';
 import { useDiseases } from '@/hooks/useGame';
 import { motion, AnimatePresence } from 'framer-motion';
+import { EXAM_TYPE_COLORS, EXAM_TYPE_LABELS, type ExamType } from '@/types/case';
 
 interface QuizStats {
   totalGames: number;
@@ -239,74 +243,153 @@ export default function RadioGame() {
       </header>
 
       <main className="flex-1 flex flex-col items-center justify-center p-4">
-        <div className="w-full max-w-xl">
+        <div className={`w-full transition-all duration-500 ${step === 'select' ? 'max-w-6xl' : 'max-w-xl'}`}>
           {step === 'intro' && (
-            <div className="bg-card border border-border rounded-2xl p-8 text-center space-y-6 shadow-xl animate-in fade-in slide-in-from-bottom-4">
-              <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto text-primary">
-                <Stethoscope className="w-10 h-10" />
+            <div className="relative bg-card/60 backdrop-blur-md border border-border/80 rounded-2xl p-6 sm:p-8 text-center space-y-6 shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-4">
+              {/* Pulsing glow background decoration */}
+              <div className="absolute -top-12 -right-12 w-32 h-32 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute -bottom-12 -left-12 w-32 h-32 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
+
+              <div className="relative w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto text-primary shadow-[0_0_20px_-3px_rgba(var(--primary-rgb),0.35)] mb-2 group">
+                <Sparkles className="absolute -top-1 -right-1 w-5 h-5 text-amber-500 animate-pulse" />
+                <Stethoscope className="w-10 h-10 group-hover:scale-110 transition-transform duration-300" />
               </div>
-              <div className="space-y-2">
-                <h2 className="text-3xl font-bold font-heading text-foreground">Quiz</h2>
-                <p className="text-muted-foreground">O desafio radiológico!</p>
+
+              <div className="space-y-2 relative z-10">
+                <span className="text-[10px] font-bold tracking-widest text-primary uppercase bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
+                  Quiz CONRAD
+                </span>
+                <h2 className="text-3xl font-extrabold font-heading text-foreground tracking-tight">
+                  Desafio Radiológico
+                </h2>
+                <p className="text-sm text-muted-foreground max-w-sm mx-auto leading-relaxed">
+                  Avalie seus conhecimentos! Analise exames de imagem reais, correlacione com a história clínica e descubra o diagnóstico.
+                </p>
               </div>
-              <div className="bg-muted p-5 rounded-xl text-left text-sm space-y-3 max-w-sm mx-auto">
-                <p className="font-semibold text-foreground text-base">Como jogar:</p>
-                <ul className="space-y-2 text-muted-foreground">
-                  <li className="flex gap-2"><CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" /> Analise a imagem radiológica.</li>
-                  <li className="flex gap-2"><CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" /> Você tem 4 tentativas para acertar.</li>
-                  <li className="flex gap-2"><CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" /> A cada erro, uma nova dica clínica é revelada.</li>
-                  <li className="flex gap-2"><CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" /> Tente acertar com o menor número de dicas!</li>
-                </ul>
+
+              {/* Como Jogar - Beautiful Interactive Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left w-full relative z-10">
+                <div className="bg-muted/30 border border-border/40 p-3.5 rounded-xl flex gap-3 hover:border-primary/30 transition-colors group">
+                  <div className="bg-primary/10 text-primary w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                    <BookOpen className="w-4 h-4" />
+                  </div>
+                  <div className="space-y-0.5">
+                    <h4 className="text-xs font-bold text-foreground uppercase tracking-wide">1. Estude o Caso</h4>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">Analise a radiografia e a idade/sexo do paciente.</p>
+                  </div>
+                </div>
+
+                <div className="bg-muted/30 border border-border/40 p-3.5 rounded-xl flex gap-3 hover:border-primary/30 transition-colors group">
+                  <div className="bg-primary/10 text-primary w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                    <Target className="w-4 h-4" />
+                  </div>
+                  <div className="space-y-0.5">
+                    <h4 className="text-xs font-bold text-foreground uppercase tracking-wide">2. 4 Tentativas</h4>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">Você tem até 4 chances para dar o palpite correto.</p>
+                  </div>
+                </div>
+
+                <div className="bg-muted/30 border border-border/40 p-3.5 rounded-xl flex gap-3 hover:border-primary/30 transition-colors group">
+                  <div className="bg-primary/10 text-primary w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                    <HelpCircle className="w-4 h-4" />
+                  </div>
+                  <div className="space-y-0.5">
+                    <h4 className="text-xs font-bold text-foreground uppercase tracking-wide">3. Pistas Clínicas</h4>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">Dicas de história estão disponíveis, mas custam 1 tentativa.</p>
+                  </div>
+                </div>
+
+                <div className="bg-muted/30 border border-border/40 p-3.5 rounded-xl flex gap-3 hover:border-primary/30 transition-colors group">
+                  <div className="bg-primary/10 text-primary w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                    <Award className="w-4 h-4" />
+                  </div>
+                  <div className="space-y-0.5">
+                    <h4 className="text-xs font-bold text-foreground uppercase tracking-wide">4. Pontue e Vença</h4>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">Acerte rápido para pontuar mais e colecionar insígnias.</p>
+                  </div>
+                </div>
               </div>
-              <div className="space-y-3 pt-2">
-                <Button size="lg" className="w-full max-w-sm gap-2 text-lg h-12" onClick={startRandom}>
-                  <Play className="w-5 h-5 fill-current" /> Jogar Aleatório
+
+              {/* Botões de Ação */}
+              <div className="flex flex-col sm:flex-row gap-3 pt-2 w-full max-w-md mx-auto relative z-10">
+                <Button 
+                  size="lg" 
+                  className="w-full sm:flex-1 gap-2 text-base h-12 rounded-xl bg-gradient-to-r from-primary to-primary/90 hover:from-primary/95 hover:to-primary hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_4px_20px_-4px_hsl(var(--primary)/0.4)]" 
+                  onClick={startRandom}
+                >
+                  <Play className="w-4 h-4 fill-current animate-pulse" /> Jogar Aleatório
                 </Button>
-                <Button variant="outline" size="lg" className="w-full max-w-sm gap-2 text-lg h-12" onClick={() => setStep('select')} disabled={loadingCases}>
-                  <Grid className="w-5 h-5" /> Escolher um Caso
+                <Button 
+                  variant="outline" 
+                  size="lg" 
+                  className="w-full sm:flex-1 gap-2 text-base h-12 rounded-xl border-border/80 hover:bg-muted/50 hover:scale-[1.02] active:scale-[0.98] transition-all" 
+                  onClick={() => setStep('select')} 
+                  disabled={loadingCases}
+                >
+                  <Grid className="w-4 h-4 text-muted-foreground" /> Escolher Caso
                 </Button>
               </div>
 
+              {/* Estatísticas Enriquecidas */}
               {stats.totalGames > 0 && (
-                <div className="mt-6 border border-border rounded-xl bg-muted/30 p-5 space-y-4 animate-in fade-in">
-                  <p className="text-sm font-semibold text-foreground text-center">📊 Suas Estatísticas</p>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-card border border-border rounded-lg p-3 text-center">
-                      <p className="text-2xl font-bold text-foreground">{stats.totalGames}</p>
-                      <p className="text-xs text-muted-foreground">Total de Jogos</p>
+                <div className="mt-4 border border-border/70 rounded-2xl bg-muted/20 backdrop-blur-sm p-4 space-y-4 animate-in fade-in relative z-10 text-left">
+                  <div className="flex items-center justify-between border-b border-border/40 pb-2">
+                    <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                      <Activity className="w-3.5 h-3.5 text-primary" /> Painel de Desempenho
+                    </span>
+                    <span className="text-[9px] bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-2 py-0.5 rounded-full font-bold uppercase tracking-wide">
+                      Quiz Ativo
+                    </span>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                    <div className="bg-card/50 border border-border/50 rounded-xl p-2.5 text-center transition-all hover:bg-card/75 group">
+                      <p className="text-xl font-extrabold text-foreground group-hover:text-primary transition-colors">{stats.totalGames}</p>
+                      <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider mt-1">Jogos</p>
                     </div>
-                    <div className="bg-card border border-border rounded-lg p-3 text-center">
-                      <p className="text-2xl font-bold text-foreground">{Math.round((stats.totalWins / stats.totalGames) * 100) || 0}%</p>
-                      <p className="text-xs text-muted-foreground">Taxa de Acerto</p>
+                    
+                    <div className="bg-card/50 border border-border/50 rounded-xl p-2.5 text-center transition-all hover:bg-card/75 group">
+                      <p className="text-xl font-extrabold text-foreground group-hover:text-emerald-500 transition-colors">
+                        {Math.round((stats.totalWins / stats.totalGames) * 100) || 0}%
+                      </p>
+                      <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider mt-1">Taxa Acerto</p>
                     </div>
-                    <div className="bg-card border border-border rounded-lg p-3 text-center">
-                      <p className="text-2xl font-bold text-foreground">{stats.totalScore}</p>
-                      <p className="text-xs text-muted-foreground">Pontuação Total</p>
+                    
+                    <div className="bg-card/50 border border-border/50 rounded-xl p-2.5 text-center transition-all hover:bg-card/75 group">
+                      <p className="text-xl font-extrabold text-foreground group-hover:text-amber-500 transition-colors">{stats.totalScore}</p>
+                      <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider mt-1">Pontos</p>
                     </div>
-                    <div className="bg-card border border-border rounded-lg p-3 text-center">
-                      <p className="text-2xl font-bold text-foreground">{stats.bestStreak}</p>
-                      <p className="text-xs text-muted-foreground">Melhor Sequência</p>
+                    
+                    <div className="bg-card/50 border border-border/50 rounded-xl p-2.5 text-center transition-all hover:bg-card/75 group">
+                      <div className="flex justify-center items-center gap-1 group-hover:scale-105 transition-transform">
+                        <Flame className={`w-3.5 h-3.5 ${stats.currentStreak > 0 ? 'text-orange-500 animate-pulse fill-orange-500' : 'text-muted-foreground'}`} />
+                        <p className="text-xl font-extrabold text-foreground">{stats.currentStreak}</p>
+                      </div>
+                      <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider mt-1">Sequência</p>
                     </div>
                   </div>
 
                   {/* Achievement Badges */}
                   {(() => {
-                    const badges: { emoji: string; label: string }[] = [];
-                    if (stats.perfectGames > 0) badges.push({ emoji: '🎯', label: 'Olho de Águia' });
-                    if (stats.currentStreak >= 3) badges.push({ emoji: '🔥', label: 'Em Chamas' });
-                    if (stats.totalWins >= 10) badges.push({ emoji: '🧠', label: 'Radiologista' });
-                    if (stats.totalScore >= 500) badges.push({ emoji: '🏆', label: 'Lenda' });
+                    const badges: { emoji: string; label: string; color: string }[] = [];
+                    if (stats.perfectGames > 0) badges.push({ emoji: '🎯', label: 'Olho de Águia', color: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' });
+                    if (stats.currentStreak >= 3) badges.push({ emoji: '🔥', label: 'Em Chamas', color: 'bg-orange-500/10 text-orange-500 border-orange-500/20' });
+                    if (stats.totalWins >= 10) badges.push({ emoji: '🧠', label: 'Radiologista', color: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20' });
+                    if (stats.totalScore >= 500) badges.push({ emoji: '🏆', label: 'Lenda', color: 'bg-amber-500/10 text-amber-500 border-amber-500/20' });
                     if (badges.length === 0) return null;
                     return (
-                      <div className="flex flex-wrap gap-2 justify-center pt-1">
-                        {badges.map((b) => (
-                          <span
-                            key={b.label}
-                            className="text-xs px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 font-semibold"
-                          >
-                            {b.emoji} {b.label}
-                          </span>
-                        ))}
+                      <div className="space-y-2 pt-2.5 border-t border-border/40">
+                        <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest text-center">Conquistas Desbloqueadas</p>
+                        <div className="flex flex-wrap gap-1.5 justify-center">
+                          {badges.map((b) => (
+                            <span
+                              key={b.label}
+                              className={`text-[10px] px-2.5 py-1 rounded-full border font-bold flex items-center gap-1 shadow-sm transition-transform hover:scale-105 cursor-default ${b.color}`}
+                            >
+                              <span>{b.emoji}</span> {b.label}
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     );
                   })()}
@@ -316,23 +399,79 @@ export default function RadioGame() {
           )}
 
           {step === 'select' && (
-            <div className="bg-card border border-border rounded-2xl p-6 shadow-xl animate-in fade-in slide-in-from-right-4 w-full max-w-3xl">
-              <h2 className="text-2xl font-bold font-heading text-foreground mb-6 text-center">Selecione o Caso</h2>
+            <div className="relative bg-card/60 backdrop-blur-md border border-border/80 rounded-2xl p-6 sm:p-8 shadow-2xl overflow-hidden animate-in fade-in slide-in-from-right-4 w-full max-w-full">
+              {/* Pulsing glow background decoration */}
+              <div className="absolute -top-12 -right-12 w-32 h-32 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute -bottom-12 -left-12 w-32 h-32 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
+
+              <div className="text-center space-y-2 mb-6 relative z-10">
+                <span className="text-[10px] font-bold tracking-widest text-primary uppercase bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
+                  Casos de Imagem
+                </span>
+                <h2 className="text-3xl font-extrabold font-heading text-foreground tracking-tight">
+                  Selecione seu Caso
+                </h2>
+                <p className="text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
+                  Investigue diagnósticos específicos selecionando um dos casos reais arquivados pela Liga Acadêmica.
+                </p>
+              </div>
+
               {loadingCases ? (
-                <div className="flex justify-center py-10"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+                <div className="flex justify-center py-12 relative z-10">
+                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                </div>
               ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-[60vh] overflow-y-auto p-1">
-                  {validCases.map(c => (
-                    <div key={c.id} className="cursor-pointer group relative rounded-xl overflow-hidden border border-border aspect-[4/3] bg-secondary" onClick={() => startGame(c)}>
-                      <img src={c.images?.[0]} alt={`Caso ${c.case_number || c.id}`} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
-                      <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <span className="text-white font-bold tracking-wider text-sm">Caso #{c.case_number || c.id}</span>
-                      </div>
-                    </div>
-                  ))}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-h-[60vh] overflow-y-auto p-1 custom-scrollbar relative z-10">
+                  {validCases.map(c => {
+                    const examType = c.exam_type as ExamType || 'RX';
+                    const label = EXAM_TYPE_LABELS[examType] || examType;
+                    const colorClass = EXAM_TYPE_COLORS[examType] || 'bg-muted text-muted-foreground';
+                    
+                    return (
+                      <motion.div 
+                        key={c.id} 
+                        whileHover={{ y: -3 }}
+                        className="cursor-pointer group flex flex-col rounded-xl overflow-hidden border border-border/40 bg-card/30 shadow-md hover:shadow-xl hover:border-primary/50 transition-all duration-300"
+                        onClick={() => startGame(c)}
+                      >
+                        {/* Imagem do Caso - 100% Limpa e Visível */}
+                        <div className="relative w-full aspect-[4/3] overflow-hidden bg-black border-b border-border/20">
+                          <img 
+                            src={c.images?.[0]} 
+                            alt={`Caso ${c.case_number || c.id}`} 
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                          />
+                          
+                          {/* Identificador do número do caso no canto - Mais legível */}
+                          <div className="absolute top-2.5 left-2.5 bg-black/75 backdrop-blur-md px-2 py-0.5 rounded text-[10px] font-extrabold font-mono text-white border border-white/10 shadow-md">
+                            Caso #{c.case_number || c.id.slice(0, 3)}
+                          </div>
+                        </div>
+
+                        {/* Painel de Informações - Demográficos e Exame (Sem redundância e ultra limpo) */}
+                        <div className="p-3.5 bg-card/60 text-left transition-colors group-hover:bg-primary/5 flex items-center justify-between gap-2">
+                          <span className="text-sm sm:text-base font-extrabold text-foreground group-hover:text-primary transition-colors truncate">
+                            {c.sex === 'M' ? 'Masculino' : c.sex === 'F' ? 'Feminino' : c.sex || 'Paciente'}, {c.age} anos
+                          </span>
+                          <span className={`text-[9px] sm:text-xs font-extrabold uppercase px-2.5 py-1 rounded shadow-sm border border-white/5 shrink-0 ${colorClass}`}>
+                            {label}
+                          </span>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
                 </div>
               )}
-              <Button variant="ghost" className="w-full mt-6" onClick={() => setStep('intro')}>Voltar</Button>
+              
+              <div className="flex justify-center pt-8 relative z-10">
+                <Button 
+                  variant="outline" 
+                  className="w-full sm:w-auto px-8 h-12 rounded-xl border-border/80 hover:bg-muted/50 transition-all font-bold text-sm shadow-sm" 
+                  onClick={() => setStep('intro')}
+                >
+                  Voltar ao Menu
+                </Button>
+              </div>
             </div>
           )}
 
