@@ -132,8 +132,8 @@ export default function LerArtigo() {
                   [&_p]:!mb-6 [&_p]:!text-foreground/80
                   [&_strong]:!font-bold [&_strong]:!text-foreground
                   [&_a]:!text-primary [&_a]:!font-semibold [&_a]:!underline [&_a]:!underline-offset-4 [&_a]:!decoration-primary/30 hover:[&_a]:!decoration-primary [&_a]:transition-colors
-                  [&_ul]:!list-disc [&_ul]:!pl-6 [&_ul]:!mb-6 [&_ul]:!space-y-2 [&_li]:!pl-1 [&_li]:marker:!text-primary/70
-                  [&_ol]:!list-decimal [&_ol]:!pl-6 [&_ol]:!mb-6 [&_ol]:!space-y-2 [&_li]:!pl-1 [&_li]:marker:!text-primary/70 [&_li]:marker:!font-bold
+                  [&_ul]:!list-disc [&_ul]:!pl-6 [&_ul]:!mb-6 [&_ul]:!space-y-2 [&_li]:!pl-1 [&_li]:marker:!text-primary/70 [&_li::before]:!content-none [&_li]:!list-item [&_li_p]:!m-0
+                  [&_ol]:!list-decimal [&_ol]:!pl-6 [&_ol]:!mb-6 [&_ol]:!space-y-2 [&_li]:!pl-1 [&_li]:marker:!text-primary/70 [&_li]:marker:!font-bold [&_li::before]:!content-none [&_li]:!list-item [&_li_p]:!m-0
                   [&_blockquote]:!border-l-4 [&_blockquote]:!border-primary [&_blockquote]:!pl-6 [&_blockquote]:!py-2 [&_blockquote]:!my-8 [&_blockquote]:!italic [&_blockquote]:!text-foreground/70 [&_blockquote]:!bg-muted/30 [&_blockquote]:!rounded-r-xl
                   [&_img]:!rounded-2xl [&_img]:!mx-auto [&_img]:!shadow-xl [&_img]:!my-12 [&_img]:!max-w-full [&_img]:!border [&_img]:!border-border/20 [&_img]:!object-cover
                   [&_iframe]:!w-full [&_iframe]:!aspect-video [&_iframe]:!rounded-2xl [&_iframe]:!shadow-xl [&_iframe]:!my-12 [&_iframe]:!border-0"
