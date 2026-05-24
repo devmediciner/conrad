@@ -7,6 +7,20 @@ import { Search, Calendar, User, ArrowLeft, Filter, Loader2 } from 'lucide-react
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 
+function getPreviewText(html: string): string {
+  if (!html) return '';
+  let text = html.replace(/<\/(p|div|h1|h2|h3|li|ul|ol|blockquote|br)>/gi, ' ');
+  text = text.replace(/<[^>]*>?/gm, '');
+  text = text
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'");
+  return text.replace(/\s+/g, ' ').trim();
+}
+
 const ListaArtigos = () => {
   const { categoria } = useParams();
   
@@ -126,7 +140,7 @@ const ListaArtigos = () => {
                           <div className="hidden sm:inline-block mb-2 px-2 py-0.5 rounded bg-primary/10 text-xs font-bold uppercase tracking-wider text-primary border border-primary/20">{artigo.categoria}</div>
                           <h2 className="text-xl sm:text-2xl font-bold mb-2 text-foreground group-hover:text-primary transition-colors">{artigo.titulo}</h2>
                           {/* Renderiza uma prévia do conteúdo já que agora não temos o campo 'desc' (opcional) */}
-                          <p className="text-muted-foreground text-sm line-clamp-2">{artigo.conteudo.replace(/<[^>]*>?/gm, '').substring(0, 150)}...</p>
+                          <p className="text-muted-foreground text-sm line-clamp-2">{getPreviewText(artigo.conteudo).substring(0, 150)}...</p>
                         </div>
                         <div className="flex items-center gap-4 mt-4 pt-4 border-t border-border/50 text-xs text-muted-foreground font-medium">
                           <span className="flex items-center gap-1.5"><User className="w-4 h-4" /> {artigo.autor}</span>
