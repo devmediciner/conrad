@@ -454,22 +454,45 @@ export default function RadioGame() {
           )}
 
           {step === 'result' && currentCase && (
-            <div className="bg-card border border-border rounded-2xl p-8 text-center space-y-6 shadow-xl animate-in zoom-in-95">
-              <div className={`w-24 h-24 rounded-full flex items-center justify-center mx-auto shadow-inner ${hasWon ? 'bg-emerald-500/20 text-emerald-500' : 'bg-red-500/20 text-red-500'}`}>
-                {hasWon ? <Trophy className="w-12 h-12" /> : <XCircle className="w-12 h-12" />}
-              </div>
-              <div>
-                <h2 className="text-3xl font-bold font-heading mb-2 text-foreground">{hasWon ? 'Parabéns!' : 'Fim de Jogo'}</h2>
-                <p className="text-muted-foreground text-lg">{hasWon ? 'Você acertou o diagnóstico!' : 'As tentativas esgotaram.'}</p>
-              </div>
-              
-              <div className="bg-muted p-5 rounded-xl space-y-3 text-left">
-                <div className="flex items-center gap-2 font-bold text-emerald-600 dark:text-emerald-400 text-lg border-b border-border/50 pb-3">
-                  <CheckCircle2 className="w-5 h-5" /> {currentCase.disease}
+            <div className="bg-card border border-border rounded-2xl p-6 sm:p-8 text-center space-y-5 shadow-xl animate-in zoom-in-95 w-full">
+              {/* Cabeçalho de Status */}
+              <div className="text-center space-y-2">
+                <div className={`w-14 h-14 rounded-full flex items-center justify-center mx-auto shadow-inner ${hasWon ? 'bg-emerald-500/20 text-emerald-500' : 'bg-red-500/20 text-red-500'}`}>
+                  {hasWon ? <Trophy className="w-7 h-7" /> : <XCircle className="w-7 h-7" />}
                 </div>
-                <p className="text-sm text-foreground/80 leading-relaxed pt-1">{currentCase.diagnosis}</p>
+                <div>
+                  <h2 className="text-2xl font-bold font-heading text-foreground">{hasWon ? 'Parabéns!' : 'Fim de Jogo'}</h2>
+                  <p className="text-sm text-muted-foreground">{hasWon ? 'Você acertou o diagnóstico clínico!' : 'As tentativas de diagnóstico esgotaram.'}</p>
+                </div>
               </div>
 
+              {/* Imagem do Caso */}
+              <div className="bg-black rounded-2xl overflow-hidden shadow-md border border-border aspect-[4/3] sm:aspect-video flex items-center justify-center relative w-full">
+                <img src={currentCase.images?.[0]} alt="Caso Radiológico" className="max-w-full max-h-full object-contain opacity-95" />
+                <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-xs font-medium text-white border border-white/10 shadow-sm">
+                  {currentCase.sex}, {currentCase.age} anos
+                </div>
+              </div>
+
+              {/* Discussão do Caso */}
+              <div className="space-y-4 text-left">
+                {/* História Clínica */}
+                <div className="bg-muted/30 border border-border/60 p-4 rounded-xl space-y-1.5">
+                  <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">História Clínica</h4>
+                  <p className="text-sm text-foreground/85 leading-relaxed font-semibold">{currentCase.clinical_case}</p>
+                </div>
+                
+                {/* Diagnóstico Final e Discussão */}
+                <div className="bg-muted p-5 rounded-xl space-y-3">
+                  <div className={`flex items-center gap-2 font-bold text-lg border-b border-border/50 pb-3 ${hasWon ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500'}`}>
+                    {hasWon ? <CheckCircle2 className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
+                    <span>{currentCase.disease}</span>
+                  </div>
+                  <p className="text-sm text-foreground/80 leading-relaxed pt-1">{currentCase.diagnosis}</p>
+                </div>
+              </div>
+
+              {/* Controles de Ação */}
               <div className="flex gap-3 pt-2">
                 <Button variant="outline" size="lg" className="flex-1 h-12" onClick={() => setStep('intro')}>
                   Jogar Novamente
