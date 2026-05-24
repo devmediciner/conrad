@@ -48,7 +48,6 @@ export default function RadioGame() {
   const [step, setStep] = useState<'intro' | 'select' | 'playing' | 'result'>('intro');
   const [currentCase, setCurrentCase] = useState<any | null>(null);
   const [guesses, setGuesses] = useState<string[]>([]);
-  const [hintsRevealed, setHintsRevealed] = useState(0);
   const [currentInput, setCurrentInput] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
   const [hasWon, setHasWon] = useState(false);
@@ -73,7 +72,6 @@ export default function RadioGame() {
   const startGame = (gameCase: any) => {
     setCurrentCase(gameCase);
     setGuesses([]);
-    setHintsRevealed(0);
     setCurrentInput('');
     setHasWon(false);
     setStatsRecorded(false);
@@ -85,17 +83,11 @@ export default function RadioGame() {
     return diseasesList.filter(d => d.toLowerCase().includes(currentInput.toLowerCase()));
   }, [currentInput, diseasesList]);
 
-  const recordStats = useCallback((won: boolean, currentGuesses: string[], currentHints: number) => {
+  const recordStats = useCallback((won: boolean, attempts: number) => {
     const current = getStats();
-    
-    let score = 0;
-    if (won) {
-      const resourcesUsed = Math.max(currentGuesses.length, currentHints);
-      if (resourcesUsed === 0) score = 100;
-      else if (resourcesUsed === 1) score = 75;
-      else if (resourcesUsed === 2) score = 50;
-      else score = 25;
-    }
+    const score = won
+      ? attempts === 1 ? 100 : attempts === 2 ? 75 : attempts === 3 ? 50 : 25
+      : 0;
 
     const updated: QuizStats = {
       totalGames: current.totalGames + 1,
@@ -105,10 +97,10 @@ export default function RadioGame() {
       bestStreak: won
         ? Math.max(current.bestStreak, current.currentStreak + 1)
         : current.bestStreak,
-      perfectGames: current.perfectGames + (won && currentGuesses.length === 0 && currentHints === 0 ? 1 : 0),
+      perfectGames: current.perfectGames + (won && attempts === 1 ? 1 : 0),
       history: [
         ...current.history,
-        { date: new Date().toISOString(), won, score, attempts: currentGuesses.length + (won ? 1 : 0) },
+        { date: new Date().toISOString(), won, score, attempts },
       ],
     };
 
@@ -127,7 +119,7 @@ export default function RadioGame() {
     if (currentInput.toLowerCase() === currentCase.disease.toLowerCase()) {
       setHasWon(true);
       setStep('result');
-      recordStats(true, guesses, hintsRevealed);
+      recordStats(true, guesses.length + 1);
       toast.success("Diagnóstico correto! 🎉");
     } else {
       const newGuesses = [...guesses, currentInput];
@@ -136,7 +128,7 @@ export default function RadioGame() {
       
       if (newGuesses.length >= 4) {
         setStep('result');
-        recordStats(false, newGuesses, hintsRevealed);
+        recordStats(false, newGuesses.length);
       } else {
         toast.error("Diagnóstico incorreto!");
       }
@@ -145,36 +137,41 @@ export default function RadioGame() {
 
   const getScore = () => {
     if (!hasWon) return 0;
-    const resourcesUsed = Math.max(guesses.length, hintsRevealed);
-    if (resourcesUsed === 0) return 100;
-    if (resourcesUsed === 1) return 75;
-    if (resourcesUsed === 2) return 50;
+    if (guesses.length === 0) return 100;
+    if (guesses.length === 1) return 75;
+    if (guesses.length === 2) return 50;
     return 25;
   };
 
   const handleRequestHint = () => {
     if (!currentCase) return;
-    const maxClues = 3;
-    const currentActive = Math.max(guesses.length, hintsRevealed);
-    
-    if (currentActive >= maxClues) {
+    if (guesses.length >= 3) {
       toast.error("Todas as dicas para este caso já foram reveladas!");
       return;
     }
     
-    const nextVal = currentActive + 1;
-    setHintsRevealed(nextVal);
-    toast.info(`Nova dica revelada! 💡`);
+    const newGuesses = [...guesses, '__hint__'];
+    setGuesses(newGuesses);
+    toast.info("Dica revelada! Consumiu 1 tentativa. 💡");
+    
+    if (newGuesses.length >= 4) {
+      setStep('result');
+      recordStats(false, newGuesses.length);
+    }
   };
 
   const clues = useMemo(() => {
     if (!currentCase) return [];
     return [
-      { text: currentCase.clue1, unlocked: Math.max(guesses.length, hintsRevealed) >= 1 },
-      { text: currentCase.clue2, unlocked: Math.max(guesses.length, hintsRevealed) >= 2 },
-      { text: currentCase.clue3, unlocked: Math.max(guesses.length, hintsRevealed) >= 3 },
+      { text: currentCase.clue1, unlocked: guesses.length >= 1 },
+      { text: currentCase.clue2, unlocked: guesses.length >= 2 },
+      { text: currentCase.clue3, unlocked: guesses.length >= 3 },
     ].filter(c => c.text);
-  }, [currentCase, guesses.length, hintsRevealed]);
+  }, [currentCase, guesses.length]);
+
+  const wrongGuesses = useMemo(() => {
+    return guesses.filter(g => g !== '__hint__');
+  }, [guesses]);
 
   const handleShare = () => {
     if (!currentCase) return;
@@ -335,11 +332,11 @@ export default function RadioGame() {
                 </div>
 
                 {/* Tentativas Incorretas */}
-                {guesses.length > 0 && (
+                {wrongGuesses.length > 0 && (
                   <div className="pt-3 border-t border-border/50 space-y-2">
                     <span className="text-xs font-bold text-red-500 uppercase tracking-wider block mb-1">❌ Palpites Errados</span>
                     <div className="flex flex-wrap gap-2">
-                      {guesses.map((g, i) => (
+                      {wrongGuesses.map((g, i) => (
                         <div key={i} className="flex items-center gap-1.5 text-xs text-red-500 bg-red-500/10 px-3 py-1.5 rounded-full border border-red-500/20 line-through font-medium animate-in zoom-in-90">
                           <XCircle className="w-3.5 h-3.5 flex-shrink-0" />
                           <span>{g}</span>
@@ -375,12 +372,12 @@ export default function RadioGame() {
                     size="lg" 
                     className="flex-1 h-12 text-base gap-2" 
                     onClick={handleRequestHint}
-                    disabled={Math.max(guesses.length, hintsRevealed) >= 3}
+                    disabled={guesses.length >= 3}
                   >
                     <span>💡 Pedir Dica</span>
-                    {Math.max(guesses.length, hintsRevealed) < 3 && (
+                    {guesses.length < 3 && (
                       <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full border border-primary/20">
-                        {3 - Math.max(guesses.length, hintsRevealed)} restam
+                        {3 - guesses.length} restam
                       </span>
                     )}
                   </Button>
