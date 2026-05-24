@@ -1,11 +1,11 @@
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/authContent';
 import { useAllCases, useDeleteCase } from '@/hooks/useCases';
 import { EXAM_TYPE_COLORS } from '@/types/case';
-import { Trash2, ArrowLeft, Loader2, Pencil, Plus, Gamepad2, List, FileText, ImagePlus, Save, X, Bold, Italic, Link2, CheckCircle, Settings, Users, UserPlus, Check, XCircle, Heading, ListOrdered, TextQuote, Eye, Edit, Palette } from 'lucide-react';
+import { Trash2, ArrowLeft, Loader2, Pencil, Plus, Gamepad2, List, FileText, ImagePlus, Save, X, CheckCircle, Settings, Users, UserPlus, Check, XCircle, Eye, Edit } from 'lucide-react';
 import { toast } from 'sonner';
 import { EditCaseModal } from '@/components/EditCaseModal';
 import { SubmitCaseModal } from '@/components/SubmitCaseModal';
@@ -17,8 +17,7 @@ import type { Article } from '@/types/article';
 // Importe seu client do Supabase (Ajuste o caminho se a sua configuração estiver em outro local)
 import { supabase } from '@/integrations/supabase/client'; 
 import { createClient } from '@supabase/supabase-js'; // ← Adicione esta importação
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
+import { ArticleEditor } from '@/components/ArticleEditor';
 
 const Admin = () => {
   const { user, isAdmin, loading: authLoading } = useAuth(); // Certifique-se de que o useAuth retorne o 'user' logado
@@ -450,7 +449,7 @@ const ArticleModal = ({ open, onOpenChange, isAdmin, onSuccess, articleToEdit, c
   const [isPublishing, setIsPublishing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploadingContentImg, setIsUploadingContentImg] = useState(false);
-  const quillRef = useRef<ReactQuill>(null);
+  const editorRef = useRef<{ insertImage: (url: string) => void } | null>(null);
 
   // Preenche os dados do modal quando abrir para editar
   useEffect(() => {
@@ -486,7 +485,7 @@ const ArticleModal = ({ open, onOpenChange, isAdmin, onSuccess, articleToEdit, c
   };
 
   // Upload de imagem do PC diretamente para o corpo do texto (Rich Text)
-  const imageHandler = useCallback(() => {
+  const handleContentImageUpload = useCallback(() => {
     const input = document.createElement('input');
     input.setAttribute('type', 'file');
     input.setAttribute('accept', 'image/*');
@@ -505,11 +504,8 @@ const ArticleModal = ({ open, onOpenChange, isAdmin, onSuccess, articleToEdit, c
           if (uploadError) throw uploadError;
 
           const { data } = supabase.storage.from('images').getPublicUrl(filePath);
-          const quill = quillRef.current?.getEditor();
-          if (quill) {
-            const range = quill.getSelection(true);
-            quill.insertEmbed(range.index, 'image', data.publicUrl);
-          }
+          // Insert the uploaded image URL into the editor content
+          setConteudo(prev => prev + `<img src="${data.publicUrl}" />`);
           toast.success('Imagem inserida no artigo!');
         } catch (error) {
           console.error(error);
@@ -520,20 +516,6 @@ const ArticleModal = ({ open, onOpenChange, isAdmin, onSuccess, articleToEdit, c
       }
     };
   }, []);
-
-  const modules = useMemo(() => ({
-    toolbar: {
-      container: [
-        [{ 'header': [1, 2, 3, false] }],
-        ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-        [{'list': 'ordered'}, {'list': 'bullet'}],
-        ['link', 'image'],
-        [{ 'color': [] }, { 'background': [] }],
-        ['clean']
-      ],
-      handlers: { image: imageHandler }
-    }
-  }), [imageHandler]);
 
   // Lida com o Upload de imagem para o Supabase Storage
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -695,19 +677,16 @@ const ArticleModal = ({ open, onOpenChange, isAdmin, onSuccess, articleToEdit, c
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <label className="text-sm font-semibold text-foreground">Conteúdo do Artigo</label>
-              {isUploadingContentImg && <span className="text-xs text-primary flex items-center"><Loader2 className="w-3 h-3 animate-spin mr-1"/> Processando imagem...</span>}
+              {isUploadingContentImg && <span className="text-xs text-primary flex items-center"><Loader2 className="w-3 h-3 animate-spin mr-1"/>Processando imagem...</span>}
             </div>
             
-            <div className="bg-background rounded-xl overflow-hidden [&_.ql-toolbar]:rounded-t-xl [&_.ql-container]:rounded-b-xl [&_.ql-editor]:min-h-[350px] [&_.ql-editor]:text-base [&_.ql-editor]:text-foreground [&_.ql-toolbar]:bg-muted/50 [&_.ql-stroke]:stroke-foreground [&_.ql-fill]:fill-foreground [&_.ql-picker]:text-foreground">
-              <ReactQuill 
-                ref={quillRef}
-                theme="snow"
-                value={conteudo}
-                onChange={setConteudo}
-                modules={modules}
-                placeholder="Escreva o conteúdo detalhado do seu artigo aqui..."
-              />
-            </div>
+            <ArticleEditor
+              value={conteudo}
+              onChange={setConteudo}
+              onImageUpload={handleContentImageUpload}
+              isUploadingImage={isUploadingContentImg}
+              placeholder="Comece a escrever seu artigo aqui..."
+            />
           </div>
         </div>
 
