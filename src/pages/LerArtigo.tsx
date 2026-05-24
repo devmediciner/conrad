@@ -85,8 +85,8 @@ export default function LerArtigo() {
         {/* Container do Cabeçalho e Capa - Mais largo para impacto visual */}
         <div className="container mx-auto max-w-4xl">
           <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-            <Link to={`/artigos/${artigo.categoria}`} className="inline-flex items-center gap-2 text-sm text-primary font-semibold hover:underline mb-10 transition-colors">
-              <ArrowLeft className="w-4 h-4" /> Voltar para {artigo.categoria.toUpperCase()}
+            <Link to="/artigos" className="inline-flex items-center gap-2 text-sm text-primary font-semibold hover:underline mb-10 transition-colors">
+              <ArrowLeft className="w-4 h-4" /> Voltar para Artigos
             </Link>
 
             {/* Cabeçalho do Artigo */}
