@@ -7,7 +7,7 @@ import Placeholder from '@tiptap/extension-placeholder';
 import Underline from '@tiptap/extension-underline';
 import TextAlign from '@tiptap/extension-text-align';
 import Highlight from '@tiptap/extension-highlight';
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import {
   Bold, Italic, Underline as UnderlineIcon, Strikethrough,
   Heading1, Heading2, Heading3,
@@ -28,12 +28,36 @@ const ResizableImage = Image.extend({
         renderHTML: attributes => {
           return {
             width: attributes.width,
-            style: `width: ${attributes.width}; max-width: 100%; display: block; margin: 8px auto;`,
+          };
+        },
+      },
+      align: {
+        default: 'center',
+        parseHTML: element => element.getAttribute('data-align') || 'center',
+        renderHTML: attributes => {
+          return {
+            'data-align': attributes.align,
           };
         },
       },
     };
   },
+  renderHTML({ HTMLAttributes }) {
+    const width = HTMLAttributes.width || '100%';
+    const align = HTMLAttributes['data-align'] || 'center';
+    const margin = align === 'left' 
+      ? '8px auto 8px 0' 
+      : align === 'right' 
+        ? '8px 0 8px auto' 
+        : '8px auto';
+    return [
+      'img',
+      {
+        ...HTMLAttributes,
+        style: `width: ${width}; max-width: 100%; display: block; margin: ${margin};`,
+      }
+    ];
+  }
 });
 
 interface ArticleEditorProps {
@@ -87,6 +111,8 @@ export function ArticleEditor({
   isUploadingImage = false,
   placeholder = 'Comece a escrever seu artigo...',
 }: ArticleEditorProps) {
+  const [selectionKey, setSelectionKey] = useState(0);
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -107,6 +133,9 @@ export function ArticleEditor({
     content: value,
     onUpdate: ({ editor: e }) => {
       onChange(e.getHTML());
+    },
+    onSelectionUpdate: () => {
+      setSelectionKey(prev => prev + 1);
     },
     editorProps: {
       attributes: {
@@ -322,6 +351,29 @@ export function ArticleEditor({
             >
               100%
             </button>
+            <div className="w-px h-4 bg-border/60 mx-1" />
+            <span className="text-[10px] text-muted-foreground font-semibold px-1">Alinhar:</span>
+            <ToolbarButton 
+              onClick={() => editor.chain().focus().updateAttributes('image', { align: 'left' }).run()} 
+              isActive={editor.getAttributes('image').align === 'left'} 
+              title="Alinhar à esquerda"
+            >
+              <AlignLeft className="w-3.5 h-3.5" />
+            </ToolbarButton>
+            <ToolbarButton 
+              onClick={() => editor.chain().focus().updateAttributes('image', { align: 'center' }).run()} 
+              isActive={editor.getAttributes('image').align === 'center' || !editor.getAttributes('image').align} 
+              title="Centralizar"
+            >
+              <AlignCenter className="w-3.5 h-3.5" />
+            </ToolbarButton>
+            <ToolbarButton 
+              onClick={() => editor.chain().focus().updateAttributes('image', { align: 'right' }).run()} 
+              isActive={editor.getAttributes('image').align === 'right'} 
+              title="Alinhar à direita"
+            >
+              <AlignRight className="w-3.5 h-3.5" />
+            </ToolbarButton>
             <div className="w-px h-4 bg-border/60 mx-1" />
             <button
               type="button"
