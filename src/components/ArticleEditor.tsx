@@ -18,6 +18,24 @@ import {
   Loader2,
 } from 'lucide-react';
 
+const ResizableImage = Image.extend({
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      width: {
+        default: '100%',
+        parseHTML: element => element.getAttribute('width') || element.style.width || '100%',
+        renderHTML: attributes => {
+          return {
+            width: attributes.width,
+            style: `width: ${attributes.width}; max-width: 100%; display: block; margin: 8px auto;`,
+          };
+        },
+      },
+    };
+  },
+});
+
 interface ArticleEditorProps {
   value: string;
   onChange: (html: string) => void;
@@ -80,7 +98,7 @@ export function ArticleEditor({
         openOnClick: false,
         HTMLAttributes: { class: 'text-primary underline underline-offset-4 cursor-pointer' },
       }),
-      Image.configure({
+      ResizableImage.configure({
         HTMLAttributes: { class: 'rounded-2xl mx-auto shadow-xl my-8 max-w-full border border-border/20 object-cover' },
       }),
       Placeholder.configure({ placeholder }),
@@ -236,9 +254,13 @@ export function ArticleEditor({
         </ToolbarButton>
       </div>
 
-      {/* ─── bubble menu ─── */}
+      {/* ─── bubble menu para texto ─── */}
       {editor && (
-        <BubbleMenu editor={editor} tippyOptions={{ duration: 150, placement: 'top' }}>
+        <BubbleMenu 
+          editor={editor} 
+          tippyOptions={{ duration: 150, placement: 'top' }}
+          shouldShow={({ editor }) => !editor.isActive('image') && !editor.state.selection.empty}
+        >
           <div className="flex items-center gap-0.5 bg-card border border-border rounded-lg shadow-xl px-1.5 py-1 backdrop-blur-xl">
             <ToolbarButton onClick={() => editor.chain().focus().toggleBold().run()} isActive={editor.isActive('bold')} title="Negrito">
               <Bold className="w-3.5 h-3.5" />
@@ -259,6 +281,68 @@ export function ArticleEditor({
             <ToolbarButton onClick={setLink} isActive={editor.isActive('link')} title="Link">
               <Link2 className="w-3.5 h-3.5" />
             </ToolbarButton>
+          </div>
+        </BubbleMenu>
+      )}
+
+      {/* ─── bubble menu para imagem (Redimensionar e Legenda) ─── */}
+      {editor && (
+        <BubbleMenu 
+          editor={editor} 
+          tippyOptions={{ duration: 150, placement: 'top' }}
+          shouldShow={({ editor }) => editor.isActive('image')}
+        >
+          <div className="flex items-center gap-0.5 bg-card border border-border rounded-lg shadow-xl px-1.5 py-1 backdrop-blur-xl">
+            <span className="text-[10px] text-muted-foreground font-semibold px-2">Largura:</span>
+            <button
+              type="button"
+              onClick={() => editor.chain().focus().updateAttributes('image', { width: '25%' }).run()}
+              className={`text-xs px-2 py-1 rounded transition-colors ${editor.getAttributes('image').width === '25%' ? 'bg-primary/20 text-primary font-bold' : 'text-muted-foreground hover:text-foreground'}`}
+            >
+              25%
+            </button>
+            <button
+              type="button"
+              onClick={() => editor.chain().focus().updateAttributes('image', { width: '50%' }).run()}
+              className={`text-xs px-2 py-1 rounded transition-colors ${editor.getAttributes('image').width === '50%' ? 'bg-primary/20 text-primary font-bold' : 'text-muted-foreground hover:text-foreground'}`}
+            >
+              50%
+            </button>
+            <button
+              type="button"
+              onClick={() => editor.chain().focus().updateAttributes('image', { width: '75%' }).run()}
+              className={`text-xs px-2 py-1 rounded transition-colors ${editor.getAttributes('image').width === '75%' ? 'bg-primary/20 text-primary font-bold' : 'text-muted-foreground hover:text-foreground'}`}
+            >
+              75%
+            </button>
+            <button
+              type="button"
+              onClick={() => editor.chain().focus().updateAttributes('image', { width: '100%' }).run()}
+              className={`text-xs px-2 py-1 rounded transition-colors ${editor.getAttributes('image').width === '100%' || !editor.getAttributes('image').width ? 'bg-primary/20 text-primary font-bold' : 'text-muted-foreground hover:text-foreground'}`}
+            >
+              100%
+            </button>
+            <div className="w-px h-4 bg-border/60 mx-1" />
+            <button
+              type="button"
+              onClick={() => {
+                const caption = window.prompt('Digite o texto de legenda/fonte da imagem:');
+                if (caption !== null && caption.trim() !== '') {
+                  // Insere um parágrafo formatado como legenda logo abaixo da imagem
+                  editor
+                    .chain()
+                    .focus()
+                    .insertContentAt(
+                      editor.state.selection.to,
+                      `<p style="text-align: center; font-size: 0.85em; color: #888888; font-style: italic; margin-top: 4px; margin-bottom: 20px;">Fonte: ${caption}</p><p></p>`
+                    )
+                    .run();
+                }
+              }}
+              className="text-xs px-2.5 py-1 rounded text-primary hover:bg-primary/10 transition-colors font-medium flex items-center gap-1"
+            >
+              + Legenda
+            </button>
           </div>
         </BubbleMenu>
       )}
