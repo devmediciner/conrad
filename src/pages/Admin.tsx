@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/authContent';
 import { useAllCases, useDeleteCase } from '@/hooks/useCases';
 import { EXAM_TYPE_COLORS } from '@/types/case';
+import { stripHtml } from '@/lib/utils';
+
 import { Trash2, ArrowLeft, Loader2, Pencil, Plus, Gamepad2, List, FileText, ImagePlus, Save, X, CheckCircle, Settings, Users, UserPlus, Check, XCircle, Eye, Edit } from 'lucide-react';
 import { toast } from 'sonner';
 import { EditCaseModal } from '@/components/EditCaseModal';
@@ -262,7 +264,7 @@ const Admin = () => {
                           </div>
                           <p className="text-sm text-foreground truncate font-semibold">
                             <span className="font-mono text-muted-foreground mr-1">#{c.case_number}</span>
-                            {c.clinical_case}
+                            {stripHtml(c.clinical_case)}
                           </p>
                           <p className="text-xs text-muted-foreground mt-0.5">{c.age} anos • {c.sex}</p>
                         </div>
@@ -406,7 +408,7 @@ const Admin = () => {
                           <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-500 border border-blue-500/20 uppercase font-bold tracking-wider">Caso</span>
                           <span className="text-[10px] uppercase font-bold text-muted-foreground">{c.exam_type}</span>
                         </div>
-                        <p className="text-sm text-foreground font-semibold">{c.clinical_case}</p>
+                        <p className="text-sm text-foreground font-semibold">{stripHtml(c.clinical_case)}</p>
                       </div>
                       <div className="flex gap-2">
                         <Button size="icon" variant="secondary" onClick={() => setEditingCase(c)} title="Editar / Visualizar"><Pencil className="w-4 h-4" /></Button>

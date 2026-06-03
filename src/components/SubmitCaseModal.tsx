@@ -9,6 +9,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { RichTextEditor } from './ui/RichTextEditor';
 import {
   Select,
   SelectContent,
@@ -216,21 +217,21 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
 
           <div>
             <label className="text-sm font-medium text-foreground mb-1 block">Caso Clínico *</label>
-            <Textarea
+            <RichTextEditor
               value={clinicalCase}
-              onChange={(e) => setClinicalCase(e.target.value)}
+              onChange={setClinicalCase}
               placeholder="Descreva o caso clínico..."
-              className="bg-card border-border min-h-[100px]"
+              minHeight="120px"
             />
           </div>
 
           <div>
             <label className="text-sm font-medium text-foreground mb-1 block">Diagnóstico (Laudo) *</label>
-            <Textarea
+            <RichTextEditor
               value={diagnosis}
-              onChange={(e) => setDiagnosis(e.target.value)}
+              onChange={setDiagnosis}
               placeholder="Informe o diagnóstico..."
-              className="bg-card border-border min-h-[80px]"
+              minHeight="100px"
             />
           </div>
 

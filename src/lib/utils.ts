@@ -17,3 +17,9 @@ export function slugify(text: string | null | undefined): string {
     .replace(/--+/g, '-')
     .trim();
 }
+
+export function stripHtml(html: string | null | undefined): string {
+  if (!html) return '';
+  return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+}
+

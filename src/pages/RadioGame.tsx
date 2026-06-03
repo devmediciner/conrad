@@ -11,6 +11,8 @@ import { useCases } from '@/hooks/useCases';
 import { useDiseases } from '@/hooks/useGame';
 import { motion, AnimatePresence } from 'framer-motion';
 import { EXAM_TYPE_COLORS, EXAM_TYPE_LABELS, type ExamType } from '@/types/case';
+import { FormattedText } from '@/components/ui/FormattedText';
+
 
 interface QuizStats {
   totalGames: number;
@@ -612,13 +614,12 @@ export default function RadioGame() {
                   {currentCase.sex}, {currentCase.age} anos
                 </div>
               </div>
-
               {/* Discussão do Caso */}
               <div className="space-y-4 text-left">
                 {/* História Clínica */}
                 <div className="bg-muted/30 border border-border/60 p-4 rounded-xl space-y-1.5">
                   <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">História Clínica</h4>
-                  <p className="text-sm text-foreground/85 leading-relaxed font-semibold">{currentCase.clinical_case}</p>
+                  <FormattedText content={currentCase.clinical_case} className="text-sm text-foreground/85 leading-relaxed font-semibold" />
                 </div>
                 
                 {/* Diagnóstico Final e Discussão */}
@@ -627,7 +628,7 @@ export default function RadioGame() {
                     {hasWon ? <CheckCircle2 className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
                     <span>{currentCase.disease}</span>
                   </div>
-                  <p className="text-sm text-foreground/80 leading-relaxed pt-1">{currentCase.diagnosis}</p>
+                  <FormattedText content={currentCase.diagnosis} className="text-sm text-foreground/80 leading-relaxed pt-1" />
                 </div>
               </div>
 

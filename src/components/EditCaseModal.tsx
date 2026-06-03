@@ -8,6 +8,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { RichTextEditor } from './ui/RichTextEditor';
 import {
   Select,
   SelectContent,
@@ -202,19 +203,19 @@ export function EditCaseModal({ caseData, open, onOpenChange }: EditCaseModalPro
 
           <div>
             <label className="text-sm font-medium text-foreground mb-1 block">Caso Clínico</label>
-            <Textarea
+            <RichTextEditor
               value={clinicalCase}
-              onChange={(e) => setClinicalCase(e.target.value)}
-              className="bg-card border-border min-h-[100px]"
+              onChange={setClinicalCase}
+              minHeight="120px"
             />
           </div>
 
           <div>
             <label className="text-sm font-medium text-foreground mb-1 block">Diagnóstico</label>
-            <Textarea
+            <RichTextEditor
               value={diagnosis}
-              onChange={(e) => setDiagnosis(e.target.value)}
-              className="bg-card border-border min-h-[80px]"
+              onChange={setDiagnosis}
+              minHeight="100px"
             />
           </div>
 

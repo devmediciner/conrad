@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion';
 import type { Case } from '@/types/case';
 import { EXAM_TYPE_COLORS } from '@/types/case';
+import { stripHtml } from '@/lib/utils';
+
 
 interface CaseCardProps {
   caseData: Case;
@@ -44,7 +46,7 @@ export function CaseCard({ caseData, index, onClick }: CaseCardProps) {
           </span>
         </div>
         <p className="text-sm text-muted-foreground line-clamp-2">
-          {caseData.clinical_case}
+          {stripHtml(caseData.clinical_case)}
         </p>
       </div>
     </motion.div>

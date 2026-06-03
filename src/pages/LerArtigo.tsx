@@ -3,10 +3,12 @@ import type { Article } from '@/types/article';
 import type { Case } from '@/types/case';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Calendar, User, Loader2, FileText, ArrowRight, X, ZoomIn, ZoomOut, Sun, Contrast, ChevronLeft, ChevronRight, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, Calendar, User, Loader2, FileText, ArrowRight, X, ChevronLeft, ChevronRight, Eye, EyeOff } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { supabase } from '@/integrations/supabase/client';
-import { slugify } from '@/lib/utils';
+import { slugify, stripHtml } from '@/lib/utils';
+import { FormattedText } from '@/components/ui/FormattedText';
+import ImageViewer from '@/components/ImageViewer';
 import 'react-quill/dist/quill.snow.css';
 
 export default function LerArtigo() {
@@ -19,22 +21,12 @@ export default function LerArtigo() {
   // Estados Avançados do Modal de Imagem
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [showDiagnosis, setShowDiagnosis] = useState(false);
-  const [zoom, setZoom] = useState(1);
-  const [brightness, setBrightness] = useState(100);
-  const [contrast, setContrast] = useState(100);
-  const [isDragging, setIsDragging] = useState(false);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
   // Reseta as configurações visuais toda vez que abrir um caso novo
   useEffect(() => {
     if (activeCaseModal) {
       setActiveImageIndex(0);
       setShowDiagnosis(false);
-      setZoom(1);
-      setBrightness(100);
-      setContrast(100);
-      setPosition({ x: 0, y: 0 });
     }
   }, [activeCaseModal]);
 
@@ -205,7 +197,7 @@ export default function LerArtigo() {
                           
                           {/* Caso Clínico */}
                           <p className="text-sm text-foreground/85 font-medium leading-relaxed line-clamp-3 mt-2 group-hover:text-foreground transition-colors duration-200">
-                            {caso.clinical_case}
+                            {stripHtml(caso.clinical_case)}
                           </p>
                         </div>
 
@@ -238,62 +230,18 @@ export default function LerArtigo() {
             
             {/* Lado Esquerdo: Visualizador de Imagem */}
             <div className="w-full md:w-[60%] lg:w-[65%] bg-black relative flex flex-col items-center justify-center overflow-hidden h-[40vh] md:h-full group select-none">
-              
-              {/* Barra de Ferramentas da Imagem */}
-              <div className="absolute top-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5 sm:gap-2 bg-black/60 backdrop-blur-md px-3 sm:px-4 py-2 rounded-full z-20 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity border border-white/10 shadow-lg">
-                <button onClick={() => setZoom(z => Math.max(1, z - 0.2))} className="text-white hover:text-primary transition-colors"><ZoomOut className="w-4 h-4" /></button>
-                <span className="text-white text-[10px] sm:text-xs font-mono w-7 sm:w-8 text-center">{Math.round(zoom * 100)}%</span>
-                <button onClick={() => setZoom(z => Math.min(4, z + 0.2))} className="text-white hover:text-primary transition-colors"><ZoomIn className="w-4 h-4" /></button>
-                <div className="w-px h-4 bg-white/20 mx-0 sm:mx-1" />
-                
-                <button onClick={() => setBrightness(b => Math.max(50, b - 10))} className="text-white hover:text-primary transition-colors"><Sun className="w-4 h-4" /></button>
-                <span className="text-white text-[10px] sm:text-xs font-mono w-7 sm:w-8 text-center">{brightness}%</span>
-                <button onClick={() => setBrightness(b => Math.min(200, b + 10))} className="text-white hover:text-primary transition-colors"><Sun className="w-4 h-4" /></button>
-                <div className="w-px h-4 bg-white/20 mx-0 sm:mx-1" />
-
-                <button onClick={() => setContrast(c => Math.max(50, c - 10))} className="text-white hover:text-primary transition-colors"><Contrast className="w-4 h-4" /></button>
-                <span className="text-white text-[10px] sm:text-xs font-mono w-7 sm:w-8 text-center">{contrast}%</span>
-                <button onClick={() => setContrast(c => Math.min(200, c + 10))} className="text-white hover:text-primary transition-colors"><Contrast className="w-4 h-4" /></button>
-                <div className="w-px h-4 bg-white/20 mx-0 sm:mx-1" />
-                
-                <button onClick={() => { setZoom(1); setBrightness(100); setContrast(100); setPosition({x:0, y:0}); }} className="text-white hover:text-primary text-[10px] font-bold uppercase tracking-wider transition-colors">Reset</button>
-              </div>
-
-              {/* Imagem com suporte a Arrastar/Touch */}
-              <div 
-                className={`w-full h-full flex items-center justify-center ${zoom > 1 ? 'cursor-grab active:cursor-grabbing' : ''}`}
-                onMouseDown={(e) => { if (zoom > 1) { setIsDragging(true); setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y }); } }}
-                onMouseMove={(e) => { if (isDragging && zoom > 1) setPosition({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y }); }}
-                onMouseUp={() => setIsDragging(false)}
-                onMouseLeave={() => setIsDragging(false)}
-                onTouchStart={(e) => { if (zoom > 1) { setIsDragging(true); setDragStart({ x: e.touches[0].clientX - position.x, y: e.touches[0].clientY - position.y }); } }}
-                onTouchMove={(e) => { if (isDragging && zoom > 1) setPosition({ x: e.touches[0].clientX - dragStart.x, y: e.touches[0].clientY - dragStart.y }); }}
-                onTouchEnd={() => setIsDragging(false)}
-              >
-                {activeCaseModal.images?.[activeImageIndex] ? (
-                  <img 
-                    src={activeCaseModal.images[activeImageIndex]} 
-                    alt="Visualização do Caso" 
-                    className="max-w-full max-h-full object-contain transition-transform duration-75"
-                    style={{ transform: `translate(${position.x}px, ${position.y}px) scale(${zoom})`, filter: `brightness(${brightness}%) contrast(${contrast}%)` }}
-                    draggable={false}
+              {activeCaseModal.images?.[activeImageIndex] ? (
+                <div className="w-full h-full p-4 flex items-center justify-center">
+                  <ImageViewer
+                    src={activeCaseModal.images[activeImageIndex]}
+                    alt="Visualização do Caso"
+                    images={activeCaseModal.images}
+                    selectedImage={activeImageIndex}
+                    setSelectedImage={setActiveImageIndex}
                   />
-                ) : (
-                  <div className="text-white/50 uppercase font-bold tracking-widest text-xl">{activeCaseModal.exam_type}</div>
-                )}
-              </div>
-
-              {/* Navegação de Múltiplas Imagens do Paciente */}
-              {activeCaseModal.images?.length > 1 && (
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full z-20 border border-white/10 shadow-lg">
-                  <button disabled={activeImageIndex === 0} onClick={() => { setActiveImageIndex(i => i - 1); setZoom(1); setPosition({x:0, y:0}); }} className="text-white disabled:opacity-30 hover:text-primary p-1 transition-colors">
-                    <ChevronLeft className="w-5 h-5" />
-                  </button>
-                  <span className="text-white text-xs font-semibold px-2">{activeImageIndex + 1} / {activeCaseModal.images.length}</span>
-                  <button disabled={activeImageIndex === activeCaseModal.images.length - 1} onClick={() => { setActiveImageIndex(i => i + 1); setZoom(1); setPosition({x:0, y:0}); }} className="text-white disabled:opacity-30 hover:text-primary p-1 transition-colors">
-                    <ChevronRight className="w-5 h-5" />
-                  </button>
                 </div>
+              ) : (
+                <div className="text-white/50 uppercase font-bold tracking-widest text-xl">{activeCaseModal.exam_type}</div>
               )}
             </div>
             
@@ -310,7 +258,7 @@ export default function LerArtigo() {
               </div>
               
                 <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">História Clínica</h3>
-                <p className="text-foreground text-sm md:text-base leading-relaxed mb-8 whitespace-pre-wrap">{activeCaseModal.clinical_case}</p>
+                <FormattedText content={activeCaseModal.clinical_case} className="text-foreground text-sm md:text-base leading-relaxed mb-8" />
               
                 <div className="mt-8 border-t border-border pt-8">
                   <div className="flex items-center justify-between mb-4">
@@ -325,8 +273,8 @@ export default function LerArtigo() {
                   </div>
                   
                   {showDiagnosis ? (
-                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-4 bg-primary/10 text-primary rounded-xl border border-primary/20 font-bold text-base md:text-lg">
-                      {activeCaseModal.diagnosis}
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-4 bg-primary/10 text-primary rounded-xl border border-primary/20">
+                      <FormattedText content={activeCaseModal.diagnosis} className="text-primary font-semibold text-sm md:text-base" />
                     </motion.div>
                   ) : (
                     <div className="p-4 bg-muted/50 rounded-xl border border-border border-dashed flex items-center justify-center">
