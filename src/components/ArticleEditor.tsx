@@ -125,7 +125,7 @@ export function ArticleEditor({
         HTMLAttributes: { class: 'text-primary underline underline-offset-4 cursor-pointer' },
       }),
       ResizableImage.configure({
-        HTMLAttributes: { class: 'rounded-2xl mx-auto shadow-xl mt-8 mb-2 max-w-full border border-border/20 object-cover' },
+        HTMLAttributes: { class: 'rounded-2xl shadow-xl max-w-full border border-border/20 object-cover' },
       }),
       Placeholder.configure({ placeholder }),
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
@@ -140,16 +140,16 @@ export function ArticleEditor({
     editorProps: {
       attributes: {
         class:
-          'prose prose-invert max-w-none min-h-[400px] px-6 py-5 outline-none text-foreground text-base leading-relaxed ' +
-          '[&_h1]:text-3xl [&_h1]:font-extrabold [&_h1]:tracking-tight [&_h1]:mt-8 [&_h1]:mb-4 ' +
-          '[&_h2]:text-2xl [&_h2]:font-bold [&_h2]:tracking-tight [&_h2]:mt-6 [&_h2]:mb-3 ' +
-          '[&_h3]:text-xl [&_h3]:font-semibold [&_h3]:mt-5 [&_h3]:mb-2 ' +
-          '[&_p]:mb-4 [&_p]:text-foreground/85 ' +
-          '[&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-4 ' +
-          '[&_li]:mb-1 ' +
-          '[&_blockquote]:border-l-4 [&_blockquote]:border-primary [&_blockquote]:pl-5 [&_blockquote]:py-2 [&_blockquote]:my-6 [&_blockquote]:italic [&_blockquote]:text-foreground/70 [&_blockquote]:bg-muted/30 [&_blockquote]:rounded-r-xl ' +
-          '[&_a]:text-primary [&_a]:underline [&_a]:underline-offset-4 ' +
-          '[&_img]:rounded-2xl [&_img]:mx-auto [&_img]:shadow-xl [&_img]:mt-8 [&_img]:mb-2 [&_img]:max-w-full [&_img]:border [&_img]:border-border/20 ' +
+          'prose prose-invert max-w-none min-h-[400px] px-6 py-5 outline-none text-foreground/90 md:text-lg leading-loose ' +
+          '[&_h1]:text-4xl md:[&_h1]:text-5xl [&_h1]:font-extrabold [&_h1]:tracking-tight [&_h1]:mt-14 [&_h1]:mb-6 [&_h1]:text-foreground [&_h1]:leading-tight ' +
+          '[&_h2]:text-3xl md:[&_h2]:text-4xl [&_h2]:font-bold [&_h2]:tracking-tight [&_h2]:mt-12 [&_h2]:mb-4 [&_h2]:text-foreground [&_h2]:border-b [&_h2]:border-border/50 [&_h2]:pb-2 ' +
+          '[&_h3]:text-2xl md:[&_h3]:text-3xl [&_h3]:font-semibold [&_h3]:tracking-tight [&_h3]:mt-8 [&_h3]:mb-4 [&_h3]:text-foreground ' +
+          '[&_p]:mb-6 [&_p]:text-foreground/80 ' +
+          '[&_strong]:font-bold [&_strong]:text-foreground ' +
+          '[&_a]:text-primary [&_a]:font-semibold [&_a]:underline [&_a]:underline-offset-4 ' +
+          '[&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-6 [&_ul]:space-y-2 [&_li]:pl-1 [&_li]:marker:text-primary/70 [&_li]:list-item [&_li_p]:m-0 ' +
+          '[&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-6 [&_ol]:space-y-2 [&_li]:pl-1 [&_li]:marker:text-primary/70 [&_li]:marker:font-bold [&_li]:list-item [&_li_p]:m-0 ' +
+          '[&_blockquote]:border-l-4 [&_blockquote]:border-primary [&_blockquote]:pl-6 [&_blockquote]:py-2 [&_blockquote]:my-8 [&_blockquote]:italic [&_blockquote]:text-foreground/70 [&_blockquote]:bg-muted/30 [&_blockquote]:rounded-r-xl ' +
           '[&_mark]:bg-primary/20 [&_mark]:text-foreground [&_mark]:rounded-sm [&_mark]:px-1 ' +
           '[&_hr]:border-border/50 [&_hr]:my-8',
       },
@@ -188,9 +188,9 @@ export function ArticleEditor({
   const ic = 'w-4 h-4'; // icon class shorthand
 
   return (
-    <div className="rounded-xl border border-border bg-background overflow-hidden focus-within:ring-2 focus-within:ring-primary/40 focus-within:border-primary/50 transition-all duration-200">
+    <div className="rounded-xl border border-border bg-background focus-within:ring-2 focus-within:ring-primary/40 focus-within:border-primary/50 transition-all duration-200 relative">
       {/* ─── toolbar ─── */}
-      <div className="flex flex-wrap items-center gap-0.5 px-3 py-2 border-b border-border bg-muted/40">
+      <div className="sticky top-0 z-30 flex flex-wrap items-center gap-0.5 px-3 py-2 border-b border-border bg-background/95 backdrop-blur-md shadow-sm rounded-t-xl">
         {/* Undo / Redo */}
         <ToolbarButton onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} title="Desfazer">
           <Undo2 className={ic} />
@@ -386,7 +386,7 @@ export function ArticleEditor({
                     .focus()
                     .insertContentAt(
                       editor.state.selection.to,
-                      `<p style="text-align: center; font-size: 0.85em; color: #888888; font-style: italic; margin-top: 4px; margin-bottom: 20px;">Fonte: ${caption}</p><p></p>`
+                      `<p class="image-caption" style="text-align: center; font-size: 0.8em; color: #888888; font-style: italic; margin-top: 4px; margin-bottom: 12px;">Fonte: ${caption}</p><p></p>`
                     )
                     .run();
                 }

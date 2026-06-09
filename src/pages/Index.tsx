@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Navbar } from '@/components/Navbar';
 import { FiltersBar } from '@/components/FiltersBar';
@@ -7,11 +7,14 @@ import { CaseModal } from '@/components/CaseModal';
 import { useCases } from '@/hooks/useCases';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { Activity, Instagram, Mail } from 'lucide-react';
+import { Activity, Instagram, Mail, FileText } from 'lucide-react';
 import type { Case } from '@/types/case';
+import type { Article } from '@/types/article';
 import backImage from '@/assets/back.jpg';
 import logo from '@/assets/logo.png';
 import { useNavigate, Link } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { slugify, stripHtml } from '@/lib/utils';
 
 const Index = () => {
   const [search, setSearch] = useState('');
@@ -20,6 +23,30 @@ const Index = () => {
   const navigate = useNavigate();
 
   const { data: cases, isLoading } = useCases({ search, examType });
+
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [loadingArticles, setLoadingArticles] = useState(false);
+
+  useEffect(() => {
+    const fetchArticles = async () => {
+      setLoadingArticles(true);
+      const { data } = await supabase.from('articles').select('*').eq('status', 'approved');
+      if (data) setArticles(data);
+      setLoadingArticles(false);
+    };
+    fetchArticles();
+  }, []);
+
+  const examLabels: Record<string, string> = {
+    all: 'Todos',
+    RX: 'Raio-X',
+    TC: 'Tomografia',
+    USG: 'Ultrassom',
+    RM: 'Ressonância'
+  };
+  const examLabel = examLabels[examType] || examType;
+
+  const filteredArticles = articles.filter(a => a.categoria?.toLowerCase() === examType.toLowerCase());
 
   return (
     
@@ -146,20 +173,105 @@ const Index = () => {
                 </div>
               ))}
             </div>
-          ) : cases && cases.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {cases.map((c, i) => (
-                <CaseCard
-                  key={c.id}
-                  caseData={c}
-                  index={i}
-                  onClick={() => setSelectedCase(c)}
-                />
-              ))}
-            </div>
+          ) : examType === 'all' ? (
+            cases && cases.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {cases.map((c, i) => (
+                  <CaseCard
+                    key={c.id}
+                    caseData={c}
+                    index={i}
+                    onClick={() => setSelectedCase(c)}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-20">
+                <p className="text-muted-foreground">Nenhum caso encontrado.</p>
+              </div>
+            )
           ) : (
-            <div className="text-center py-20">
-              <p className="text-muted-foreground">Nenhum caso encontrado.</p>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-in fade-in duration-500">
+              {/* Coluna da Esquerda: Artigos */}
+              <div className="lg:col-span-6 space-y-6">
+                <div className="flex items-center justify-between border-b border-border/80 pb-4 mb-2">
+                  <h3 className="font-heading text-2xl font-bold text-foreground flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-primary" />
+                    Artigos ({examLabel})
+                  </h3>
+                  <Link to={`/artigos`} className="text-xs font-semibold text-primary hover:underline">
+                    Ver todos
+                  </Link>
+                </div>
+                {loadingArticles ? (
+                  <div className="space-y-4">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <Skeleton key={i} className="h-28 w-full rounded-3xl" />
+                    ))}
+                  </div>
+                ) : filteredArticles.length > 0 ? (
+                  <div className="space-y-4">
+                    {filteredArticles.map(artigo => (
+                      <Link 
+                        key={artigo.id} 
+                        to={`/artigo/${slugify(artigo.titulo)}`}
+                        className="group flex gap-5 p-5 bg-card hover:bg-muted/30 rounded-3xl border border-border/40 hover:border-primary/30 transition-all duration-300 shadow-sm"
+                      >
+                        <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden bg-muted flex-shrink-0 border border-border/50 relative">
+                          {artigo.imagem_capa ? (
+                            <img src={artigo.imagem_capa} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-xs uppercase font-bold text-muted-foreground bg-secondary">{artigo.categoria}</div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
+                          <div>
+                            <h4 className="text-base sm:text-lg font-bold text-foreground line-clamp-2 group-hover:text-primary transition-colors leading-snug mb-2">
+                              {artigo.titulo}
+                            </h4>
+                            <p className="text-xs sm:text-sm text-muted-foreground/80 line-clamp-2 leading-relaxed mb-3">
+                              {stripHtml(artigo.conteudo).substring(0, 110)}...
+                            </p>
+                          </div>
+                          <span className="text-xs text-muted-foreground font-medium">
+                            Por {artigo.autor?.split(' | ')[0]} • {new Date(artigo.data_publicacao).toLocaleDateString('pt-BR')}
+                          </span>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12 bg-card rounded-2xl border border-dashed border-border/80">
+                    <p className="text-sm text-muted-foreground">Nenhum artigo publicado nesta modalidade.</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Coluna da Direita: Casos */}
+              <div className="lg:col-span-6 space-y-6">
+                <div className="border-b border-border/80 pb-4 mb-2">
+                  <h3 className="font-heading text-2xl font-bold text-foreground flex items-center gap-2">
+                    <Activity className="w-5 h-5 text-primary" />
+                    Casos ({examLabel})
+                  </h3>
+                </div>
+                {cases && cases.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    {cases.map((c, i) => (
+                      <CaseCard
+                        key={c.id}
+                        caseData={c}
+                        index={i}
+                        onClick={() => setSelectedCase(c)}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-20 bg-card rounded-2xl border border-dashed border-border/80">
+                    <p className="text-muted-foreground">Nenhum caso encontrado nesta modalidade.</p>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>

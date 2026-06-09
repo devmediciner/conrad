@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/authContent';
-import { useAllCases, useDeleteCase } from '@/hooks/useCases';
+import { useAllCases, useDeleteCase, useUpdateCaseStatus } from '@/hooks/useCases';
 import { EXAM_TYPE_COLORS } from '@/types/case';
-import { stripHtml } from '@/lib/utils';
+import { stripHtml, slugify } from '@/lib/utils';
+import { CaseModal } from '@/components/CaseModal';
 
 import { Trash2, ArrowLeft, Loader2, Pencil, Plus, Gamepad2, List, FileText, ImagePlus, Save, X, CheckCircle, Settings, Users, UserPlus, Check, XCircle, Eye, Edit } from 'lucide-react';
 import { toast } from 'sonner';
@@ -25,14 +26,16 @@ const Admin = () => {
   const { user, isAdmin, loading: authLoading } = useAuth(); // Certifique-se de que o useAuth retorne o 'user' logado
   const { data: cases, isLoading } = useAllCases();
   const deleteCase = useDeleteCase();
+  const updateCaseStatus = useUpdateCaseStatus();
   const navigate = useNavigate();
   const [editingCase, setEditingCase] = useState<Case | null>(null);
   const [submitOpen, setSubmitOpen] = useState(false);
   const [diseaseModalOpen, setDiseaseModalOpen] = useState(false);
   const [articleModalOpen, setArticleModalOpen] = useState(false);
   const [editingArticle, setEditingArticle] = useState<Article | null>(null);
+  const [viewingCase, setViewingCase] = useState<Case | null>(null);
   
-  const [activeTab, setActiveTab] = useState<'casos' | 'minigame' | 'artigos' | 'aprovacao' | 'config'>('casos');
+  const [activeTab, setActiveTab] = useState<'casos' | 'minigame' | 'artigos' | 'config'>('casos');
   const [articles, setArticles] = useState<Article[]>([]);
   const [users, setUsers] = useState<Record<string, unknown>[]>([]);
   const [loadingArticles, setLoadingArticles] = useState(false);
@@ -47,6 +50,18 @@ const Admin = () => {
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [editUserEmail, setEditUserEmail] = useState('');
   const [editUserRole, setEditUserRole] = useState('user');
+
+  const getSubmitterName = (submittedBy: string | null) => {
+    if (!submittedBy) return 'Desconhecido';
+    if (submittedBy === user?.id && user?.email) {
+      return user.email.split('@')[0];
+    }
+    const foundUser = users.find(u => u.user_id === submittedBy);
+    if (foundUser && typeof foundUser.email === 'string') {
+      return foundUser.email.split('@')[0];
+    }
+    return 'Desconhecido';
+  };
 
   useEffect(() => {
     const fetchArticles = async () => {
@@ -211,7 +226,6 @@ const Admin = () => {
             { id: 'artigos', label: 'Artigos' },
             // Abas restritas a administradores
             ...(isAdmin ? [
-              { id: 'aprovacao', label: 'Aprovação' },
               { id: 'config', label: 'Configurações' },
             ] : []),
           ].map((tab) => (
@@ -266,14 +280,62 @@ const Admin = () => {
                             <span className="font-mono text-muted-foreground mr-1">#{c.case_number}</span>
                             {stripHtml(c.clinical_case)}
                           </p>
-                          <p className="text-xs text-muted-foreground mt-0.5">{c.age} anos • {c.sex}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">{c.age} anos • {c.sex} • Enviado por: <span className="font-semibold text-foreground/80">{getSubmitterName(c.submitted_by)}</span></p>
                         </div>
-                        {isAdmin && (
-                          <div className="flex gap-1 flex-shrink-0">
-                            <Button variant="ghost" size="icon" onClick={() => setEditingCase(c)} className="text-muted-foreground hover:text-primary"><Pencil className="w-4 h-4" /></Button>
-                            <Button variant="ghost" size="icon" onClick={() => { deleteCase.mutate(c.id); toast.success('Caso excluído'); }} className="text-muted-foreground hover:text-destructive"><Trash2 className="w-4 h-4" /></Button>
-                          </div>
-                        )}
+                        <div className="flex gap-2 flex-shrink-0 items-center">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => setViewingCase(c)} 
+                            className="h-8 gap-1.5 text-xs border-border/85 text-muted-foreground hover:text-primary"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                            Visualizar
+                          </Button>
+                          
+                          {isAdmin && c.status === 'pending' && (
+                            <>
+                              <Button 
+                                size="icon" 
+                                onClick={async () => {
+                                  updateCaseStatus.mutate({ id: c.id, status: 'approved' });
+                                  toast.success('Caso aprovado!');
+                                }} 
+                                className="bg-emerald-500 hover:bg-emerald-600 text-white h-8 w-8 shrink-0 animate-in zoom-in-50 duration-200"
+                                title="Aprovar Caso"
+                              >
+                                <Check className="w-4 h-4" />
+                              </Button>
+                              <Button 
+                                size="icon" 
+                                onClick={() => {
+                                  if (confirm('Deseja recusar e excluir este caso?')) {
+                                    deleteCase.mutate(c.id);
+                                    toast.success('Caso recusado e excluído');
+                                  }
+                                }} 
+                                variant="destructive" 
+                                className="h-8 w-8 shrink-0 animate-in zoom-in-50 duration-200"
+                                title="Recusar Caso"
+                              >
+                                <XCircle className="w-4 h-4" />
+                              </Button>
+                            </>
+                          )}
+
+                          {(isAdmin || c.submitted_by === user?.id) && (
+                            <Button variant="ghost" size="icon" onClick={() => setEditingCase(c)} className="text-muted-foreground hover:text-primary h-8 w-8" title="Editar"><Pencil className="w-4 h-4" /></Button>
+                          )}
+
+                          {(isAdmin || (c.submitted_by === user?.id && c.status === 'pending')) && (
+                            <Button variant="ghost" size="icon" onClick={() => { 
+                              if (confirm('Deseja excluir este caso permanentemente?')) {
+                                deleteCase.mutate(c.id); 
+                                toast.success('Caso excluído'); 
+                              }
+                            }} className="text-muted-foreground hover:text-destructive h-8 w-8" title="Excluir"><Trash2 className="w-4 h-4" /></Button>
+                          )}
+                        </div>
                       </div>
                     );
                   })}
@@ -347,18 +409,59 @@ const Admin = () => {
                           )}
                         </div>
                         <p className="text-sm text-foreground truncate font-semibold">{artigo.titulo}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">{artigo.autor} • {new Date(artigo.data_publicacao).toLocaleDateString('pt-BR')}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">{artigo.autor?.split(' | ')[0]} • {new Date(artigo.data_publicacao).toLocaleDateString('pt-BR')}</p>
                       </div>
-                      {isAdmin && (
-                        <div className="flex gap-1 flex-shrink-0">
-                          <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary" onClick={() => { setEditingArticle(artigo); setArticleModalOpen(true); }}><Pencil className="w-4 h-4" /></Button>
-                          <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive" onClick={async () => {
+                      <div className="flex gap-2 flex-shrink-0 items-center">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="h-8 gap-1.5 text-xs border-border/85 text-muted-foreground hover:text-primary" 
+                          onClick={() => window.open(`/artigo/${slugify(artigo.titulo)}`, '_blank')}
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          Visualizar
+                        </Button>
+
+                        {isAdmin && artigo.status === 'pending' && (
+                          <>
+                            <Button 
+                              size="icon" 
+                              onClick={async () => {
+                                await handleApproveArticle(artigo.id);
+                              }} 
+                              className="bg-emerald-500 hover:bg-emerald-600 text-white h-8 w-8 shrink-0 animate-in zoom-in-50 duration-200"
+                              title="Aprovar Artigo"
+                            >
+                              <Check className="w-4 h-4" />
+                            </Button>
+                            <Button 
+                              size="icon" 
+                              onClick={async () => {
+                                if (confirm('Deseja recusar e excluir este artigo?')) {
+                                  await handleRejectArticle(artigo.id);
+                                }
+                              }} 
+                              variant="destructive" 
+                              className="h-8 w-8 shrink-0 animate-in zoom-in-50 duration-200"
+                              title="Recusar Artigo"
+                            >
+                              <XCircle className="w-4 h-4" />
+                            </Button>
+                          </>
+                        )}
+
+                        {(isAdmin || (artigo.autor && artigo.autor.includes(user?.email || ''))) && (
+                          <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary h-8 w-8" onClick={() => { setEditingArticle(artigo); setArticleModalOpen(true); }} title="Editar"><Pencil className="w-4 h-4" /></Button>
+                        )}
+
+                        {(isAdmin || (artigo.autor && artigo.autor.includes(user?.email || '') && artigo.status === 'pending')) && (
+                          <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive h-8 w-8" onClick={async () => {
                             if (confirm('Deseja excluir este artigo permanentemente?')) {
                               await handleRejectArticle(artigo.id);
                             }
-                          }}><Trash2 className="w-4 h-4" /></Button>
-                        </div>
-                      )}
+                          }} title="Excluir"><Trash2 className="w-4 h-4" /></Button>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -366,64 +469,7 @@ const Admin = () => {
             </div>
           )}
 
-          {/* CONTEÚDO: ABA APROVAÇÃO */}
-          {activeTab === 'aprovacao' && (
-            <div className="space-y-4 max-w-4xl">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold font-heading text-foreground">Pendentes de Aprovação</h2>
-              </div>
-              
-              {(pendingArticles.length === 0 && pendingCases.length === 0) ? (
-                <div className="text-center py-16 bg-card border border-dashed border-border rounded-xl shadow-sm">
-                  <CheckCircle className="w-10 h-10 mx-auto text-muted-foreground/30 mb-4" />
-                  <p className="text-muted-foreground font-medium">Tudo certo por aqui!</p>
-                  <p className="text-sm text-muted-foreground/70 mt-1">Nenhum caso ou artigo pendente no momento.</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {/* Renderizando Artigos Pendentes */}
-                  {pendingArticles.map(a => (
-                    <div key={a.id} className="bg-card border-l-4 border-l-amber-500 border-border p-4 rounded-xl shadow-sm flex items-center justify-between">
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20 uppercase font-bold tracking-wider">Artigo</span>
-                          <span className="text-[10px] uppercase font-bold text-muted-foreground">{a.categoria}</span>
-                        </div>
-                        <p className="text-sm text-foreground font-semibold">{a.titulo}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">Enviado por: {a.autor}</p>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button size="icon" variant="secondary" onClick={() => { setEditingArticle(a); setArticleModalOpen(true); }} title="Editar / Visualizar"><Pencil className="w-4 h-4" /></Button>
-                        <Button size="icon" onClick={() => handleApproveArticle(a.id)} className="bg-emerald-500 hover:bg-emerald-600 text-white"><Check className="w-4 h-4" /></Button>
-                        <Button size="icon" onClick={() => handleRejectArticle(a.id)} variant="destructive"><XCircle className="w-4 h-4" /></Button>
-                      </div>
-                    </div>
-                  ))}
-                  
-                  {/* Renderizando Casos Pendentes */}
-                  {pendingCases.map(c => (
-                    <div key={c.id} className="bg-card border-l-4 border-l-blue-500 border-border p-4 rounded-xl shadow-sm flex items-center justify-between">
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-500 border border-blue-500/20 uppercase font-bold tracking-wider">Caso</span>
-                          <span className="text-[10px] uppercase font-bold text-muted-foreground">{c.exam_type}</span>
-                        </div>
-                        <p className="text-sm text-foreground font-semibold">{stripHtml(c.clinical_case)}</p>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button size="icon" variant="secondary" onClick={() => setEditingCase(c)} title="Editar / Visualizar"><Pencil className="w-4 h-4" /></Button>
-                        <Button size="icon" onClick={async () => {
-                          await supabase.from('cases').update({ status: 'approved' }).eq('id', c.id);
-                          toast.success('Caso aprovado! (Atualize a página para refleti-lo)');
-                        }} className="bg-emerald-500 hover:bg-emerald-600 text-white"><Check className="w-4 h-4" /></Button>
-                        <Button size="icon" onClick={() => deleteCase.mutate(c.id)} variant="destructive"><XCircle className="w-4 h-4" /></Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+
 
           {/* CONTEÚDO: ABA CONFIGURAÇÕES */}
           {activeTab === 'config' && (
@@ -560,12 +606,13 @@ const Admin = () => {
       <SubmitCaseModal open={submitOpen} onOpenChange={setSubmitOpen} />
       <DiseaseModal open={diseaseModalOpen} onOpenChange={setDiseaseModalOpen} />
       <ArticleModal open={articleModalOpen} onOpenChange={setArticleModalOpen} isAdmin={isAdmin} onSuccess={() => setRefreshKey(prev => prev + 1)} articleToEdit={editingArticle} cases={approvedCases} />
+      <CaseModal caseData={viewingCase} open={!!viewingCase} onOpenChange={(o) => !o && setViewingCase(null)} />
     </div>
   );
 };
 
-/* --- Modal de Adição/Edição de Artigo Interno --- */
 const ArticleModal = ({ open, onOpenChange, isAdmin, onSuccess, articleToEdit, cases }: { open: boolean; onOpenChange: (open: boolean) => void; isAdmin: boolean; onSuccess: () => void; articleToEdit?: Article | null; cases?: Case[] }) => {
+  const { user } = useAuth();
   // Estados para o formulário
   const [titulo, setTitulo] = useState('');
   const [categoria, setCategoria] = useState('rx');
@@ -588,7 +635,9 @@ const ArticleModal = ({ open, onOpenChange, isAdmin, onSuccess, articleToEdit, c
       if (articleToEdit) {
         setTitulo(articleToEdit.titulo || '');
         setCategoria(articleToEdit.categoria || 'rx');
-        setAutor(articleToEdit.autor || '');
+        // Limpar o sufixo " | email" se existir para a exibição no formulário
+        const cleanAutor = articleToEdit.autor ? articleToEdit.autor.split(' | ')[0] : '';
+        setAutor(cleanAutor);
         setDataPub(articleToEdit.data_publicacao ? articleToEdit.data_publicacao.split('T')[0] : '');
         setImagemUrl(articleToEdit.imagem_capa || '');
         setConteudo(articleToEdit.conteudo || '');
@@ -682,13 +731,22 @@ const ArticleModal = ({ open, onOpenChange, isAdmin, onSuccess, articleToEdit, c
     }
     try {
       setIsPublishing(true);
+
+      let finalAutor = autor;
+      if (articleToEdit && articleToEdit.autor && articleToEdit.autor.includes(' | ')) {
+        const parts = articleToEdit.autor.split(' | ');
+        const originalEmail = parts[1];
+        finalAutor = `${autor} | ${originalEmail}`;
+      } else if (user?.email) {
+        finalAutor = `${autor} | ${user.email}`;
+      }
       
       if (articleToEdit) {
         // Modo de Edição
         const { error } = await supabase.from('articles').update({
           titulo, 
           categoria, 
-          autor, 
+          autor: finalAutor, 
           data_publicacao: dataPub || new Date().toISOString(), 
           imagem_capa: imagemUrl, 
           conteudo,
@@ -701,7 +759,7 @@ const ArticleModal = ({ open, onOpenChange, isAdmin, onSuccess, articleToEdit, c
         const { error } = await supabase.from('articles').insert([{
           titulo, 
           categoria, 
-          autor, 
+          autor: finalAutor, 
           data_publicacao: dataPub || new Date().toISOString(), 
           imagem_capa: imagemUrl, 
           conteudo, 

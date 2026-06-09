@@ -8,7 +8,8 @@ import { Navbar } from '@/components/Navbar';
 import { supabase } from '@/integrations/supabase/client';
 import { slugify, stripHtml } from '@/lib/utils';
 import { FormattedText } from '@/components/ui/FormattedText';
-import ImageViewer from '@/components/ImageViewer';
+import { CaseModal } from '@/components/CaseModal';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import 'react-quill/dist/quill.snow.css';
 
 export default function LerArtigo() {
@@ -17,18 +18,17 @@ export default function LerArtigo() {
   const [casosRelacionados, setCasosRelacionados] = useState<Case[]>([]);
   const [activeCaseModal, setActiveCaseModal] = useState<Case | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
 
-  // Estados Avançados do Modal de Imagem
-  const [activeImageIndex, setActiveImageIndex] = useState(0);
-  const [showDiagnosis, setShowDiagnosis] = useState(false);
-
-  // Reseta as configurações visuais toda vez que abrir um caso novo
-  useEffect(() => {
-    if (activeCaseModal) {
-      setActiveImageIndex(0);
-      setShowDiagnosis(false);
+  const handleContentClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLElement;
+    if (target.tagName === 'IMG') {
+      const src = target.getAttribute('src');
+      if (src) {
+        setSelectedImageUrl(src);
+      }
     }
-  }, [activeCaseModal]);
+  };
 
   useEffect(() => {
     const fetchArtigo = async () => {
@@ -117,9 +117,9 @@ export default function LerArtigo() {
               <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-muted-foreground font-medium pt-4">
                 <div className="flex items-center gap-2.5">
                   <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold shadow-sm">
-                    {artigo.autor?.charAt(0).toUpperCase() || 'U'}
+                    {artigo.autor?.split(' | ')[0]?.charAt(0).toUpperCase() || 'U'}
                   </div>
-                  <span className="text-foreground font-semibold text-base">{artigo.autor || 'Usuário Desconhecido'}</span>
+                  <span className="text-foreground font-semibold text-base">{artigo.autor?.split(' | ')[0] || 'Usuário Desconhecido'}</span>
                 </div>
                 <div className="flex items-center gap-2 bg-muted/50 px-3 py-1.5 rounded-full border border-border/50">
                   <Calendar className="w-4 h-4" /> 
@@ -130,9 +130,12 @@ export default function LerArtigo() {
 
             {/* Imagem de Capa */}
             {artigo.imagem_capa && (
-              <div className="w-full h-[400px] md:h-[500px] rounded-3xl overflow-hidden mb-16 border border-border/50 shadow-2xl relative">
-                <img src={artigo.imagem_capa} alt={artigo.titulo} className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-t from-background/10 to-transparent pointer-events-none"></div>
+              <div className="w-full h-[350px] md:h-[480px] rounded-3xl overflow-hidden mb-16 border border-border/50 shadow-2xl relative bg-black/30 flex items-center justify-center">
+                {/* Background blurred image to fill space beautifully without cropping the main content */}
+                <img src={artigo.imagem_capa} alt="" className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-45 scale-105 pointer-events-none" />
+                {/* Foreground image preserving its aspect ratio */}
+                <img src={artigo.imagem_capa} alt={artigo.titulo} className="relative z-10 max-w-full max-h-full object-contain" />
+                <div className="absolute inset-0 bg-gradient-to-t from-background/10 to-transparent pointer-events-none z-10"></div>
               </div>
             )}
           </motion.div>
@@ -143,7 +146,8 @@ export default function LerArtigo() {
           <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.15 }}>
             {/* Conteúdo Renderizado */}
             <div className="ql-snow">
-              <div 
+               <div 
+                onClick={handleContentClick}
                 className="ql-editor !p-0 w-full max-w-none text-foreground/90 md:text-lg !leading-loose whitespace-pre-wrap break-words 
                   [&_h1]:!text-4xl md:[&_h1]:!text-5xl [&_h1]:!font-extrabold [&_h1]:!tracking-tight [&_h1]:!mt-14 [&_h1]:!mb-6 [&_h1]:!text-foreground [&_h1]:!leading-tight
                   [&_h2]:!text-3xl md:[&_h2]:!text-4xl [&_h2]:!font-bold [&_h2]:!tracking-tight [&_h2]:!mt-12 [&_h2]:!mb-4 [&_h2]:!text-foreground [&_h2]:!border-b [&_h2]:!border-border/50 [&_h2]:!pb-2
@@ -154,7 +158,6 @@ export default function LerArtigo() {
                   [&_ul]:!list-disc [&_ul_li]:!list-disc [&_ul]:!pl-6 [&_ul]:!mb-6 [&_ul]:!space-y-2 [&_li]:!pl-1 [&_li]:marker:!text-primary/70 [&_li::before]:!content-none [&_li]:!list-item [&_li_p]:!m-0
                   [&_ol]:!list-decimal [&_ol_li]:!list-decimal [&_ol]:!pl-6 [&_ol]:!mb-6 [&_ol]:!space-y-2 [&_li]:!pl-1 [&_li]:marker:!text-primary/70 [&_li]:marker:!font-bold [&_li::before]:!content-none [&_li]:!list-item [&_li_p]:!m-0
                   [&_blockquote]:!border-l-4 [&_blockquote]:!border-primary [&_blockquote]:!pl-6 [&_blockquote]:!py-2 [&_blockquote]:!my-8 [&_blockquote]:!italic [&_blockquote]:!text-foreground/70 [&_blockquote]:!bg-muted/30 [&_blockquote]:!rounded-r-xl
-                  [&_img]:!rounded-2xl [&_img]:mx-auto [&_img]:!shadow-xl [&_img]:!mt-12 [&_img]:!mb-3 [&_img]:!max-w-full [&_img]:!border [&_img]:!border-border/20 [&_img]:!object-cover
                   [&_iframe]:!w-full [&_iframe]:!aspect-video [&_iframe]:!rounded-2xl [&_iframe]:!shadow-xl [&_iframe]:!my-12 [&_iframe]:!border-0"
                 dangerouslySetInnerHTML={{ __html: artigo.conteudo }} 
               />
@@ -216,77 +219,32 @@ export default function LerArtigo() {
         </div>
       </article>
 
-      {/* Modal Avançado (Estilo Viewer Profissional) */}
-      {activeCaseModal && (
-        <div className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-md flex items-center justify-center p-2 sm:p-6 overflow-hidden">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="w-full h-full max-w-7xl max-h-[90vh] bg-card rounded-3xl border border-border shadow-2xl overflow-hidden relative flex flex-col md:flex-row"
-          >
-            <button onClick={() => setActiveCaseModal(null)} className="absolute top-4 right-4 md:right-auto md:left-4 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full transition-colors z-[110] backdrop-blur-md shadow-sm">
-              <X className="w-5 h-5" />
-            </button>
-            
-            {/* Lado Esquerdo: Visualizador de Imagem */}
-            <div className="w-full md:w-[60%] lg:w-[65%] bg-black relative flex flex-col items-center justify-center overflow-hidden h-[40vh] md:h-full group select-none">
-              {activeCaseModal.images?.[activeImageIndex] ? (
-                <div className="w-full h-full p-4 flex items-center justify-center">
-                  <ImageViewer
-                    src={activeCaseModal.images[activeImageIndex]}
-                    alt="Visualização do Caso"
-                    images={activeCaseModal.images}
-                    selectedImage={activeImageIndex}
-                    setSelectedImage={setActiveImageIndex}
-                  />
-                </div>
-              ) : (
-                <div className="text-white/50 uppercase font-bold tracking-widest text-xl">{activeCaseModal.exam_type}</div>
-              )}
+      <CaseModal
+        caseData={activeCaseModal}
+        open={!!activeCaseModal}
+        onOpenChange={(o) => !o && setActiveCaseModal(null)}
+      />
+
+      {/* Lightbox para Imagens do Corpo do Artigo */}
+      <Dialog open={!!selectedImageUrl} onOpenChange={(o) => !o && setSelectedImageUrl(null)}>
+        <DialogContent className="max-w-5xl bg-black/95 border-none p-0 overflow-hidden flex items-center justify-center max-h-[95vh] rounded-3xl">
+          {selectedImageUrl && (
+            <div className="relative w-full h-full flex items-center justify-center p-2">
+              <img 
+                src={selectedImageUrl} 
+                alt="Imagem ampliada" 
+                className="max-w-full max-h-[85vh] object-contain rounded-2xl select-none" 
+              />
+              <button 
+                onClick={() => setSelectedImageUrl(null)} 
+                className="absolute top-4 right-4 p-2 bg-black/60 hover:bg-black/80 text-white rounded-full transition-colors z-[110] backdrop-blur-md shadow-sm border border-white/10"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
-            
-            {/* Lado Direito: Informações e Diagnóstico do Caso */}
-            <div className="w-full md:w-[40%] lg:w-[35%] bg-card flex flex-col h-[50vh] md:h-full relative border-l border-border/50">
-              <div className="p-6 md:p-8 overflow-y-auto flex-1 custom-scrollbar">
-                <div className="flex flex-wrap items-center gap-3 mb-6">
-                <span className="text-xs px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 font-bold uppercase tracking-wider">
-                    {activeCaseModal.exam_type}
-                </span>
-                  <span className="text-sm font-semibold text-muted-foreground bg-muted px-3 py-1 rounded-full border border-border">
-                    {activeCaseModal.age} anos • {activeCaseModal.sex}
-                </span>
-              </div>
-              
-                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">História Clínica</h3>
-                <FormattedText content={activeCaseModal.clinical_case} className="text-foreground text-sm md:text-base leading-relaxed mb-8" />
-              
-                <div className="mt-8 border-t border-border pt-8">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Diagnóstico</h3>
-                    <button 
-                      onClick={() => setShowDiagnosis(!showDiagnosis)}
-                      className={`text-xs px-3 py-1.5 rounded-full font-bold flex items-center transition-all ${showDiagnosis ? 'bg-secondary text-secondary-foreground' : 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm'}`}
-                    >
-                      {showDiagnosis ? <EyeOff className="w-3.5 h-3.5 mr-1.5" /> : <Eye className="w-3.5 h-3.5 mr-1.5" />}
-                      {showDiagnosis ? 'Ocultar' : 'Revelar'}
-                    </button>
-                  </div>
-                  
-                  {showDiagnosis ? (
-                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-4 bg-primary/10 text-primary rounded-xl border border-primary/20">
-                      <FormattedText content={activeCaseModal.diagnosis} className="text-primary font-semibold text-sm md:text-base" />
-                    </motion.div>
-                  ) : (
-                    <div className="p-4 bg-muted/50 rounded-xl border border-border border-dashed flex items-center justify-center">
-                      <p className="text-sm text-muted-foreground font-medium">Analise a imagem antes de revelar</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      )}
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

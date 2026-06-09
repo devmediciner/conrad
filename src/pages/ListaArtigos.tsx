@@ -157,7 +157,7 @@ const ListaArtigos = () => {
                           <div className="flex items-center justify-between mt-4 pt-4 border-t border-border/40">
                             <div className="flex items-center gap-4 text-xs text-muted-foreground font-medium">
                               <span className="flex items-center gap-1.5">
-                                <User className="w-3.5 h-3.5 text-primary/70" /> {artigo.autor}
+                                <User className="w-3.5 h-3.5 text-primary/70" /> {artigo.autor?.split(' | ')[0]}
                               </span>
                               <span className="flex items-center gap-1.5">
                                 <Calendar className="w-3.5 h-3.5" /> {new Date(artigo.data_publicacao).toLocaleDateString('pt-BR')}
