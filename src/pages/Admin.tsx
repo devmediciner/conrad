@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/authContent';
 import { useAllCases, useDeleteCase, useUpdateCaseStatus } from '@/hooks/useCases';
 import { EXAM_TYPE_COLORS } from '@/types/case';
-import { stripHtml, slugify } from '@/lib/utils';
+import { stripHtml, slugify, removeAccents } from '@/lib/utils';
 import { CaseModal } from '@/components/CaseModal';
 
 import { Trash2, ArrowLeft, Loader2, Pencil, Plus, Gamepad2, List, FileText, ImagePlus, Save, X, CheckCircle, Settings, Users, UserPlus, Check, XCircle, Eye, Edit, Search } from 'lucide-react';
@@ -109,13 +109,13 @@ const Admin = () => {
   
   // Mostra todos os casos para todos os usuários logados, filtrados pela busca
   const displayCases = (cases ?? []).filter(c => {
-    const query = casesSearchQuery.toLowerCase().trim();
+    const query = removeAccents(casesSearchQuery).trim();
     if (!query) return true;
     return (
       c.case_number.toString().includes(query) ||
-      c.exam_type.toLowerCase().includes(query) ||
-      c.disease?.toLowerCase().includes(query) ||
-      stripHtml(c.clinical_case).toLowerCase().includes(query)
+      removeAccents(c.exam_type).includes(query) ||
+      removeAccents(c.disease).includes(query) ||
+      removeAccents(stripHtml(c.clinical_case)).includes(query)
     );
   });
 
@@ -893,15 +893,16 @@ const ArticleModal = ({ open, onOpenChange, isAdmin, onSuccess, articleToEdit, c
                 />
                 {isSearchFocused && (
                   <div className="absolute z-50 w-full bg-popover border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto mt-1">
-                    {cases?.filter(c => 
-                      !relatedCases.includes(c.id) && 
+                    {cases?.filter(c => {
+                      const query = removeAccents(caseSearchQuery).trim();
+                      return !relatedCases.includes(c.id) && 
                       (
-                        caseSearchQuery.trim() === '' ||
-                        c.case_number.toString().includes(caseSearchQuery) ||
-                        c.exam_type.toLowerCase().includes(caseSearchQuery.toLowerCase()) ||
-                        c.disease?.toLowerCase().includes(caseSearchQuery.toLowerCase())
-                      )
-                    ).map(c => (
+                        query === '' ||
+                        c.case_number.toString().includes(query) ||
+                        removeAccents(c.exam_type).includes(query) ||
+                        removeAccents(c.disease).includes(query)
+                      );
+                    }).map(c => (
                       <button
                         key={c.id}
                         type="button"
@@ -914,15 +915,16 @@ const ArticleModal = ({ open, onOpenChange, isAdmin, onSuccess, articleToEdit, c
                         #{c.case_number} - {c.exam_type} - {c.disease || 'Sem Diagnóstico'}
                       </button>
                     ))}
-                    {cases?.filter(c => 
-                      !relatedCases.includes(c.id) && 
+                    {cases?.filter(c => {
+                      const query = removeAccents(caseSearchQuery).trim();
+                      return !relatedCases.includes(c.id) && 
                       (
-                        caseSearchQuery.trim() === '' ||
-                        c.case_number.toString().includes(caseSearchQuery) ||
-                        c.exam_type.toLowerCase().includes(caseSearchQuery.toLowerCase()) ||
-                        c.disease?.toLowerCase().includes(caseSearchQuery.toLowerCase())
-                      )
-                    ).length === 0 && (
+                        query === '' ||
+                        c.case_number.toString().includes(query) ||
+                        removeAccents(c.exam_type).includes(query) ||
+                        removeAccents(c.disease).includes(query)
+                      );
+                    }).length === 0 && (
                       <div className="px-3 py-2 text-[11px] text-muted-foreground text-center">Nenhum caso correspondente.</div>
                     )}
                   </div>

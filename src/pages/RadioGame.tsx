@@ -12,6 +12,7 @@ import { useDiseases } from '@/hooks/useGame';
 import { motion, AnimatePresence } from 'framer-motion';
 import { EXAM_TYPE_COLORS, EXAM_TYPE_LABELS, type ExamType } from '@/types/case';
 import { FormattedText } from '@/components/ui/FormattedText';
+import { removeAccents } from '@/lib/utils';
 
 
 interface QuizStats {
@@ -87,7 +88,8 @@ export default function RadioGame() {
 
   const filteredDiseases = useMemo(() => {
     if (!currentInput) return diseasesList;
-    return diseasesList.filter(d => d.toLowerCase().includes(currentInput.toLowerCase()));
+    const cleanInput = removeAccents(currentInput);
+    return diseasesList.filter(d => removeAccents(d).includes(cleanInput));
   }, [currentInput, diseasesList]);
 
   const recordStats = useCallback((won: boolean, attempts: number) => {
@@ -123,7 +125,7 @@ export default function RadioGame() {
       return;
     }
 
-    if (currentInput.toLowerCase() === currentCase.disease.toLowerCase()) {
+    if (removeAccents(currentInput) === removeAccents(currentCase.disease)) {
       setHasWon(true);
       setStep('result');
       recordStats(true, guesses.length + 1);
