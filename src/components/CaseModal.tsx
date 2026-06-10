@@ -119,10 +119,15 @@ export function CaseModal({ caseData, open, onOpenChange }: CaseModalProps) {
               </div>
               <div>
                 {!showDiagnosis ? (
-                  <Button onClick={() => setShowDiagnosis(true)} className="w-full">Ver Diagnóstico</Button>
+                  <Button onClick={() => setShowDiagnosis(true)} className="w-full">Ver Laudo</Button>
                 ) : (
                   <div className="space-y-1 animate-fade-up">
-                    <h4 className="text-sm font-semibold text-primary">Diagnóstico</h4>
+                    <h4 className="text-sm font-semibold text-primary">Laudo</h4>
+                    {(caseData as any).disease && (
+                      <p className="text-sm font-semibold text-foreground mb-2">
+                        Diagnóstico: <span className="font-bold text-foreground">{(caseData as any).disease}</span>
+                      </p>
+                    )}
                     <FormattedText content={caseData.diagnosis} className="text-sm text-foreground leading-relaxed" />
                   </div>
                 )}

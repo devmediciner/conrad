@@ -89,16 +89,12 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
       toast.error('Sessão expirada. Faça login novamente.');
       return;
     }
-    if (!examType || !clinicalCase.trim() || !diagnosis.trim()) {
-      toast.error('Preencha todos os campos obrigatórios da galeria.');
-      return;
-    }
-    if (isMinigame && !disease) {
-      toast.error('Selecione o diagnóstico para o minigame.');
+    if (!examType || !clinicalCase.trim() || !diagnosis.trim() || !disease) {
+      toast.error('Preencha todos os campos obrigatórios (Tipo, Caso Clínico, Laudo e Diagnóstico).');
       return;
     }
     if (isMinigame && images.length === 0) {
-      toast.error('O minigame exige que o caso tenha pelo menos uma imagem.');
+      toast.error('O quiz exige que o caso tenha pelo menos uma imagem.');
       return;
     }
 
@@ -115,7 +111,7 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
         diagnosis,
         source: source.trim() || undefined,
         status: isAdmin ? 'approved' : 'pending',
-        disease: isMinigame ? disease : null,
+        disease: disease || null,
         clue1: isMinigame ? (clue1.trim() || clinicalCase) : null,
         clue2: isMinigame ? clue2 : null,
         clue3: isMinigame ? clue3 : null
@@ -226,11 +222,25 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
           </div>
 
           <div>
-            <label className="text-sm font-medium text-foreground mb-1 block">Diagnóstico (Laudo) *</label>
+            <label className="text-sm font-medium text-foreground mb-1 block">Diagnóstico *</label>
+            <Select value={disease} onValueChange={setDisease}>
+              <SelectTrigger className="bg-card border-border">
+                <SelectValue placeholder="Selecione o diagnóstico correspondente" />
+              </SelectTrigger>
+              <SelectContent className="bg-card border-border max-h-48">
+                {diseases?.map(d => (
+                  <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-foreground mb-1 block">Laudo *</label>
             <RichTextEditor
               value={diagnosis}
               onChange={setDiagnosis}
-              placeholder="Informe o diagnóstico..."
+              placeholder="Escreva o laudo detalhado..."
               minHeight="100px"
             />
           </div>
@@ -262,20 +272,6 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
             
             {isMinigame && (
               <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
-                <div>
-                  <label className="text-sm font-medium text-foreground mb-1 block">Diagnóstico no Jogo *</label>
-                  <Select value={disease} onValueChange={setDisease}>
-                    <SelectTrigger className="bg-card border-border">
-                      <SelectValue placeholder="Selecione a doença correspondente" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-card border-border max-h-48">
-                      {diseases?.map(d => (
-                        <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
                 <div>
                   <label className="text-sm font-medium text-foreground mb-1 block">Dica 1 (Após 1º erro)</label>
                   <Input value={clue1} onChange={e => setClue1(e.target.value)} placeholder="Sintoma principal (opcional, usa caso clínico por padrão)" className="bg-card border-border" />

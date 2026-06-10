@@ -90,12 +90,12 @@ export function EditCaseModal({ caseData, open, onOpenChange }: EditCaseModalPro
   };
 
   const handleSave = async () => {
-    if (isMinigame && !disease) {
-      toast.error('Selecione o diagnóstico para o minigame.');
+    if (!examType || !clinicalCase.trim() || !diagnosis.trim() || !disease) {
+      toast.error('Preencha todos os campos obrigatórios (Tipo, Caso Clínico, Laudo e Diagnóstico).');
       return;
     }
     if (isMinigame && images.length === 0) {
-      toast.error('O minigame exige que o caso tenha pelo menos uma imagem.');
+      toast.error('O quiz exige que o caso tenha pelo menos uma imagem.');
       return;
     }
 
@@ -108,7 +108,7 @@ export function EditCaseModal({ caseData, open, onOpenChange }: EditCaseModalPro
         clinical_case: clinicalCase,
         diagnosis,
         images,
-        disease: isMinigame ? disease : null,
+        disease: disease || null,
         clue1: isMinigame ? (clue1.trim() || clinicalCase) : null,
         clue2: isMinigame ? clue2 : null,
         clue3: isMinigame ? clue3 : null
@@ -211,7 +211,21 @@ export function EditCaseModal({ caseData, open, onOpenChange }: EditCaseModalPro
           </div>
 
           <div>
-            <label className="text-sm font-medium text-foreground mb-1 block">Diagnóstico</label>
+            <label className="text-sm font-medium text-foreground mb-1 block">Diagnóstico *</label>
+            <Select value={disease} onValueChange={setDisease}>
+              <SelectTrigger className="bg-card border-border">
+                <SelectValue placeholder="Selecione o diagnóstico correspondente" />
+              </SelectTrigger>
+              <SelectContent className="bg-card border-border max-h-48">
+                {diseases?.map(d => (
+                  <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-foreground mb-1 block">Laudo *</label>
             <RichTextEditor
               value={diagnosis}
               onChange={setDiagnosis}
@@ -236,20 +250,6 @@ export function EditCaseModal({ caseData, open, onOpenChange }: EditCaseModalPro
             
             {isMinigame && (
               <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
-                <div>
-                  <label className="text-sm font-medium text-foreground mb-1 block">Diagnóstico no Jogo *</label>
-                  <Select value={disease} onValueChange={setDisease}>
-                    <SelectTrigger className="bg-card border-border">
-                      <SelectValue placeholder="Selecione a doença" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-card border-border max-h-48">
-                      {diseases?.map(d => (
-                        <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
                 <div>
                   <label className="text-sm font-medium text-foreground mb-1 block">Dica 1 (Após 1º erro)</label>
                   <Input value={clue1} onChange={e => setClue1(e.target.value)} className="bg-card border-border" />

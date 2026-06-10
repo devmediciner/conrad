@@ -222,7 +222,7 @@ const Admin = () => {
         <div className="flex overflow-x-auto space-x-4 mb-8 border-b border-border">
           {[
             { id: 'casos', label: 'Casos' },
-            { id: 'minigame', label: 'Minigame' },
+            { id: 'minigame', label: 'Diagnósticos' },
             { id: 'artigos', label: 'Artigos' },
             // Abas restritas a administradores
             ...(isAdmin ? [
@@ -348,10 +348,10 @@ const Admin = () => {
           {activeTab === 'minigame' && (
             <div className="space-y-4 max-w-2xl">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold font-heading text-foreground">Doenças do Minigame</h2>
+                <h2 className="text-xl font-bold font-heading text-foreground">Diagnósticos do Minigame</h2>
                 {isAdmin && (
                   <Button variant="outline" className="gap-2" onClick={() => setDiseaseModalOpen(true)}>
-                    <Plus className="w-4 h-4" /> Nova Doença
+                    <Plus className="w-4 h-4" /> Novo Diagnóstico
                   </Button>
                 )}
               </div>
@@ -359,14 +359,23 @@ const Admin = () => {
                   {loadingDiseases ? (
                     <p className="text-sm text-center text-muted-foreground py-4">Carregando...</p>
                   ) : diseases?.length === 0 ? (
-                    <div className="text-sm text-muted-foreground text-center py-10">Nenhuma doença cadastrada.</div>
+                    <div className="text-sm text-muted-foreground text-center py-10">Nenhum diagnóstico cadastrado.</div>
                   ) : (
                     <div className="space-y-2">
                       {diseases?.map(d => (
                         <div key={d.id} className="flex items-center justify-between bg-muted/30 px-3 py-2 rounded-lg border border-border">
                           <span className="text-sm text-foreground font-medium">{d.name}</span>
                           {isAdmin && (
-                            <Button variant="ghost" size="icon" onClick={() => deleteDisease.mutate(d.id)} className="text-muted-foreground hover:text-destructive h-8 w-8">
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              onClick={() => {
+                                if (confirm('Deseja excluir este diagnóstico permanentemente?')) {
+                                  deleteDisease.mutate(d.id);
+                                }
+                              }} 
+                              className="text-muted-foreground hover:text-destructive h-8 w-8"
+                            >
                               <Trash2 className="w-4 h-4" />
                             </Button>
                           )}

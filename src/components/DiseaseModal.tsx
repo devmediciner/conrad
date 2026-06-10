@@ -17,16 +17,16 @@ export function DiseaseModal({ open, onOpenChange }: DiseaseModalProps) {
 
   const handleSave = async () => {
     if (!name.trim()) {
-      toast.error('Informe o nome da doença.');
+      toast.error('Informe o nome do diagnóstico.');
       return;
     }
     try {
       await addDisease.mutateAsync(name.trim());
-      toast.success('Doença adicionada com sucesso!');
+      toast.success('Diagnóstico adicionado com sucesso!');
       setName('');
       onOpenChange(false);
     } catch (error) {
-      toast.error('Erro ao adicionar doença.');
+      toast.error('Erro ao adicionar diagnóstico.');
     }
   };
 
@@ -34,7 +34,7 @@ export function DiseaseModal({ open, onOpenChange }: DiseaseModalProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-sm bg-card border-border">
         <DialogHeader>
-          <DialogTitle className="font-heading text-foreground">Nova Doença</DialogTitle>
+          <DialogTitle className="font-heading text-foreground">Novo Diagnóstico</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 pt-2">
           <Input value={name} onChange={e => setName(e.target.value)} placeholder="Ex: Pneumotórax" className="bg-card border-border" />
