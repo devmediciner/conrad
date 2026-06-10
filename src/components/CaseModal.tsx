@@ -123,9 +123,9 @@ export function CaseModal({ caseData, open, onOpenChange }: CaseModalProps) {
                 ) : (
                   <div className="space-y-1 animate-fade-up">
                     <h4 className="text-sm font-semibold text-primary">Laudo</h4>
-                    {(caseData as any).disease && (
+                    {caseData.disease && (
                       <p className="text-sm font-semibold text-foreground mb-2">
-                        Diagnóstico: <span className="font-bold text-foreground">{(caseData as any).disease}</span>
+                        Diagnóstico: <span className="font-bold text-foreground">{caseData.disease}</span>
                       </p>
                     )}
                     <FormattedText content={caseData.diagnosis} className="text-sm text-foreground leading-relaxed" />

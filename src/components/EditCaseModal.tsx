@@ -54,11 +54,11 @@ export function EditCaseModal({ caseData, open, onOpenChange }: EditCaseModalPro
       setClinicalCase(caseData.clinical_case);
       setDiagnosis(caseData.diagnosis);
       setImages(caseData.images ?? []);
-      setIsMinigame(!!(caseData as any).disease);
-      setDisease((caseData as any).disease ?? '');
-      setClue1((caseData as any).clue1 ?? '');
-      setClue2((caseData as any).clue2 ?? '');
-      setClue3((caseData as any).clue3 ?? '');
+      setIsMinigame(!!caseData.disease);
+      setDisease(caseData.disease ?? '');
+      setClue1(caseData.clue1 ?? '');
+      setClue2(caseData.clue2 ?? '');
+      setClue3(caseData.clue3 ?? '');
     }
   }, [caseData]);
 

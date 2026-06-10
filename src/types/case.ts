@@ -9,6 +9,10 @@ export interface Case {
   sex: string | null;
   clinical_case: string;
   diagnosis: string;
+  disease?: string | null;
+  clue1?: string | null;
+  clue2?: string | null;
+  clue3?: string | null;
   source: string | null;
   status: string;
   submitted_by: string | null;

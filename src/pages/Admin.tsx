@@ -348,7 +348,7 @@ const Admin = () => {
           {activeTab === 'minigame' && (
             <div className="space-y-4 max-w-2xl">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold font-heading text-foreground">Diagnósticos do Minigame</h2>
+                <h2 className="text-xl font-bold font-heading text-foreground">Diagnósticos</h2>
                 {isAdmin && (
                   <Button variant="outline" className="gap-2" onClick={() => setDiseaseModalOpen(true)}>
                     <Plus className="w-4 h-4" /> Novo Diagnóstico
@@ -631,6 +631,8 @@ const ArticleModal = ({ open, onOpenChange, isAdmin, onSuccess, articleToEdit, c
   const [conteudo, setConteudo] = useState('');
   const [relatedCases, setRelatedCases] = useState<string[]>([]);
   const [caseToAdd, setCaseToAdd] = useState('none');
+  const [caseSearchQuery, setCaseSearchQuery] = useState('');
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
   
   const [isUploading, setIsUploading] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
@@ -652,6 +654,7 @@ const ArticleModal = ({ open, onOpenChange, isAdmin, onSuccess, articleToEdit, c
         setConteudo(articleToEdit.conteudo || '');
         setRelatedCases(articleToEdit.related_cases_ids || []);
         setCaseToAdd('none');
+        setCaseSearchQuery('');
       } else {
         setTitulo('');
         setCategoria('rx');
@@ -661,6 +664,7 @@ const ArticleModal = ({ open, onOpenChange, isAdmin, onSuccess, articleToEdit, c
         setConteudo('');
         setRelatedCases([]);
         setCaseToAdd('none');
+        setCaseSearchQuery('');
       }
     }
   }, [open, articleToEdit]);
@@ -852,16 +856,56 @@ const ArticleModal = ({ open, onOpenChange, isAdmin, onSuccess, articleToEdit, c
 
             <div className="space-y-1.5">
               <label className="text-[11px] font-semibold text-foreground">Casos Clínicos Relacionados (Opcional)</label>
-              <div className="flex gap-2">
-                <select className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1.5 text-xs ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring" value={caseToAdd} onChange={e => setCaseToAdd(e.target.value)}>
-                  <option value="none">Selecione para adicionar...</option>
-                  {cases?.filter(c => !relatedCases.includes(c.id)).map(c => (
-                    <option key={c.id} value={c.id}>
-                      #{c.case_number} - {c.exam_type} - {c.diagnosis}
-                    </option>
-                  ))}
-                </select>
-                <Button type="button" onClick={handleAddCase} className="h-9 w-9 px-0 shrink-0 bg-secondary hover:bg-secondary/80 text-secondary-foreground"><Plus className="w-3.5 h-3.5" /></Button>
+              <div className="relative">
+                <Input 
+                  placeholder="Pesquise por número, tipo ou diagnóstico..." 
+                  value={caseSearchQuery} 
+                  onChange={e => {
+                    setCaseSearchQuery(e.target.value);
+                    setIsSearchFocused(true);
+                  }} 
+                  onFocus={() => setIsSearchFocused(true)}
+                  onBlur={() => {
+                    setTimeout(() => setIsSearchFocused(false), 200);
+                  }}
+                  className="h-9 text-xs bg-background"
+                />
+                {isSearchFocused && (
+                  <div className="absolute z-50 w-full bg-popover border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto mt-1">
+                    {cases?.filter(c => 
+                      !relatedCases.includes(c.id) && 
+                      (
+                        caseSearchQuery.trim() === '' ||
+                        c.case_number.toString().includes(caseSearchQuery) ||
+                        c.exam_type.toLowerCase().includes(caseSearchQuery.toLowerCase()) ||
+                        c.disease?.toLowerCase().includes(caseSearchQuery.toLowerCase())
+                      )
+                    ).map(c => (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onMouseDown={() => {
+                          setRelatedCases([...relatedCases, c.id]);
+                          setCaseSearchQuery('');
+                        }}
+                        className="w-full text-left px-3 py-2 text-[11px] hover:bg-accent hover:text-accent-foreground border-b border-border/45 last:border-0"
+                      >
+                        #{c.case_number} - {c.exam_type} - {c.disease || 'Sem Diagnóstico'}
+                      </button>
+                    ))}
+                    {cases?.filter(c => 
+                      !relatedCases.includes(c.id) && 
+                      (
+                        caseSearchQuery.trim() === '' ||
+                        c.case_number.toString().includes(caseSearchQuery) ||
+                        c.exam_type.toLowerCase().includes(caseSearchQuery.toLowerCase()) ||
+                        c.disease?.toLowerCase().includes(caseSearchQuery.toLowerCase())
+                      )
+                    ).length === 0 && (
+                      <div className="px-3 py-2 text-[11px] text-muted-foreground text-center">Nenhum caso correspondente.</div>
+                    )}
+                  </div>
+                )}
               </div>
               {relatedCases.length > 0 && (
                 <div className="flex flex-col gap-1.5 mt-2 max-h-40 overflow-y-auto pr-1">
@@ -870,7 +914,7 @@ const ArticleModal = ({ open, onOpenChange, isAdmin, onSuccess, articleToEdit, c
                     if (!c) return null;
                     return (
                       <div key={id} className="flex items-center justify-between bg-muted/50 p-2 rounded-lg border border-border shadow-sm">
-                        <span className="text-[11px] font-medium text-foreground truncate max-w-[250px]">#{c.case_number} - {c.exam_type}</span>
+                        <span className="text-[11px] font-medium text-foreground truncate max-w-[250px]">#{c.case_number} - {c.exam_type} - {c.disease || 'Sem Diagnóstico'}</span>
                         <Button type="button" variant="ghost" size="sm" onClick={() => setRelatedCases(relatedCases.filter(rid => rid !== id))} className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"><X className="w-3 h-3" /></Button>
                       </div>
                     );
