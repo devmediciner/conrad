@@ -52,6 +52,7 @@ export default function ImageViewer({ src, alt, images, selectedImage, setSelect
   const [activeDrag, setActiveDrag] = useState<{
     lineId: string;
     type: 'start' | 'end' | 'move';
+    target: 'ruler' | 'arrow';
     initialMouse: { x: number; y: number };
     initialStart: { x: number; y: number };
     initialEnd: { x: number; y: number };
@@ -152,10 +153,66 @@ export default function ImageViewer({ src, alt, images, selectedImage, setSelect
     };
   }, [imageAspectRatio]);
 
-  // Handler to initiate dragging of an existing ruler line or its endpoints
-  const handleRulerStartDrag = useCallback((
+  // Helper function to update coordinates of active drag target
+  const getUpdatedLineCoords = useCallback((dx: number, dy: number) => {
+    if (!activeDrag) return null;
+    
+    if (activeDrag.type === 'start') {
+      return {
+        start: {
+          x: Math.max(0, Math.min(1, activeDrag.initialStart.x + dx)),
+          y: Math.max(0, Math.min(1, activeDrag.initialStart.y + dy))
+        },
+        end: activeDrag.initialEnd
+      };
+    } else if (activeDrag.type === 'end') {
+      return {
+        start: activeDrag.initialStart,
+        end: {
+          x: Math.max(0, Math.min(1, activeDrag.initialEnd.x + dx)),
+          y: Math.max(0, Math.min(1, activeDrag.initialEnd.y + dy))
+        }
+      };
+    } else {
+      // move type
+      let newStartX = activeDrag.initialStart.x + dx;
+      let newStartY = activeDrag.initialStart.y + dy;
+      let newEndX = activeDrag.initialEnd.x + dx;
+      let newEndY = activeDrag.initialEnd.y + dy;
+
+      const minX = Math.min(newStartX, newEndX);
+      const maxX = Math.max(newStartX, newEndX);
+      const minY = Math.min(newStartY, newEndY);
+      const maxY = Math.max(newStartY, newEndY);
+
+      if (minX < 0) {
+        newStartX -= minX;
+        newEndX -= minX;
+      } else if (maxX > 1) {
+        newStartX -= (maxX - 1);
+        newEndX -= (maxX - 1);
+      }
+
+      if (minY < 0) {
+        newStartY -= minY;
+        newEndY -= minY;
+      } else if (maxY > 1) {
+        newStartY -= (maxY - 1);
+        newEndY -= (maxY - 1);
+      }
+
+      return {
+        start: { x: newStartX, y: newStartY },
+        end: { x: newEndX, y: newEndY }
+      };
+    }
+  }, [activeDrag]);
+
+  // Handler to initiate dragging of an existing ruler/arrow line or its endpoints
+  const handleStartDrag = useCallback((
     e: React.MouseEvent | React.TouchEvent, 
-    line: RulerLine, 
+    line: RulerLine | ArrowLine, 
+    target: 'ruler' | 'arrow',
     type: 'start' | 'end' | 'move'
   ) => {
     e.stopPropagation();
@@ -170,6 +227,7 @@ export default function ImageViewer({ src, alt, images, selectedImage, setSelect
     setActiveDrag({
       lineId: line.id,
       type,
+      target,
       initialMouse: coords,
       initialStart: { ...line.start },
       initialEnd: { ...line.end },
@@ -192,61 +250,18 @@ export default function ImageViewer({ src, alt, images, selectedImage, setSelect
     if (activeDrag) {
       const dx = coords.x - activeDrag.initialMouse.x;
       const dy = coords.y - activeDrag.initialMouse.y;
-      
-      setRulerLines(prev => prev.map(line => {
-        if (line.id !== activeDrag.lineId) return line;
-
-        if (activeDrag.type === 'start') {
-          return {
-            ...line,
-            start: {
-              x: Math.max(0, Math.min(1, activeDrag.initialStart.x + dx)),
-              y: Math.max(0, Math.min(1, activeDrag.initialStart.y + dy))
-            }
-          };
-        } else if (activeDrag.type === 'end') {
-          return {
-            ...line,
-            end: {
-              x: Math.max(0, Math.min(1, activeDrag.initialEnd.x + dx)),
-              y: Math.max(0, Math.min(1, activeDrag.initialEnd.y + dy))
-            }
-          };
+      const updated = getUpdatedLineCoords(dx, dy);
+      if (updated) {
+        const updater = (prev: any[]) => prev.map(line => {
+          if (line.id !== activeDrag.lineId) return line;
+          return { ...line, start: updated.start, end: updated.end };
+        });
+        if (activeDrag.target === 'ruler') {
+          setRulerLines(updater);
         } else {
-          // move type
-          let newStartX = activeDrag.initialStart.x + dx;
-          let newStartY = activeDrag.initialStart.y + dy;
-          let newEndX = activeDrag.initialEnd.x + dx;
-          let newEndY = activeDrag.initialEnd.y + dy;
-
-          const minX = Math.min(newStartX, newEndX);
-          const maxX = Math.max(newStartX, newEndX);
-          const minY = Math.min(newStartY, newEndY);
-          const maxY = Math.max(newStartY, newEndY);
-
-          if (minX < 0) {
-            newStartX -= minX;
-            newEndX -= minX;
-          } else if (maxX > 1) {
-            newStartX -= (maxX - 1);
-            newEndX -= (maxX - 1);
-          }
-
-          if (minY < 0) {
-            newStartY -= minY;
-            newEndY -= minY;
-          } else if (maxY > 1) {
-            newStartY -= (maxY - 1);
-            newEndY -= (maxY - 1);
-          }
-
-          return {
-            ...line,
-            start: { x: newStartX, y: newStartY },
-            end: { x: newEndX, y: newEndY }
-          };
+          setArrowLines(updater);
         }
-      }));
+      }
     } else if (activeTool === 'lens') {
       setIsTouch(false);
       setShowLens(true);
@@ -339,61 +354,18 @@ export default function ImageViewer({ src, alt, images, selectedImage, setSelect
     if (activeDrag) {
       const dx = coords.x - activeDrag.initialMouse.x;
       const dy = coords.y - activeDrag.initialMouse.y;
-      
-      setRulerLines(prev => prev.map(line => {
-        if (line.id !== activeDrag.lineId) return line;
-
-        if (activeDrag.type === 'start') {
-          return {
-            ...line,
-            start: {
-              x: Math.max(0, Math.min(1, activeDrag.initialStart.x + dx)),
-              y: Math.max(0, Math.min(1, activeDrag.initialStart.y + dy))
-            }
-          };
-        } else if (activeDrag.type === 'end') {
-          return {
-            ...line,
-            end: {
-              x: Math.max(0, Math.min(1, activeDrag.initialEnd.x + dx)),
-              y: Math.max(0, Math.min(1, activeDrag.initialEnd.y + dy))
-            }
-          };
+      const updated = getUpdatedLineCoords(dx, dy);
+      if (updated) {
+        const updater = (prev: any[]) => prev.map(line => {
+          if (line.id !== activeDrag.lineId) return line;
+          return { ...line, start: updated.start, end: updated.end };
+        });
+        if (activeDrag.target === 'ruler') {
+          setRulerLines(updater);
         } else {
-          // move type
-          let newStartX = activeDrag.initialStart.x + dx;
-          let newStartY = activeDrag.initialStart.y + dy;
-          let newEndX = activeDrag.initialEnd.x + dx;
-          let newEndY = activeDrag.initialEnd.y + dy;
-
-          const minX = Math.min(newStartX, newEndX);
-          const maxX = Math.max(newStartX, newEndX);
-          const minY = Math.min(newStartY, newEndY);
-          const maxY = Math.max(newStartY, newEndY);
-
-          if (minX < 0) {
-            newStartX -= minX;
-            newEndX -= minX;
-          } else if (maxX > 1) {
-            newStartX -= (maxX - 1);
-            newEndX -= (maxX - 1);
-          }
-
-          if (minY < 0) {
-            newStartY -= minY;
-            newEndY -= minY;
-          } else if (maxY > 1) {
-            newStartY -= (maxY - 1);
-            newEndY -= (maxY - 1);
-          }
-
-          return {
-            ...line,
-            start: { x: newStartX, y: newStartY },
-            end: { x: newEndX, y: newEndY }
-          };
+          setArrowLines(updater);
         }
-      }));
+      }
     } else if (activeTool === 'lens') {
       setIsTouch(true);
       setShowLens(true);
@@ -561,12 +533,7 @@ export default function ImageViewer({ src, alt, images, selectedImage, setSelect
                     strokeWidth={2.5 / currentZoom}
                     strokeDasharray={`${5 / currentZoom} ${3 / currentZoom}`}
                   />
-                  {/* Start Point */}
-                  <circle cx={x1} cy={y1} r={5 / currentZoom} fill="#eab308" />
-                  <circle cx={x1} cy={y1} r={9 / currentZoom} stroke="#eab308" strokeWidth={1 / currentZoom} fill="none" />
-                  {/* End Point */}
-                  <circle cx={x2} cy={y2} r={5 / currentZoom} fill="#eab308" />
-                  <circle cx={x2} cy={y2} r={9 / currentZoom} stroke="#eab308" strokeWidth={1 / currentZoom} fill="none" />
+
                   
                   {/* Distance label */}
                   <g transform={`translate(${(x1 + x2) / 2}, ${(y1 + y2) / 2 - 12 / currentZoom})`}>
@@ -595,8 +562,8 @@ export default function ImageViewer({ src, alt, images, selectedImage, setSelect
                         strokeWidth={15 / currentZoom}
                         style={{ cursor: activeDrag ? 'grabbing' : 'grab' }}
                         className="pointer-events-auto"
-                        onMouseDown={(e) => handleRulerStartDrag(e, line, 'move')}
-                        onTouchStart={(e) => handleRulerStartDrag(e, line, 'move')}
+                        onMouseDown={(e) => handleStartDrag(e, line, 'ruler', 'move')}
+                        onTouchStart={(e) => handleStartDrag(e, line, 'ruler', 'move')}
                       />
                       
                       {/* Invisible larger target for the start point */}
@@ -607,8 +574,8 @@ export default function ImageViewer({ src, alt, images, selectedImage, setSelect
                         fill="transparent"
                         style={{ cursor: activeDrag ? 'grabbing' : 'grab' }}
                         className="pointer-events-auto"
-                        onMouseDown={(e) => handleRulerStartDrag(e, line, 'start')}
-                        onTouchStart={(e) => handleRulerStartDrag(e, line, 'start')}
+                        onMouseDown={(e) => handleStartDrag(e, line, 'ruler', 'start')}
+                        onTouchStart={(e) => handleStartDrag(e, line, 'ruler', 'start')}
                       />
 
                       {/* Invisible larger target for the end point */}
@@ -619,8 +586,8 @@ export default function ImageViewer({ src, alt, images, selectedImage, setSelect
                         fill="transparent"
                         style={{ cursor: activeDrag ? 'grabbing' : 'grab' }}
                         className="pointer-events-auto"
-                        onMouseDown={(e) => handleRulerStartDrag(e, line, 'end')}
-                        onTouchStart={(e) => handleRulerStartDrag(e, line, 'end')}
+                        onMouseDown={(e) => handleStartDrag(e, line, 'ruler', 'end')}
+                        onTouchStart={(e) => handleStartDrag(e, line, 'ruler', 'end')}
                       />
                     </>
                   )}
@@ -634,6 +601,9 @@ export default function ImageViewer({ src, alt, images, selectedImage, setSelect
               const y1 = line.start.y * imgH;
               const x2 = line.end.x * imgW;
               const y2 = line.end.y * imgH;
+              
+              const isInteractive = !isZoomed && activeTool === 'arrow';
+              
               return (
                 <g key={line.id}>
                   <line
@@ -645,6 +615,48 @@ export default function ImageViewer({ src, alt, images, selectedImage, setSelect
                     strokeWidth={2.5 / currentZoom}
                     markerEnd={`url(#${isZoomed ? 'arrowhead-zoom' : 'arrowhead-main'})`}
                   />
+                  
+                  {isInteractive && (
+                    <>
+                      {/* Invisible line target for moving the entire arrow */}
+                      <line
+                        x1={x1}
+                        y1={y1}
+                        x2={x2}
+                        y2={y2}
+                        stroke="transparent"
+                        strokeWidth={15 / currentZoom}
+                        style={{ cursor: activeDrag ? 'grabbing' : 'grab' }}
+                        className="pointer-events-auto"
+                        onMouseDown={(e) => handleStartDrag(e, line, 'arrow', 'move')}
+                        onTouchStart={(e) => handleStartDrag(e, line, 'arrow', 'move')}
+                      />
+                      
+                      {/* Invisible larger target for the start point */}
+                      <circle
+                        cx={x1}
+                        cy={y1}
+                        r={14 / currentZoom}
+                        fill="transparent"
+                        style={{ cursor: activeDrag ? 'grabbing' : 'grab' }}
+                        className="pointer-events-auto"
+                        onMouseDown={(e) => handleStartDrag(e, line, 'arrow', 'start')}
+                        onTouchStart={(e) => handleStartDrag(e, line, 'arrow', 'start')}
+                      />
+
+                      {/* Invisible larger target for the end point */}
+                      <circle
+                        cx={x2}
+                        cy={y2}
+                        r={14 / currentZoom}
+                        fill="transparent"
+                        style={{ cursor: activeDrag ? 'grabbing' : 'grab' }}
+                        className="pointer-events-auto"
+                        onMouseDown={(e) => handleStartDrag(e, line, 'arrow', 'end')}
+                        onTouchStart={(e) => handleStartDrag(e, line, 'arrow', 'end')}
+                      />
+                    </>
+                  )}
                 </g>
               );
             })}
@@ -683,10 +695,7 @@ export default function ImageViewer({ src, alt, images, selectedImage, setSelect
                         strokeWidth={2.5 / currentZoom}
                         strokeDasharray={`${5 / currentZoom} ${3 / currentZoom}`}
                       />
-                      <circle cx={x1} cy={y1} r={5 / currentZoom} fill="#fef08a" />
-                      <circle cx={x1} cy={y1} r={9 / currentZoom} stroke="#fef08a" strokeWidth={1 / currentZoom} fill="none" />
-                      <circle cx={x2} cy={y2} r={5 / currentZoom} fill="#fef08a" />
-                      <circle cx={x2} cy={y2} r={9 / currentZoom} stroke="#fef08a" strokeWidth={1 / currentZoom} fill="none" />
+
                       
                       <g transform={`translate(${(x1 + x2) / 2}, ${(y1 + y2) / 2 - 12 / currentZoom})`}>
                         <text

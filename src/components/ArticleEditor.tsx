@@ -23,8 +23,8 @@ const ResizableImage = Image.extend({
     return {
       ...this.parent?.(),
       width: {
-        default: '100%',
-        parseHTML: element => element.getAttribute('width') || element.style.width || '100%',
+        default: '50%',
+        parseHTML: element => element.getAttribute('width') || element.style.width || '50%',
         renderHTML: attributes => {
           return {
             width: attributes.width,
@@ -43,7 +43,7 @@ const ResizableImage = Image.extend({
     };
   },
   renderHTML({ HTMLAttributes }) {
-    const width = HTMLAttributes.width || '100%';
+    const width = HTMLAttributes.width || '50%';
     const align = HTMLAttributes['data-align'] || 'center';
     const margin = align === 'left' 
       ? '8px auto 8px 0' 
@@ -54,7 +54,7 @@ const ResizableImage = Image.extend({
       'img',
       {
         ...HTMLAttributes,
-        style: `width: ${width}; max-width: 100%; display: block; margin: ${margin};`,
+        style: `width: ${width}; max-width: 100%; height: auto !important; max-height: 280px; object-fit: contain; display: block; margin: ${margin};`,
       }
     ];
   }
@@ -66,6 +66,7 @@ interface ArticleEditorProps {
   onImageUpload?: () => void;
   isUploadingImage?: boolean;
   placeholder?: string;
+  className?: string;
 }
 
 /* ────────────────────────── toolbar button ────────────────────────── */
@@ -110,6 +111,7 @@ export function ArticleEditor({
   onImageUpload,
   isUploadingImage = false,
   placeholder = 'Comece a escrever seu artigo...',
+  className,
 }: ArticleEditorProps) {
   const [selectionKey, setSelectionKey] = useState(0);
 
@@ -125,7 +127,7 @@ export function ArticleEditor({
         HTMLAttributes: { class: 'text-primary underline underline-offset-4 cursor-pointer' },
       }),
       ResizableImage.configure({
-        HTMLAttributes: { class: 'rounded-2xl shadow-xl max-w-full border border-border/20 object-cover' },
+        HTMLAttributes: { class: 'rounded-xl shadow-md max-w-full border border-border/20 object-contain h-auto max-h-[280px] mx-auto' },
       }),
       Placeholder.configure({ placeholder }),
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
@@ -137,21 +139,21 @@ export function ArticleEditor({
     onSelectionUpdate: () => {
       setSelectionKey(prev => prev + 1);
     },
-    editorProps: {
+      editorProps: {
       attributes: {
         class:
-          'prose prose-invert max-w-none min-h-[400px] px-6 py-5 outline-none text-foreground/90 md:text-lg leading-loose ' +
-          '[&_h1]:text-4xl md:[&_h1]:text-5xl [&_h1]:font-extrabold [&_h1]:tracking-tight [&_h1]:mt-14 [&_h1]:mb-6 [&_h1]:text-foreground [&_h1]:leading-tight ' +
-          '[&_h2]:text-3xl md:[&_h2]:text-4xl [&_h2]:font-bold [&_h2]:tracking-tight [&_h2]:mt-12 [&_h2]:mb-4 [&_h2]:text-foreground [&_h2]:border-b [&_h2]:border-border/50 [&_h2]:pb-2 ' +
-          '[&_h3]:text-2xl md:[&_h3]:text-3xl [&_h3]:font-semibold [&_h3]:tracking-tight [&_h3]:mt-8 [&_h3]:mb-4 [&_h3]:text-foreground ' +
-          '[&_p]:mb-6 [&_p]:text-foreground/80 ' +
+          'prose prose-invert max-w-[750px] mx-auto min-h-full my-4 px-8 md:px-12 py-8 md:py-12 outline-none text-foreground/90 text-xs md:text-sm leading-relaxed bg-background border border-border rounded-xl shadow-sm ' +
+          '[&_h1]:text-lg md:[&_h1]:text-xl [&_h1]:font-extrabold [&_h1]:tracking-tight [&_h1]:mt-4 [&_h1]:mb-2 [&_h1]:text-foreground [&_h1]:leading-tight ' +
+          '[&_h2]:text-base md:[&_h2]:text-lg [&_h2]:font-bold [&_h2]:tracking-tight [&_h2]:mt-3 [&_h2]:mb-1.5 [&_h2]:text-foreground [&_h2]:border-b [&_h2]:border-border/50 [&_h2]:pb-1.5 ' +
+          '[&_h3]:text-sm md:[&_h3]:text-base [&_h3]:font-semibold [&_h3]:tracking-tight [&_h3]:mt-3 [&_h3]:mb-1 [&_h3]:text-foreground ' +
+          '[&_p]:mb-2 [&_p]:text-foreground/80 ' +
           '[&_strong]:font-bold [&_strong]:text-foreground ' +
           '[&_a]:text-primary [&_a]:font-semibold [&_a]:underline [&_a]:underline-offset-4 ' +
-          '[&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-6 [&_ul]:space-y-2 [&_li]:pl-1 [&_li]:marker:text-primary/70 [&_li]:list-item [&_li_p]:m-0 ' +
-          '[&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-6 [&_ol]:space-y-2 [&_li]:pl-1 [&_li]:marker:text-primary/70 [&_li]:marker:font-bold [&_li]:list-item [&_li_p]:m-0 ' +
-          '[&_blockquote]:border-l-4 [&_blockquote]:border-primary [&_blockquote]:pl-6 [&_blockquote]:py-2 [&_blockquote]:my-8 [&_blockquote]:italic [&_blockquote]:text-foreground/70 [&_blockquote]:bg-muted/30 [&_blockquote]:rounded-r-xl ' +
+          '[&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-2 [&_ul]:space-y-1 [&_li]:pl-1 [&_li]:marker:text-primary/70 [&_li]:list-item [&_li_p]:m-0 ' +
+          '[&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-2 [&_ol]:space-y-1 [&_li]:pl-1 [&_li]:marker:text-primary/70 [&_li]:marker:font-bold [&_li]:list-item [&_li_p]:m-0 ' +
+          '[&_blockquote]:border-l-4 [&_blockquote]:border-primary [&_blockquote]:pl-6 [&_blockquote]:py-2 [&_blockquote]:my-3 [&_blockquote]:italic [&_blockquote]:text-foreground/70 [&_blockquote]:bg-muted/30 [&_blockquote]:rounded-r-xl ' +
           '[&_mark]:bg-primary/20 [&_mark]:text-foreground [&_mark]:rounded-sm [&_mark]:px-1 ' +
-          '[&_hr]:border-border/50 [&_hr]:my-8',
+          '[&_hr]:border-border/50 [&_hr]:my-3',
       },
     },
   });
@@ -188,9 +190,9 @@ export function ArticleEditor({
   const ic = 'w-4 h-4'; // icon class shorthand
 
   return (
-    <div className="rounded-xl border border-border bg-background focus-within:ring-2 focus-within:ring-primary/40 focus-within:border-primary/50 transition-all duration-200 relative">
+    <div className={className || "rounded-xl border border-border bg-background focus-within:ring-2 focus-within:ring-primary/40 focus-within:border-primary/50 transition-all duration-200 relative"}>
       {/* ─── toolbar ─── */}
-      <div className="sticky top-0 z-30 flex flex-wrap items-center gap-0.5 px-3 py-2 border-b border-border bg-background/95 backdrop-blur-md shadow-sm rounded-t-xl">
+      <div className={`sticky top-0 z-30 flex flex-wrap items-center gap-0.5 px-3 py-1.5 border-b border-border bg-background/95 backdrop-blur-md shadow-sm ${className ? 'rounded-none' : 'rounded-t-xl'}`}>
         {/* Undo / Redo */}
         <ToolbarButton onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} title="Desfazer">
           <Undo2 className={ic} />
@@ -400,7 +402,7 @@ export function ArticleEditor({
       )}
 
       {/* ─── editor area ─── */}
-      <EditorContent editor={editor} />
+      <EditorContent editor={editor} className={className ? "flex-1 overflow-y-auto min-h-0 bg-muted/15 p-4" : ""} />
     </div>
   );
 }

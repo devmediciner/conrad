@@ -781,47 +781,70 @@ const ArticleModal = ({ open, onOpenChange, isAdmin, onSuccess, articleToEdit, c
 
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-card w-full max-w-5xl rounded-2xl border border-border shadow-2xl flex flex-col my-auto relative animate-in zoom-in-95 duration-200">
-        <div className="flex items-center justify-between p-6 border-b border-border bg-muted/30 rounded-t-2xl">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary">
-              <FileText className="w-5 h-5" />
+    <div className="fixed inset-0 z-50 bg-background flex flex-col overflow-hidden animate-in fade-in duration-200">
+      <div className="bg-card w-full h-full flex flex-col relative">
+        
+        {/* Shrunken Navbar */}
+        <div className="border-b border-border bg-muted/30 shrink-0">
+          <div className="max-w-7xl mx-auto w-full flex items-center justify-between py-2 px-6">
+            <div className="flex items-center gap-2">
+              <FileText className="w-4 h-4 text-primary" />
+              <h2 className="text-sm font-bold font-heading text-foreground">{articleToEdit ? 'Editar Artigo' : 'Novo Artigo'}</h2>
             </div>
-            <h2 className="text-2xl font-bold font-heading text-foreground">{articleToEdit ? 'Editar Artigo' : 'Novo Artigo'}</h2>
+            <Button variant="ghost" size="icon" onClick={() => onOpenChange(false)} className="h-8 w-8 rounded-full hover:bg-destructive/10 hover:text-destructive">
+              <X className="w-4 h-4" />
+            </Button>
           </div>
-          <Button variant="ghost" size="icon" onClick={() => onOpenChange(false)} className="rounded-full hover:bg-destructive/10 hover:text-destructive">
-            <X className="w-5 h-5" />
-          </Button>
         </div>
         
-        <div className="p-6 space-y-8 overflow-y-auto max-h-[75vh]">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-3">
-              <label className="text-sm font-semibold text-foreground">Título do Artigo</label>
-              <Input placeholder="Ex: Padrões Radiológicos na Pneumonia" className="h-11 bg-background" value={titulo} onChange={e => setTitulo(e.target.value)} />
+        {/* Fullscreen Workspace */}
+        <div className="flex-1 flex flex-col lg:flex-row overflow-hidden bg-background">
+          
+          {/* Left Column: Metadata / Fields - Scrollable */}
+          <div className="w-full lg:w-[350px] lg:shrink-0 lg:border-r border-border bg-muted/15 overflow-y-auto p-4 space-y-4 lg:h-full max-h-[35vh] lg:max-h-none shrink-0 border-b lg:border-b-0">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground border-b border-border pb-1.5">Informações do Artigo</h3>
+            
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-semibold text-foreground">Título do Artigo</label>
+              <Input placeholder="Ex: Padrões Radiológicos na Pneumonia" className="h-9 text-xs bg-background" value={titulo} onChange={e => setTitulo(e.target.value)} />
             </div>
-            <div className="space-y-3">
-              <label className="text-sm font-semibold text-foreground">Categoria</label>
-              <select className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2" value={categoria} onChange={e => setCategoria(e.target.value)}>
+            
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-semibold text-foreground">Categoria</label>
+              <select className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1.5 text-xs ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring" value={categoria} onChange={e => setCategoria(e.target.value)}>
                 <option value="rx">Raio-X (RX)</option>
                 <option value="tc">Tomografia (TC)</option>
                 <option value="usg">Ultrassom (USG)</option>
                 <option value="rm">Ressonância Magnética (RM)</option>
               </select>
             </div>
-            <div className="space-y-3">
-              <label className="text-sm font-semibold text-foreground">Autor</label>
-              <Input placeholder="Nome completo do autor" className="h-11 bg-background" value={autor} onChange={e => setAutor(e.target.value)} />
+            
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-semibold text-foreground">Autor</label>
+              <Input placeholder="Nome completo do autor" className="h-9 text-xs bg-background" value={autor} onChange={e => setAutor(e.target.value)} />
             </div>
-            <div className="space-y-3">
-              <label className="text-sm font-semibold text-foreground">Data de Publicação</label>
-              <Input type="date" className="h-11 bg-background block" value={dataPub} onChange={e => setDataPub(e.target.value)} />
+            
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-semibold text-foreground">Data de Publicação</label>
+              <Input type="date" className="h-9 text-xs bg-background block" value={dataPub} onChange={e => setDataPub(e.target.value)} />
             </div>
-            <div className="space-y-3 md:col-span-2">
-              <label className="text-sm font-semibold text-foreground">Casos Clínicos Relacionados (Opcional)</label>
+
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-semibold text-foreground">Imagem de Capa (URL ou Upload)</label>
+              <div className="flex flex-col gap-2">
+                <Input placeholder="https://..." className="h-9 text-xs bg-background" value={imagemUrl} onChange={e => setImagemUrl(e.target.value)} />
+                <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
+                <Button variant="secondary" size="sm" className="gap-2 h-8 font-semibold w-full text-xs" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
+                  {isUploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ImagePlus className="w-3.5 h-3.5" />} 
+                  {isUploading ? 'Enviando...' : 'Fazer Upload'}
+                </Button>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-semibold text-foreground">Casos Clínicos Relacionados (Opcional)</label>
               <div className="flex gap-2">
-                <select className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2" value={caseToAdd} onChange={e => setCaseToAdd(e.target.value)}>
+                <select className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1.5 text-xs ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring" value={caseToAdd} onChange={e => setCaseToAdd(e.target.value)}>
                   <option value="none">Selecione para adicionar...</option>
                   {cases?.filter(c => !relatedCases.includes(c.id)).map(c => (
                     <option key={c.id} value={c.id}>
@@ -829,17 +852,17 @@ const ArticleModal = ({ open, onOpenChange, isAdmin, onSuccess, articleToEdit, c
                     </option>
                   ))}
                 </select>
-                <Button type="button" onClick={handleAddCase} className="h-11 w-11 px-0 shrink-0 bg-secondary hover:bg-secondary/80 text-secondary-foreground"><Plus className="w-5 h-5" /></Button>
+                <Button type="button" onClick={handleAddCase} className="h-9 w-9 px-0 shrink-0 bg-secondary hover:bg-secondary/80 text-secondary-foreground"><Plus className="w-3.5 h-3.5" /></Button>
               </div>
               {relatedCases.length > 0 && (
-                <div className="flex flex-col gap-2 mt-3">
+                <div className="flex flex-col gap-1.5 mt-2 max-h-40 overflow-y-auto pr-1">
                   {relatedCases.map(id => {
                     const c = cases?.find(x => x.id === id);
                     if (!c) return null;
                     return (
-                      <div key={id} className="flex items-center justify-between bg-muted/50 p-2.5 rounded-lg border border-border shadow-sm">
-                        <span className="text-sm font-medium text-foreground">#{c.case_number} - {c.exam_type} - {c.diagnosis}</span>
-                        <Button type="button" variant="ghost" size="sm" onClick={() => setRelatedCases(relatedCases.filter(rid => rid !== id))} className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"><X className="w-4 h-4" /></Button>
+                      <div key={id} className="flex items-center justify-between bg-muted/50 p-2 rounded-lg border border-border shadow-sm">
+                        <span className="text-[11px] font-medium text-foreground truncate max-w-[250px]">#{c.case_number} - {c.exam_type}</span>
+                        <Button type="button" variant="ghost" size="sm" onClick={() => setRelatedCases(relatedCases.filter(rid => rid !== id))} className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"><X className="w-3 h-3" /></Button>
                       </div>
                     );
                   })}
@@ -848,43 +871,35 @@ const ArticleModal = ({ open, onOpenChange, isAdmin, onSuccess, articleToEdit, c
             </div>
           </div>
 
-          <div className="space-y-3">
-            <label className="text-sm font-semibold text-foreground">Imagem de Capa (URL ou Upload)</label>
-            <div className="flex gap-3">
-              <Input placeholder="https://..." className="flex-1 h-11 bg-background" value={imagemUrl} onChange={e => setImagemUrl(e.target.value)} />
-              
-              {/* Input escondido ativado pelo botão de upload */}
-              <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
-              
-              <Button variant="secondary" className="gap-2 h-11 px-6 font-semibold" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
-                {isUploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <ImagePlus className="w-5 h-5" />} 
-                {isUploading ? 'Enviando...' : 'Fazer Upload'}
-              </Button>
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-semibold text-foreground">Conteúdo do Artigo</label>
-              {isUploadingContentImg && <span className="text-xs text-primary flex items-center"><Loader2 className="w-3 h-3 animate-spin mr-1"/>Processando imagem...</span>}
-            </div>
-            
+          {/* Right Column: Editor Workspace - Full Height, Toolbar Glued directly under Navbar */}
+          <div className="flex-1 flex flex-col overflow-hidden h-full relative">
+            {isUploadingContentImg && (
+              <div className="absolute top-2 right-4 z-40 bg-background/90 backdrop-blur border border-border px-3 py-1.5 rounded-lg text-xs text-primary flex items-center shadow-md animate-pulse">
+                <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5"/>
+                Processando imagem...
+              </div>
+            )}
             <ArticleEditor
               value={conteudo}
               onChange={setConteudo}
               onImageUpload={handleContentImageUpload}
               isUploadingImage={isUploadingContentImg}
               placeholder="Comece a escrever seu artigo aqui..."
+              className="flex-1 flex flex-col overflow-hidden border-none rounded-none bg-muted/15"
             />
           </div>
+
         </div>
 
-        <div className="p-6 border-t border-border flex justify-end gap-3 bg-muted/30 rounded-b-2xl">
-          <Button variant="ghost" className="font-semibold" onClick={() => onOpenChange(false)}>Cancelar</Button>
-          <Button className="gap-2 font-semibold h-11 px-8" onClick={handlePublish} disabled={isPublishing}>
-            {isPublishing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />} 
-            {isPublishing ? 'Salvando...' : (articleToEdit ? 'Salvar Alterações' : 'Publicar Artigo')}
-          </Button>
+        {/* Shrunken Footer */}
+        <div className="border-t border-border bg-muted/30 shrink-0">
+          <div className="max-w-7xl mx-auto w-full flex justify-end gap-3 py-2.5 px-6">
+            <Button variant="ghost" size="sm" className="font-semibold" onClick={() => onOpenChange(false)}>Cancelar</Button>
+            <Button size="sm" className="gap-1.5 font-semibold h-9 px-5" onClick={handlePublish} disabled={isPublishing}>
+              {isPublishing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} 
+              {isPublishing ? 'Salvando...' : (articleToEdit ? 'Salvar Alterações' : 'Publicar Artigo')}
+            </Button>
+          </div>
         </div>
       </div>
     </div>
