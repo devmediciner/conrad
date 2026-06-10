@@ -121,14 +121,24 @@ export function CaseModal({ caseData, open, onOpenChange }: CaseModalProps) {
                 {!showDiagnosis ? (
                   <Button onClick={() => setShowDiagnosis(true)} className="w-full">Ver Laudo</Button>
                 ) : (
-                  <div className="space-y-1 animate-fade-up">
-                    <h4 className="text-sm font-semibold text-primary">Laudo</h4>
+                  <div className="space-y-3.5 animate-fade-up">
                     {caseData.disease && (
-                      <p className="text-sm font-semibold text-foreground mb-2">
-                        Diagnóstico: <span className="font-bold text-foreground">{caseData.disease}</span>
-                      </p>
+                      <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3">
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-amber-500 mb-1">
+                          Diagnóstico
+                        </h4>
+                        <p className="text-sm font-semibold text-foreground">
+                          {caseData.disease}
+                        </p>
+                      </div>
                     )}
-                    <FormattedText content={caseData.diagnosis} className="text-sm text-foreground leading-relaxed" />
+                    
+                    <div className="border border-border rounded-lg p-3 bg-muted/20">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-primary mb-1.5">
+                        Laudo Clínico
+                      </h4>
+                      <FormattedText content={caseData.diagnosis} className="text-sm text-foreground leading-relaxed" />
+                    </div>
                   </div>
                 )}
               </div>
