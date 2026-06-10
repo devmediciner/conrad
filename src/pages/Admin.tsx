@@ -8,7 +8,7 @@ import { EXAM_TYPE_COLORS } from '@/types/case';
 import { stripHtml, slugify } from '@/lib/utils';
 import { CaseModal } from '@/components/CaseModal';
 
-import { Trash2, ArrowLeft, Loader2, Pencil, Plus, Gamepad2, List, FileText, ImagePlus, Save, X, CheckCircle, Settings, Users, UserPlus, Check, XCircle, Eye, Edit } from 'lucide-react';
+import { Trash2, ArrowLeft, Loader2, Pencil, Plus, Gamepad2, List, FileText, ImagePlus, Save, X, CheckCircle, Settings, Users, UserPlus, Check, XCircle, Eye, Edit, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { EditCaseModal } from '@/components/EditCaseModal';
 import { SubmitCaseModal } from '@/components/SubmitCaseModal';
@@ -34,6 +34,7 @@ const Admin = () => {
   const [articleModalOpen, setArticleModalOpen] = useState(false);
   const [editingArticle, setEditingArticle] = useState<Article | null>(null);
   const [viewingCase, setViewingCase] = useState<Case | null>(null);
+  const [casesSearchQuery, setCasesSearchQuery] = useState('');
   
   const [activeTab, setActiveTab] = useState<'casos' | 'minigame' | 'artigos' | 'config'>('casos');
   const [articles, setArticles] = useState<Article[]>([]);
@@ -106,8 +107,17 @@ const Admin = () => {
   const approvedCases = cases?.filter(c => c.status === 'approved') ?? [];
   const pendingCases = cases?.filter(c => c.status === 'pending') ?? [];
   
-  // Mostra todos os casos para todos os usuários logados
-  const displayCases = cases ?? [];
+  // Mostra todos os casos para todos os usuários logados, filtrados pela busca
+  const displayCases = (cases ?? []).filter(c => {
+    const query = casesSearchQuery.toLowerCase().trim();
+    if (!query) return true;
+    return (
+      c.case_number.toString().includes(query) ||
+      c.exam_type.toLowerCase().includes(query) ||
+      c.disease?.toLowerCase().includes(query) ||
+      stripHtml(c.clinical_case).toLowerCase().includes(query)
+    );
+  });
 
   const approvedArticles = articles.filter(a => a.status === 'approved');
   const pendingArticles = articles.filter(a => a.status === 'pending');
@@ -243,11 +253,22 @@ const Admin = () => {
           {/* CONTEÚDO: ABA CASOS */}
           {activeTab === 'casos' && (
             <div className="space-y-4 max-w-4xl">
-              <div className="flex justify-between items-center mb-4">
+              <div className="flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center mb-4">
                 <h2 className="text-xl font-bold font-heading text-foreground">Casos (Todos)</h2>
-                <Button variant="default" className="gap-2" onClick={() => setSubmitOpen(true)}>
-                  <Plus className="w-4 h-4" /> Novo Caso
-                </Button>
+                <div className="flex items-center gap-3 w-full sm:w-auto">
+                  <div className="relative w-full sm:w-64">
+                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Pesquisar por número, diagnóstico..."
+                      value={casesSearchQuery}
+                      onChange={(e) => setCasesSearchQuery(e.target.value)}
+                      className="pl-9 h-9 text-xs bg-card border-border"
+                    />
+                  </div>
+                  <Button variant="default" className="gap-2 h-9 text-xs shrink-0" onClick={() => setSubmitOpen(true)}>
+                    <Plus className="w-4 h-4" /> Novo Caso
+                  </Button>
+                </div>
               </div>
               {isLoading ? (
                 <p className="text-muted-foreground">Carregando...</p>
@@ -278,7 +299,7 @@ const Admin = () => {
                           </div>
                           <p className="text-sm text-foreground truncate font-semibold">
                             <span className="font-mono text-muted-foreground mr-1">#{c.case_number}</span>
-                            {stripHtml(c.clinical_case)}
+                            — {c.disease || 'Sem Diagnóstico'}
                           </p>
                           <p className="text-xs text-muted-foreground mt-0.5">{c.age} anos • {c.sex} • Enviado por: <span className="font-semibold text-foreground/80">{getSubmitterName(c.submitted_by)}</span></p>
                         </div>
