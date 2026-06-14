@@ -277,29 +277,28 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Contact section */}
-      <section id="contato" className="px-4 py-24 border-t border-border bg-muted/20">
-        <div className="container mx-auto max-w-3xl text-center space-y-8">
-          <h2 className="font-heading text-3xl font-bold text-foreground">Acompanhe a CONRAD</h2>
-          <p className="text-muted-foreground text-lg">
-            Fique por dentro das nossas discussões de casos, aulas e eventos acadêmicos.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-            <a href="https://www.instagram.com/conradufsj/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 px-6 py-3 rounded-full bg-card border border-border hover:border-primary/50 hover:shadow-md transition-all">
-              <Instagram className="w-5 h-5 text-pink-500" />
-              <span className="font-medium text-foreground">@conradufsj</span>
-            </a>
-            <a href="mailto:conradufsj@gmail.com" className="flex items-center gap-3 px-6 py-3 rounded-full bg-card border border-border hover:border-primary/50 hover:shadow-md transition-all">
-              <Mail className="w-5 h-5 text-blue-500" />
-              <span className="font-medium text-foreground">conradufsj@gmail.com</span>
-            </a>
-          </div>
-        </div>
-      </section>
-
       {/* Footer */}
-      <footer className="border-t border-border px-4 py-10 bg-gradient-to-t from-primary/5 to-transparent">
-        <div className="container mx-auto">
+      <footer id="contato" className="border-t border-border px-4 py-12 bg-gradient-to-t from-primary/5 to-transparent">
+        <div className="container mx-auto max-w-4xl space-y-8">
+          {/* Contact info row */}
+          <div className="flex flex-col items-center text-center space-y-4 pb-8 border-b border-border/40">
+            <h3 className="font-heading text-lg font-bold text-foreground">Acompanhe a CONRAD</h3>
+            <p className="text-muted-foreground text-sm max-w-md">
+              Fique por dentro das nossas discussões de casos, aulas e eventos acadêmicos.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center gap-4 pt-2">
+              <a href="https://www.instagram.com/conradufsj/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-card border border-border hover:border-primary/50 transition-all text-sm">
+                <Instagram className="w-4 h-4 text-pink-500" />
+                <span className="font-medium text-foreground">@conradufsj</span>
+              </a>
+              <a href="mailto:conradufsj@gmail.com" className="flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-card border border-border hover:border-primary/50 transition-all text-sm">
+                <Mail className="w-4 h-4 text-blue-500" />
+                <span className="font-medium text-foreground">conradufsj@gmail.com</span>
+              </a>
+            </div>
+          </div>
+
+          {/* Middle row */}
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">
               <img src={logo} alt="CONRAD" className="w-8 h-8 rounded-lg opacity-60" />
@@ -312,7 +311,9 @@ const Index = () => {
               <Link to="/privacidade" className="hover:text-foreground transition-colors">Privacidade</Link>
             </div>
           </div>
-          <div className="mt-6 pt-6 border-t border-border/50 text-center text-xs text-muted-foreground">
+
+          {/* Bottom copyright row */}
+          <div className="pt-4 text-center text-xs text-muted-foreground">
             © {new Date().getFullYear()} Liga Acadêmica de Radiologia — UFSJ CCO
           </div>
         </div>
