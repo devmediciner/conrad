@@ -39,6 +39,37 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
 
   const [images, setImages] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    if (uploading) return;
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', index.toString());
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === index) return;
+
+    const newImages = [...images];
+    const newPreviews = [...previews];
+    
+    const [draggedImage] = newImages.splice(draggedIndex, 1);
+    const [draggedPreview] = newPreviews.splice(draggedIndex, 1);
+    
+    newImages.splice(index, 0, draggedImage);
+    newPreviews.splice(index, 0, draggedPreview);
+    
+    setImages(newImages);
+    setPreviews(newPreviews);
+    setDraggedIndex(index);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+  };
+
   const [examType, setExamType] = useState<ExamType | ''>('');
   const [age, setAge] = useState('');
   const [sex, setSex] = useState('');
@@ -196,7 +227,12 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
         <div className="space-y-4">
           {/* Image upload */}
           <div>
-            <label className="text-sm font-medium text-foreground mb-2 block">Imagens</label>
+            <label className="text-sm font-medium text-foreground mb-1 block">Imagens</label>
+            {previews.length > 0 && (
+              <span className="text-xs text-muted-foreground block mb-2">
+                Arraste e solte as imagens para alterar a ordem de exibição.
+              </span>
+            )}
             <input
               ref={fileInputRef}
               type="file"
@@ -208,11 +244,23 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
             />
             <div className="flex flex-wrap gap-2">
               {previews.map((src, i) => (
-                <div key={i} className="relative w-20 h-20 rounded-md overflow-hidden border border-border">
-                  <img src={src} alt="" className="w-full h-full object-cover" />
+                <div
+                  key={i}
+                  draggable={!uploading}
+                  onDragStart={(e) => handleDragStart(e, i)}
+                  onDragOver={(e) => handleDragOver(e, i)}
+                  onDragEnd={handleDragEnd}
+                  className={`relative w-20 h-20 rounded-md overflow-hidden border transition-all cursor-grab active:cursor-grabbing ${
+                    draggedIndex === i ? 'opacity-40 border-primary scale-90' : 'border-border'
+                  }`}
+                >
+                  <img src={src} alt="" className="w-full h-full object-cover" draggable="false" />
                   <button
-                    onClick={() => removeImage(i)}
-                    className="absolute top-0.5 right-0.5 bg-background/80 rounded-full p-0.5"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeImage(i);
+                    }}
+                    className="absolute top-0.5 right-0.5 bg-background/80 hover:bg-destructive hover:text-destructive-foreground rounded-full p-0.5 transition-colors"
                     disabled={uploading}
                   >
                     <X className="w-3 h-3" />

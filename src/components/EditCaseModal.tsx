@@ -40,6 +40,30 @@ export function EditCaseModal({ caseData, open, onOpenChange }: EditCaseModalPro
   const [images, setImages] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [newlyUploadedImages, setNewlyUploadedImages] = useState<string[]>([]);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    if (uploading) return;
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', index.toString());
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === index) return;
+
+    const newImages = [...images];
+    const [draggedImage] = newImages.splice(draggedIndex, 1);
+    newImages.splice(index, 0, draggedImage);
+    
+    setImages(newImages);
+    setDraggedIndex(index);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+  };
   
   // Game fields
   const [isMinigame, setIsMinigame] = useState(false);
@@ -213,13 +237,30 @@ export function EditCaseModal({ caseData, open, onOpenChange }: EditCaseModalPro
         <div className="space-y-4">
           {/* Images management */}
           <div>
-            <label className="text-sm font-medium text-foreground mb-2 block">Imagens</label>
+            <label className="text-sm font-medium text-foreground mb-1 block">Imagens</label>
+            {images.length > 0 && (
+              <span className="text-xs text-muted-foreground block mb-2">
+                Arraste e solte as imagens para alterar a ordem de exibição.
+              </span>
+            )}
             <div className="flex flex-wrap gap-2">
               {images.map((img, i) => (
-                <div key={i} className="relative w-20 h-20 rounded-lg overflow-hidden border border-border group">
-                  <img src={img} alt="" className="w-full h-full object-cover" />
+                <div
+                  key={i}
+                  draggable={!uploading}
+                  onDragStart={(e) => handleDragStart(e, i)}
+                  onDragOver={(e) => handleDragOver(e, i)}
+                  onDragEnd={handleDragEnd}
+                  className={`relative w-20 h-20 rounded-lg overflow-hidden border transition-all cursor-grab active:cursor-grabbing group ${
+                    draggedIndex === i ? 'opacity-40 border-primary scale-90' : 'border-border'
+                  }`}
+                >
+                  <img src={img} alt="" className="w-full h-full object-cover" draggable="false" />
                   <button
-                    onClick={() => handleRemoveImage(i)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRemoveImage(i);
+                    }}
                     className="absolute top-0.5 right-0.5 bg-destructive text-destructive-foreground rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
                   >
                     <X className="w-3 h-3" />
