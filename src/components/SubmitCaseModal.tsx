@@ -23,6 +23,8 @@ import { useAuth } from '@/hooks/authContent';
 import { useDiseases } from '@/hooks/useGame';
 import { toast } from 'sonner';
 import type { ExamType } from '@/types/case';
+import { convertDicomToJpeg, getDicomSortMetadata, sortFilesByDicomMetadata } from '@/utils/dicom';
+import { supabase } from '@/integrations/supabase/client';
 
 interface SubmitCaseModalProps {
   open: boolean;
@@ -52,15 +54,70 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
   const [clue2, setClue2] = useState('');
   const [clue3, setClue3] = useState('');
 
-  const handleFiles = (files: FileList | null) => {
+  const handleFiles = async (files: FileList | null) => {
     if (!files) return;
-    const newFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
-    setImages(prev => [...prev, ...newFiles]);
-    newFiles.forEach(f => {
-      const reader = new FileReader();
-      reader.onload = (e) => setPreviews(prev => [...prev, e.target?.result as string]);
-      reader.readAsDataURL(f);
-    });
+
+    const fileListArray = Array.from(files);
+
+    const validFileList = fileListArray.filter(f =>
+      f.type.startsWith('image/') ||
+      f.name.toLowerCase().endsWith('.dcm') ||
+      f.name.toLowerCase().endsWith('.dicom') ||
+      f.type === 'application/dicom'
+    );
+
+    if (validFileList.length === 0) return;
+
+    setUploading(true);
+    try {
+      // Extract metadata for sorting (Instance Number, Slice Position, etc.)
+      const filesWithMetadata = await Promise.all(validFileList.map(getDicomSortMetadata));
+      
+      // Sort using DICOM metadata (with filename fallback)
+      const sortedFiles = sortFilesByDicomMetadata(filesWithMetadata);
+
+      const processedFiles: File[] = [];
+
+      for (const file of sortedFiles) {
+        const isDicom =
+          file.name.toLowerCase().endsWith('.dcm') ||
+          file.name.toLowerCase().endsWith('.dicom') ||
+          file.type === 'application/dicom';
+
+        if (isDicom) {
+          try {
+            const converted = await convertDicomToJpeg(file);
+            processedFiles.push(converted);
+          } catch (err: any) {
+            console.error(`Erro ao converter DICOM ${file.name}:`, err);
+            toast.error(`Falha ao processar DICOM ${file.name}: ${err.message || err}`);
+          }
+        } else {
+          processedFiles.push(file);
+        }
+      }
+
+      if (processedFiles.length > 0) {
+        setImages(prev => [...prev, ...processedFiles]);
+        
+        // Read all previews maintaining the exact same index order
+        const previewUrls = await Promise.all(
+          processedFiles.map(file => {
+            return new Promise<string>((resolve) => {
+              const reader = new FileReader();
+              reader.onload = (e) => resolve(e.target?.result as string);
+              reader.readAsDataURL(file);
+            });
+          })
+        );
+        setPreviews(prev => [...prev, ...previewUrls]);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Erro ao processar arquivos.');
+    } finally {
+      setUploading(false);
+    }
   };
 
   const removeImage = (index: number) => {
@@ -100,10 +157,8 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
 
     setUploading(true);
     try {
-      const uploadedUrls = await Promise.all(images.map(uploadCaseImage));
-      
       await submitCase.mutateAsync({
-        images: uploadedUrls,
+        files: images,
         exam_type: examType,
         age: age ? parseInt(age) : 0,
         sex: sex || 'Outro',
@@ -115,12 +170,13 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
         clue1: isMinigame ? (clue1.trim() || clinicalCase) : null,
         clue2: isMinigame ? clue2 : null,
         clue3: isMinigame ? clue3 : null
-      } as any);
+      });
       
       toast.success(isAdmin ? 'Caso adicionado à galeria!' : 'Caso enviado para aprovação!');
       resetForm();
       onOpenChange(false);
     } catch (err) {
+      console.error("Erro na submissão do caso:", err);
       toast.error('Erro ao enviar caso. Tente novamente.');
     } finally {
       setUploading(false);
@@ -144,10 +200,11 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*"
+              accept="image/*,.dcm,.dicom"
               multiple
               className="hidden"
               onChange={(e) => handleFiles(e.target.files)}
+              disabled={uploading}
             />
             <div className="flex flex-wrap gap-2">
               {previews.map((src, i) => (
@@ -156,16 +213,22 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
                   <button
                     onClick={() => removeImage(i)}
                     className="absolute top-0.5 right-0.5 bg-background/80 rounded-full p-0.5"
+                    disabled={uploading}
                   >
                     <X className="w-3 h-3" />
                   </button>
                 </div>
               ))}
               <button
-                onClick={() => fileInputRef.current?.click()}
-                className="w-20 h-20 rounded-md border border-dashed border-border flex items-center justify-center text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+                onClick={() => !uploading && fileInputRef.current?.click()}
+                disabled={uploading}
+                className="w-20 h-20 rounded-md border border-dashed border-border flex items-center justify-center text-muted-foreground hover:border-primary hover:text-primary transition-colors disabled:opacity-50"
               >
-                <Upload className="w-5 h-5" />
+                {uploading ? (
+                  <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                ) : (
+                  <Upload className="w-5 h-5" />
+                )}
               </button>
             </div>
           </div>

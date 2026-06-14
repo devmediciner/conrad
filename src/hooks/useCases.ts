@@ -52,23 +52,101 @@ export function useSubmitCase() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (caseData: {
-      images: string[];
+      files: File[];
       exam_type: ExamType;
       age: number;
       sex: string;
       clinical_case: string;
       diagnosis: string;
       source?: string;
+      status?: string;
+      disease?: string | null;
+      clue1?: string | null;
+      clue2?: string | null;
+      clue3?: string | null;
     }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Não autenticado');
       
-      const { error } = await supabase.from('cases').insert({
-        ...caseData,
-        submitted_by: user.id,
-        status: 'pending',
-      });
+      // 1. Insert case record first with empty images array
+      const { data, error } = await supabase
+        .from('cases')
+        .insert({
+          exam_type: caseData.exam_type,
+          age: caseData.age,
+          sex: caseData.sex,
+          clinical_case: caseData.clinical_case,
+          diagnosis: caseData.diagnosis,
+          source: caseData.source,
+          status: 'pending',
+          submitted_by: user.id,
+          disease: caseData.disease,
+          clue1: caseData.clue1,
+          clue2: caseData.clue2,
+          clue3: caseData.clue3,
+          images: [],
+        })
+        .select('id, case_number')
+        .single();
+
       if (error) throw error;
+
+      const caseId = data.id;
+      const caseNumber = data.case_number;
+      const examType = caseData.exam_type.toUpperCase();
+
+      let uploadedUrls: string[] = [];
+
+      try {
+        // 2. Upload images directly to the official structured folder path
+        if (caseData.files && caseData.files.length > 0) {
+          uploadedUrls = await Promise.all(
+            caseData.files.map(file => uploadCaseImage(file, examType, caseNumber))
+          );
+
+          // 3. Update the case record in the database with the official URLs
+          const { error: updateImgError } = await supabase
+            .from('cases')
+            .update({ images: uploadedUrls })
+            .eq('id', caseId);
+
+          if (updateImgError) throw updateImgError;
+        }
+      } catch (uploadError) {
+        console.error("Erro no upload das imagens do novo caso:", uploadError);
+        
+        // Cleanup uploaded images on failure
+        if (uploadedUrls.length > 0) {
+          const fileNames = uploadedUrls
+            .map(url => {
+              const bucketMarker = '/radiology-images/';
+              const idx = url.indexOf(bucketMarker);
+              return idx !== -1 ? url.substring(idx + bucketMarker.length) : url.split('/').pop();
+            })
+            .filter(Boolean) as string[];
+
+          if (fileNames.length > 0) {
+            await supabase.storage
+              .from('radiology-images')
+              .remove(fileNames)
+              .catch(e => console.error("Erro ao remover arquivos após falha:", e));
+          }
+        }
+
+        // Delete the broken case record
+        await supabase.from('cases').delete().eq('id', caseId);
+        
+        throw uploadError;
+      }
+
+      // 4. Update status to approved if submitting admin/approved status
+      if (caseData.status === 'approved') {
+        const { error: updateError } = await supabase
+          .from('cases')
+          .update({ status: 'approved' })
+          .eq('id', caseId);
+        if (updateError) throw updateError;
+      }
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['cases'] }),
   });
@@ -77,7 +155,52 @@ export function useSubmitCase() {
 export function useUpdateCase() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, ...updates }: { id: string; images?: string[]; exam_type?: string; age?: number | null; sex?: string | null; clinical_case?: string; diagnosis?: string; source?: string | null; status?: string }) => {
+    mutationFn: async ({ id, ...updates }: { 
+      id: string; 
+      images?: string[]; 
+      exam_type?: string; 
+      age?: number | null; 
+      sex?: string | null; 
+      clinical_case?: string; 
+      diagnosis?: string; 
+      source?: string | null; 
+      status?: string;
+      disease?: string | null;
+      clue1?: string | null;
+      clue2?: string | null;
+      clue3?: string | null;
+    }) => {
+      // If updates contain a new images array, clean up removed images from storage
+      if (updates.images) {
+        const { data: currentCase } = await supabase
+          .from('cases')
+          .select('images')
+          .eq('id', id)
+          .single();
+        
+        if (currentCase?.images) {
+          const oldImages = currentCase.images as string[];
+          const newImages = updates.images;
+          const removedImages = oldImages.filter(url => !newImages.includes(url));
+          
+          if (removedImages.length > 0) {
+            const fileNames = removedImages
+              .map(url => {
+                const bucketMarker = '/radiology-images/';
+                const idx = url.indexOf(bucketMarker);
+                return idx !== -1 ? url.substring(idx + bucketMarker.length) : url.split('/').pop();
+              })
+              .filter(Boolean) as string[];
+            
+            if (fileNames.length > 0) {
+              await supabase.storage
+                .from('radiology-images')
+                .remove(fileNames);
+            }
+          }
+        }
+      }
+
       const { error } = await supabase.from('cases').update(updates).eq('id', id);
       if (error) throw error;
     },
@@ -100,8 +223,33 @@ export function useDeleteCase() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
+      // 1. Fetch case to get images
+      const { data: caseData } = await supabase
+        .from('cases')
+        .select('images')
+        .eq('id', id)
+        .single();
+
+      // 2. Delete case from DB
       const { error } = await supabase.from('cases').delete().eq('id', id);
       if (error) throw error;
+
+      // 3. Delete images from storage
+      if (caseData?.images && caseData.images.length > 0) {
+        const fileNames = (caseData.images as string[])
+          .map(url => {
+            const bucketMarker = '/radiology-images/';
+            const idx = url.indexOf(bucketMarker);
+            return idx !== -1 ? url.substring(idx + bucketMarker.length) : url.split('/').pop();
+          })
+          .filter(Boolean) as string[];
+
+        if (fileNames.length > 0) {
+          await supabase.storage
+            .from('radiology-images')
+            .remove(fileNames);
+        }
+      }
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['cases'] }),
   });
@@ -151,7 +299,11 @@ async function compressImage(file: File, maxSizeMB = 2): Promise<Blob> {
   });
 }
 
-export async function uploadCaseImage(file: File): Promise<string> {
+export async function uploadCaseImage(
+  file: File,
+  examType: string,
+  caseNumber?: number | string
+): Promise<string> {
   let uploadFile: File | Blob = file;
 
   try {
@@ -159,11 +311,18 @@ export async function uploadCaseImage(file: File): Promise<string> {
       uploadFile = await compressImage(file);
     }
 
-    const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.jpg`;
+    const rawFileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.jpg`;
+    
+    // Structure path: modality/caseNumber/fileName
+    // e.g., TC/123/17156382-abc.jpg
+    const folderPath = caseNumber 
+      ? `${examType.toUpperCase()}/${caseNumber}` 
+      : `temp/${examType.toUpperCase()}`;
+    const filePath = `${folderPath}/${rawFileName}`;
 
     const { error } = await supabase.storage
       .from('radiology-images')
-      .upload(fileName, uploadFile, {
+      .upload(filePath, uploadFile, {
         contentType: 'image/jpeg',
         upsert: false,
       });
@@ -175,7 +334,7 @@ export async function uploadCaseImage(file: File): Promise<string> {
 
     const { data } = supabase.storage
       .from('radiology-images')
-      .getPublicUrl(fileName);
+      .getPublicUrl(filePath);
 
     if (!data?.publicUrl) {
       throw new Error("Falha ao gerar URL pública");
@@ -185,10 +344,7 @@ export async function uploadCaseImage(file: File): Promise<string> {
 
   } catch (err) {
     console.error("Upload falhou:", err);
-
-    // 🔥 ESSA LINHA EVITA O BUG DO SITE "MORRER"
     await supabase.auth.refreshSession();
-
     throw err;
   }
 }

@@ -4,8 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { 
   Sun, Contrast, RotateCcw, RotateCw, FlipHorizontal2, 
-  Maximize2, X, Ruler, Search, Eye, EyeOff, ArrowUpRight
+  Maximize2, X, Ruler, Search, Eye, EyeOff, ArrowUpRight,
+  Eclipse
 } from 'lucide-react';
+import type { ExamType } from '@/types/case';
 
 interface RulerLine {
   id: string;
@@ -25,9 +27,43 @@ interface ImageViewerProps {
   images?: string[];
   selectedImage?: number;
   setSelectedImage?: (index: number) => void;
+  hideTools?: boolean;
+  aspectClass?: string;
+  examType?: ExamType;
+  layout?: 'default' | 'three-columns';
+  caseDetails?: React.ReactNode;
 }
 
-export default function ImageViewer({ src, alt, images, selectedImage, setSelectedImage }: ImageViewerProps) {
+export default function ImageViewer({ 
+  src, 
+  alt, 
+  images, 
+  selectedImage: propSelectedImage, 
+  setSelectedImage: propSetSelectedImage,
+  hideTools = false,
+  aspectClass = 'aspect-square',
+  examType,
+  layout = 'default',
+  caseDetails
+}: ImageViewerProps) {
+  const [localSelectedImage, setLocalSelectedImage] = useState(0);
+  const selectedImage = propSelectedImage !== undefined ? propSelectedImage : localSelectedImage;
+  const isSliceSeries = examType?.toUpperCase() === 'TC' || examType?.toUpperCase() === 'RM';
+  
+  const setSelectedImage = useCallback((val: number | ((prev: number) => number)) => {
+    if (propSetSelectedImage) {
+      if (typeof val === 'function') {
+        const resolvedVal = val(propSelectedImage !== undefined ? propSelectedImage : 0);
+        propSetSelectedImage(resolvedVal);
+      } else {
+        propSetSelectedImage(val);
+      }
+    } else {
+      setLocalSelectedImage(val);
+    }
+  }, [propSelectedImage, propSetSelectedImage]);
+
+  const currentSrc = (images && images.length > 0) ? images[selectedImage] : src;
   const containerRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
@@ -85,7 +121,7 @@ export default function ImageViewer({ src, alt, images, selectedImage, setSelect
     return () => {
       resizeObserver.disconnect();
     };
-  }, [isFullscreen, src]);
+  }, [isFullscreen, currentSrc]);
 
   // Reset controls to defaults
   const resetControls = useCallback(() => {
@@ -109,13 +145,50 @@ export default function ImageViewer({ src, alt, images, selectedImage, setSelect
     setShowLens(false);
     setImageAspectRatio(null);
     setActiveDrag(null);
-  }, [src]);
+  }, [currentSrc]);
 
   useEffect(() => {
     if (imgRef.current && imgRef.current.complete && imgRef.current.naturalWidth) {
       setImageAspectRatio(imgRef.current.naturalWidth / imgRef.current.naturalHeight);
     }
-  }, [src]);
+  }, [currentSrc]);
+
+  // Native non-passive wheel event listener to scroll through images smoothly on desktop without scrolling the background page
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container || !images || images.length <= 1 || !isSliceSeries) return;
+
+    const handleNativeWheel = (e: WheelEvent) => {
+      // Prevent background scrolling
+      e.preventDefault();
+      
+      if (e.deltaY > 0) {
+        setSelectedImage((prev) => Math.min(prev + 1, images.length - 1));
+      } else if (e.deltaY < 0) {
+        setSelectedImage((prev) => Math.max(prev - 1, 0));
+      }
+      setShowLens(false);
+    };
+
+    container.addEventListener('wheel', handleNativeWheel, { passive: false });
+    return () => {
+      container.removeEventListener('wheel', handleNativeWheel);
+    };
+  }, [images, setSelectedImage, isSliceSeries]);
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (!images || images.length <= 1 || !isSliceSeries) return;
+    
+    if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+      e.preventDefault();
+      setSelectedImage((prev) => Math.max(prev - 1, 0));
+      setShowLens(false);
+    } else if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+      e.preventDefault();
+      setSelectedImage((prev) => Math.min(prev + 1, images.length - 1));
+      setShowLens(false);
+    }
+  }, [images, setSelectedImage, isSliceSeries]);
 
   // Coordinates calculation helper (Returns relative percentage coordinates [0, 1] relative to the actual visible image rect)
   const getCoordinates = useCallback((e: React.MouseEvent | React.Touch) => {
@@ -252,14 +325,16 @@ export default function ImageViewer({ src, alt, images, selectedImage, setSelect
       const dy = coords.y - activeDrag.initialMouse.y;
       const updated = getUpdatedLineCoords(dx, dy);
       if (updated) {
-        const updater = (prev: any[]) => prev.map(line => {
-          if (line.id !== activeDrag.lineId) return line;
-          return { ...line, start: updated.start, end: updated.end };
-        });
         if (activeDrag.target === 'ruler') {
-          setRulerLines(updater);
+          setRulerLines(prev => prev.map(line => {
+            if (line.id !== activeDrag.lineId) return line;
+            return { ...line, start: updated.start, end: updated.end };
+          }));
         } else {
-          setArrowLines(updater);
+          setArrowLines(prev => prev.map(line => {
+            if (line.id !== activeDrag.lineId) return line;
+            return { ...line, start: updated.start, end: updated.end };
+          }));
         }
       }
     } else if (activeTool === 'lens') {
@@ -268,7 +343,7 @@ export default function ImageViewer({ src, alt, images, selectedImage, setSelect
     } else if ((activeTool === 'ruler' || activeTool === 'arrow') && isDrawingRuler) {
       setCurrentLine(prev => prev ? { ...prev, end: coords } : null);
     }
-  }, [activeTool, isDrawingRuler, activeDrag, getCoordinates]);
+  }, [activeTool, isDrawingRuler, activeDrag, getCoordinates, getUpdatedLineCoords]);
 
   const handleMouseUp = useCallback(() => {
     if (activeDrag) {
@@ -356,14 +431,16 @@ export default function ImageViewer({ src, alt, images, selectedImage, setSelect
       const dy = coords.y - activeDrag.initialMouse.y;
       const updated = getUpdatedLineCoords(dx, dy);
       if (updated) {
-        const updater = (prev: any[]) => prev.map(line => {
-          if (line.id !== activeDrag.lineId) return line;
-          return { ...line, start: updated.start, end: updated.end };
-        });
         if (activeDrag.target === 'ruler') {
-          setRulerLines(updater);
+          setRulerLines(prev => prev.map(line => {
+            if (line.id !== activeDrag.lineId) return line;
+            return { ...line, start: updated.start, end: updated.end };
+          }));
         } else {
-          setArrowLines(updater);
+          setArrowLines(prev => prev.map(line => {
+            if (line.id !== activeDrag.lineId) return line;
+            return { ...line, start: updated.start, end: updated.end };
+          }));
         }
       }
     } else if (activeTool === 'lens') {
@@ -372,7 +449,7 @@ export default function ImageViewer({ src, alt, images, selectedImage, setSelect
     } else if ((activeTool === 'ruler' || activeTool === 'arrow') && isDrawingRuler) {
       setCurrentLine(prev => prev ? { ...prev, end: coords } : null);
     }
-  }, [activeTool, isDrawingRuler, activeDrag, getCoordinates]);
+  }, [activeTool, isDrawingRuler, activeDrag, getCoordinates, getUpdatedLineCoords]);
 
   const handleTouchEnd = useCallback(() => {
     setShowLens(false);
@@ -425,7 +502,7 @@ export default function ImageViewer({ src, alt, images, selectedImage, setSelect
   const mouseYPx = mousePos.y * containerHeight;
 
   // Lens coordinate positioning with mobile touch offset
-  let targetX = mouseXPx;
+  const targetX = mouseXPx;
   let targetY = mouseYPx;
   if (isTouch && activeTool === 'lens') {
     targetY = mouseYPx - 80; // Offset 80px vertically on mobile to avoid finger obstruction
@@ -469,7 +546,7 @@ export default function ImageViewer({ src, alt, images, selectedImage, setSelect
         {/* Main Image */}
         <img
           ref={isZoomed ? undefined : imgRef}
-          src={src}
+          src={currentSrc}
           alt={alt}
           onLoad={(e) => {
             if (!isZoomed) {
@@ -725,8 +802,8 @@ export default function ImageViewer({ src, alt, images, selectedImage, setSelect
     return (
       <div
         ref={containerRef}
-        className={`relative w-full overflow-hidden bg-black select-none ${
-          isFS ? 'h-full max-h-full' : 'aspect-square rounded-lg'
+        className={`relative w-full overflow-hidden bg-black select-none outline-none focus:ring-1 focus:ring-primary/30 ${
+          isFS ? 'h-full max-h-full' : `${aspectClass} rounded-lg`
         }`}
         style={{ 
           cursor: activeDrag 
@@ -734,6 +811,7 @@ export default function ImageViewer({ src, alt, images, selectedImage, setSelect
             : (activeTool === 'ruler' || activeTool === 'arrow') ? 'crosshair' : 'default',
           touchAction: 'none' // Lock mobile gestures completely when interacting with tools
         }}
+        tabIndex={0}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
@@ -796,68 +874,251 @@ export default function ImageViewer({ src, alt, images, selectedImage, setSelect
 
   return (
     <div className="space-y-3">
-      {/* Normal Interactive Image Area (only mount when not in fullscreen to preserve React Ref) */}
-      {!isFullscreen && renderInteractiveContainer(false)}
+      {layout === 'three-columns' ? (
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+          {/* Column 1: Controls (Left) */}
+          <div className="md:col-span-2 order-3 md:order-1 space-y-4">
+            <div className="bg-secondary/40 border border-border/60 rounded-xl p-3.5 space-y-4 select-none">
+              {/* Adjustments */}
+              <div className="flex flex-col gap-3">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  Ajustes
+                </span>
+                <div className="space-y-1">
+                  <span className="text-[10px] text-muted-foreground flex justify-between">
+                    <span>Brilho</span>
+                    <span>{brightness}%</span>
+                  </span>
+                  <Slider value={[brightness]} onValueChange={([v]) => setBrightness(v)} min={20} max={300} step={5} className="py-1 cursor-ew-resize" />
+                </div>
+                <div className="space-y-1">
+                  <span className="text-[10px] text-muted-foreground flex justify-between">
+                    <span>Contraste</span>
+                    <span>{contrast}%</span>
+                  </span>
+                  <Slider value={[contrast]} onValueChange={([v]) => setContrast(v)} min={20} max={300} step={5} className="py-1 cursor-ew-resize" />
+                </div>
+              </div>
 
-      {/* Control Buttons with flex wrap for mobile screens */}
-      <div className="bg-secondary/50 rounded-lg p-3 space-y-2 select-none">
-        <div className="flex items-center gap-3">
-          <Sun className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
-          <Slider value={[brightness]} onValueChange={([v]) => setBrightness(v)} min={20} max={300} step={5} className="flex-1" />
-          <span className="text-xs text-muted-foreground w-10 text-right">{brightness}%</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <Contrast className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
-          <Slider value={[contrast]} onValueChange={([v]) => setContrast(v)} min={20} max={300} step={5} className="flex-1" />
-          <span className="text-xs text-muted-foreground w-10 text-right">{contrast}%</span>
-        </div>
-        
-        {/* Buttons wrapping enabled via flex-wrap */}
-        <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-border/20 mt-1">
-          {/* Tool selector buttons styled identically */}
-          <Button
-            variant={activeTool === 'lens' ? 'default' : 'outline'}
-            size="sm"
-            className="text-xs h-7 px-3 py-1"
-            onClick={() => { setActiveTool('lens'); setShowLens(false); }}
-          >
-            <Search className="w-3 h-3 mr-1" /> Lupa
-          </Button>
-          <Button
-            variant={activeTool === 'ruler' ? 'default' : 'outline'}
-            size="sm"
-            className="text-xs h-7 px-3 py-1"
-            onClick={() => { setActiveTool('ruler'); setShowLens(false); }}
-          >
-            <Ruler className="w-3 h-3 mr-1" /> Régua
-          </Button>
-          <Button
-            variant={activeTool === 'arrow' ? 'default' : 'outline'}
-            size="sm"
-            className="text-xs h-7 px-3 py-1"
-            onClick={() => { setActiveTool('arrow'); setShowLens(false); }}
-          >
-            <ArrowUpRight className="w-3 h-3 mr-1" /> Seta
-          </Button>
+              {/* Modifiers */}
+              <div className="flex flex-col gap-1.5 pt-3 border-t border-border/20">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
+                  Imagem
+                </span>
+                <Button variant={invert ? 'default' : 'outline'} size="sm" className="text-xs h-8 justify-start px-2.5 w-full" onClick={() => setInvert(!invert)}>
+                  <Eclipse className="w-3.5 h-3.5 mr-2" /> Inverter
+                </Button>
+                <Button variant={flipH ? 'default' : 'outline'} size="sm" className="text-xs h-8 justify-start px-2.5 w-full" onClick={() => setFlipH(!flipH)}>
+                  <FlipHorizontal2 className="w-3.5 h-3.5 mr-2" /> Espelhar
+                </Button>
+                <Button variant="outline" size="sm" className="text-xs h-8 justify-start px-2.5 w-full" onClick={() => setRotation((r) => (r + 90) % 360)}>
+                  <RotateCw className="w-3.5 h-3.5 mr-2" /> Rotacionar
+                </Button>
+              </div>
 
-          {/* Divider */}
-          <div className="w-px h-6 bg-border mx-1 hidden sm:block" />
+              {/* Tool selection */}
+              <div className="flex flex-col gap-1.5 pt-3 border-t border-border/20">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
+                  Ferramentas
+                </span>
+                <Button
+                  variant={activeTool === 'lens' ? 'default' : 'outline'}
+                  size="sm"
+                  className="text-xs h-8 justify-start px-2.5 w-full"
+                  onClick={() => { setActiveTool('lens'); setShowLens(false); }}
+                >
+                  <Search className="w-3.5 h-3.5 mr-2" /> Lupa
+                </Button>
+                {!hideTools && (
+                  <>
+                    <Button
+                      variant={activeTool === 'ruler' ? 'default' : 'outline'}
+                      size="sm"
+                      className="text-xs h-8 justify-start px-2.5 w-full"
+                      onClick={() => { setActiveTool('ruler'); setShowLens(false); }}
+                    >
+                      <Ruler className="w-3.5 h-3.5 mr-2" /> Régua
+                    </Button>
+                    <Button
+                      variant={activeTool === 'arrow' ? 'default' : 'outline'}
+                      size="sm"
+                      className="text-xs h-8 justify-start px-2.5 w-full"
+                      onClick={() => { setActiveTool('arrow'); setShowLens(false); }}
+                    >
+                      <ArrowUpRight className="w-3.5 h-3.5 mr-2" /> Seta
+                    </Button>
+                  </>
+                )}
+              </div>
 
-          {/* Adjustments (Reset handles clearing all ruler markings) */}
-          <Button variant={invert ? 'default' : 'outline'} size="sm" className="text-xs h-7 px-3 py-1" onClick={() => setInvert(!invert)}>
-            Inverter
-          </Button>
-          <Button variant="outline" size="sm" className="text-xs h-7 px-3 py-1" onClick={() => setRotation((r) => (r + 90) % 360)}>
-            <RotateCw className="w-3 h-3 mr-1" /> Rotacionar
-          </Button>
-          <Button variant={flipH ? 'default' : 'outline'} size="sm" className="text-xs h-7 px-3 py-1" onClick={() => setFlipH(!flipH)}>
-            <FlipHorizontal2 className="w-3 h-3 mr-1" /> Espelhar
-          </Button>
-          <Button variant="outline" size="sm" className="text-xs h-7 px-3 py-1" onClick={resetControls}>
-            <RotateCcw className="w-3 h-3 mr-1" /> Resetar
-          </Button>
+              <Button variant="outline" size="sm" className="text-xs h-8 mt-2 justify-start px-2.5 w-full border-destructive/20 text-destructive hover:bg-destructive/10" onClick={resetControls}>
+                <RotateCcw className="w-3.5 h-3.5 mr-2" /> Resetar
+              </Button>
+            </div>
+          </div>
+
+          {/* Column 2: Image (Middle) */}
+          <div className="md:col-span-7 order-1 md:order-2 space-y-4">
+           {/* Normal Interactive Image Area & Vertical Slice Slider side-by-side */}
+      <div className="flex items-stretch gap-4">
+        {!isFullscreen && isSliceSeries && images && images.length > 1 && (
+          <div className="w-10 flex flex-col items-center justify-between bg-secondary/50 border border-border rounded-full py-4 shrink-0 select-none animate-in fade-in">
+            <span className="text-[10px] font-bold text-foreground/80 select-none">
+              {selectedImage + 1}
+            </span>
+            <span className="text-[8px] font-extrabold uppercase tracking-widest text-muted-foreground/60 [writing-mode:vertical-lr] rotate-180 my-2 select-none">
+              Cortes
+            </span>
+            <Slider
+              value={[selectedImage]}
+              onValueChange={([v]) => {
+                setSelectedImage(v);
+                setShowLens(false);
+              }}
+              min={0}
+              max={images.length - 1}
+              step={1}
+              orientation="vertical"
+              className="flex-1 my-3 cursor-ns-resize"
+            />
+            <span className="text-[11px] font-bold text-muted-foreground select-none">
+              {images.length}
+            </span>
+          </div>
+        )}
+
+        <div className="flex-1 min-w-0">
+          {!isFullscreen && renderInteractiveContainer(false)}
         </div>
       </div>
+            
+            {/* Thumbnails list if multiple images (hide for slice series) */}
+            {!isSliceSeries && images && images.length > 1 && selectedImage !== undefined && setSelectedImage && (
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                {images.map((img, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setSelectedImage(i)}
+                    className={`w-16 h-16 rounded-md overflow-hidden border-2 flex-shrink-0 transition-colors ${
+                      i === selectedImage ? 'border-primary' : 'border-border'
+                    }`}
+                  >
+                    <img src={img} alt="" className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Column 3: Case Details (Right) */}
+          <div className="md:col-span-3 order-2 md:order-3">
+            {caseDetails}
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Normal Interactive Image Area & Vertical Slice Slider side-by-side */}
+          <div className="flex items-center gap-4">
+            <div className="flex-1 min-w-0">
+              {!isFullscreen && renderInteractiveContainer(false)}
+            </div>
+            
+            {!isFullscreen && isSliceSeries && images && images.length > 1 && (
+              <div className="h-[250px] sm:h-[350px] w-10 flex flex-col items-center justify-between bg-secondary/50 border border-border rounded-full px-1 py-4 shrink-0 select-none">
+                <span className="text-[11px] font-bold text-foreground/80 select-none">
+                  {selectedImage + 1}
+                </span>
+                <Slider
+                  value={[selectedImage]}
+                  onValueChange={([v]) => {
+                    setSelectedImage(v);
+                    setShowLens(false);
+                  }}
+                  min={0}
+                  max={images.length - 1}
+                  step={1}
+                  orientation="vertical"
+                  className="flex-1 my-3 cursor-ns-resize"
+                />
+                <span className="text-[11px] font-bold text-muted-foreground select-none">
+                  {images.length}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Control Buttons with flex wrap for mobile screens */}
+          <div className="bg-secondary/50 rounded-lg p-3 space-y-2 select-none">
+            <div className="flex items-center gap-3">
+              <Sun className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
+              <Slider value={[brightness]} onValueChange={([v]) => setBrightness(v)} min={20} max={300} step={5} className="flex-1" />
+              <span className="text-xs text-muted-foreground w-10 text-right">{brightness}%</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Contrast className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
+              <Slider value={[contrast]} onValueChange={([v]) => setContrast(v)} min={20} max={300} step={5} className="flex-1" />
+              <span className="text-xs text-muted-foreground w-10 text-right">{contrast}%</span>
+            </div>
+            
+            {/* Buttons wrapping enabled via flex-wrap */}
+            <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-border/20 mt-1">
+              {/* Adjustments */}
+              <Button variant={invert ? 'default' : 'outline'} size="sm" className="text-xs h-7 px-3 py-1" onClick={() => setInvert(!invert)}>
+                <Eclipse className="w-3.5 h-3.5 mr-1" /> Inverter
+              </Button>
+
+              <Button variant={flipH ? 'default' : 'outline'} size="sm" className="text-xs h-7 px-3 py-1" onClick={() => setFlipH(!flipH)}>
+                <FlipHorizontal2 className="w-3.5 h-3.5 mr-1" /> Espelhar
+              </Button>
+
+              <Button variant="outline" size="sm" className="text-xs h-7 px-3 py-1" onClick={() => setRotation((r) => (r + 90) % 360)}>
+                <RotateCw className="w-3.5 h-3.5 mr-1" /> Rotacionar
+              </Button>
+
+              {/* Divider */}
+              <div className="w-px h-6 bg-border mx-1 hidden sm:block" />
+
+              {/* Unified Tools Group */}
+              <Button
+                variant={activeTool === 'lens' ? 'default' : 'outline'}
+                size="sm"
+                className="text-xs h-7 px-3 py-1"
+                onClick={() => { setActiveTool('lens'); setShowLens(false); }}
+              >
+                <Search className="w-3.5 h-3.5 mr-1" /> Lupa
+              </Button>
+
+              {!hideTools && (
+                <>
+                  <Button
+                    variant={activeTool === 'ruler' ? 'default' : 'outline'}
+                    size="sm"
+                    className="text-xs h-7 px-3 py-1"
+                    onClick={() => { setActiveTool('ruler'); setShowLens(false); }}
+                  >
+                    <Ruler className="w-3.5 h-3.5 mr-1" /> Régua
+                  </Button>
+                  <Button
+                    variant={activeTool === 'arrow' ? 'default' : 'outline'}
+                    size="sm"
+                    className="text-xs h-7 px-3 py-1"
+                    onClick={() => { setActiveTool('arrow'); setShowLens(false); }}
+                  >
+                    <ArrowUpRight className="w-3.5 h-3.5 mr-1" /> Seta
+                  </Button>
+                </>
+              )}
+
+              {/* Divider */}
+              <div className="w-px h-6 bg-border mx-1 hidden sm:block" />
+
+              <Button variant="outline" size="sm" className="text-xs h-7 px-3 py-1" onClick={resetControls}>
+                <RotateCcw className="w-3.5 h-3.5 mr-1" /> Resetar
+              </Button>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Fullscreen Overlay */}
       {isFullscreen && createPortal(
@@ -898,6 +1159,29 @@ export default function ImageViewer({ src, alt, images, selectedImage, setSelect
                   />
                 </label>
 
+                <button
+                  onClick={() => setInvert(!invert)}
+                  className={`text-xs px-3 py-1.5 rounded border transition-colors flex items-center gap-1.5 ${invert ? 'bg-primary text-primary-foreground border-primary' : 'bg-white/5 text-white/80 border-white/10 hover:bg-white/10'}`}
+                >
+                  <Eclipse className="w-3.5 h-3.5" /> Inverter
+                </button>
+
+                <button
+                  onClick={() => setFlipH(!flipH)}
+                  className={`text-xs px-3 py-1.5 rounded border transition-colors flex items-center gap-1.5 ${flipH ? 'bg-primary border-primary text-primary-foreground' : 'bg-white/5 text-white/80 border-white/10 hover:bg-white/10'}`}
+                >
+                  <FlipHorizontal2 className="w-3.5 h-3.5" /> Espelhar
+                </button>
+
+                <button
+                  onClick={() => setRotation((r) => (r + 90) % 360)}
+                  className="text-xs px-3 py-1.5 rounded bg-white/5 text-white/80 border border-white/10 hover:bg-white/10 flex items-center gap-1 transition-colors"
+                >
+                  <RotateCw className="w-3.5 h-3.5" /> Rotacionar
+                </button>
+
+                <div className="w-px h-6 bg-white/20" />
+
                 {/* Unified Tools Group in Fullscreen (Outlined style matching bottom buttons) */}
                 <button
                   onClick={() => { setActiveTool('lens'); setShowLens(false); }}
@@ -905,39 +1189,26 @@ export default function ImageViewer({ src, alt, images, selectedImage, setSelect
                 >
                   <Search className="w-3.5 h-3.5" /> Lupa
                 </button>
-                <button
-                  onClick={() => { setActiveTool('ruler'); setShowLens(false); }}
-                  className={`text-xs px-3 py-1.5 rounded border transition-colors flex items-center gap-1 ${activeTool === 'ruler' ? 'bg-primary text-primary-foreground border-primary' : 'bg-white/5 text-white/80 border-white/10 hover:bg-white/10'}`}
-                >
-                  <Ruler className="w-3.5 h-3.5" /> Régua
-                </button>
-                <button
-                  onClick={() => { setActiveTool('arrow'); setShowLens(false); }}
-                  className={`text-xs px-3 py-1.5 rounded border transition-colors flex items-center gap-1 ${activeTool === 'arrow' ? 'bg-primary text-primary-foreground border-primary' : 'bg-white/5 text-white/80 border-white/10 hover:bg-white/10'}`}
-                >
-                  <ArrowUpRight className="w-3.5 h-3.5" /> Seta
-                </button>
+
+                {!hideTools && (
+                  <>
+                    <button
+                      onClick={() => { setActiveTool('ruler'); setShowLens(false); }}
+                      className={`text-xs px-3 py-1.5 rounded border transition-colors flex items-center gap-1 ${activeTool === 'ruler' ? 'bg-primary text-primary-foreground border-primary' : 'bg-white/5 text-white/80 border-white/10 hover:bg-white/10'}`}
+                    >
+                      <Ruler className="w-3.5 h-3.5" /> Régua
+                    </button>
+                    <button
+                      onClick={() => { setActiveTool('arrow'); setShowLens(false); }}
+                      className={`text-xs px-3 py-1.5 rounded border transition-colors flex items-center gap-1 ${activeTool === 'arrow' ? 'bg-primary text-primary-foreground border-primary' : 'bg-white/5 text-white/80 border-white/10 hover:bg-white/10'}`}
+                    >
+                      <ArrowUpRight className="w-3.5 h-3.5" /> Seta
+                    </button>
+                  </>
+                )}
 
                 <div className="w-px h-6 bg-white/20" />
                 
-                <button
-                  onClick={() => setInvert(!invert)}
-                  className={`text-xs px-3 py-1.5 rounded border transition-colors ${invert ? 'bg-primary text-primary-foreground border-primary' : 'bg-white/5 text-white/80 border-white/10 hover:bg-white/10'}`}
-                >
-                  Inverter
-                </button>
-                <button
-                  onClick={() => setRotation((r) => (r + 90) % 360)}
-                  className="text-xs px-3 py-1.5 rounded bg-white/5 text-white/80 border border-white/10 hover:bg-white/10 flex items-center gap-1 transition-colors"
-                >
-                  <RotateCw className="w-3.5 h-3.5" /> Rotacionar
-                </button>
-                <button
-                  onClick={() => setFlipH(!flipH)}
-                  className={`text-xs px-3 py-1.5 rounded border transition-colors ${flipH ? 'bg-primary border-primary text-primary-foreground' : 'bg-white/5 text-white/80 border-white/10 hover:bg-white/10'}`}
-                >
-                  Espelhar
-                </button>
                 <button
                   onClick={resetControls}
                   className="text-xs px-3 py-1.5 rounded bg-white/5 text-white/80 border border-white/10 hover:bg-white/10 flex items-center gap-1 transition-colors"
@@ -949,12 +1220,40 @@ export default function ImageViewer({ src, alt, images, selectedImage, setSelect
           )}
 
           {/* Fullscreen Interactive image box - takes remaining height */}
-          <div className="flex-1 min-h-0 w-full relative bg-black z-10 flex items-center justify-center">
-            {renderInteractiveContainer(true)}
+          <div className="flex-1 min-h-0 w-full relative bg-black z-10 flex items-center justify-center gap-6 px-6">
+            {isSliceSeries && images && images.length > 1 && (
+              <div className="h-[60%] w-10 flex flex-col items-center justify-between bg-white/5 border border-white/10 rounded-full px-1 py-4 shrink-0 select-none animate-in fade-in">
+                <span className="text-[11px] font-bold text-white/95 select-none">
+                  {selectedImage + 1}
+                </span>
+                <span className="text-[8px] font-extrabold uppercase tracking-widest text-white/40 [writing-mode:vertical-lr] rotate-180 my-2 select-none">
+                  Cortes
+                </span>
+                <Slider
+                  value={[selectedImage]}
+                  onValueChange={([v]) => {
+                    setSelectedImage(v);
+                    setShowLens(false);
+                  }}
+                  min={0}
+                  max={images.length - 1}
+                  step={1}
+                  orientation="vertical"
+                  className="flex-1 my-3 cursor-ns-resize"
+                />
+                <span className="text-[11px] font-bold text-white/40 select-none">
+                  {images.length}
+                </span>
+              </div>
+            )}
+
+            <div className="flex-1 h-full min-w-0 flex items-center justify-center">
+              {renderInteractiveContainer(true)}
+            </div>
           </div>
 
-          {/* Thumbnails Navigation inside fullscreen */}
-          {showFSControls && images && images.length > 1 && selectedImage !== undefined && setSelectedImage && (
+          {/* Thumbnails Navigation inside fullscreen (hide for TC/RM slice series) */}
+          {!isSliceSeries && showFSControls && images && images.length > 1 && selectedImage !== undefined && setSelectedImage && (
             <div className="w-full flex gap-2 justify-center p-4 bg-black/90 backdrop-blur-md border-t border-white/10 z-40 flex-shrink-0">
               {images.map((img, i) => (
                 <button

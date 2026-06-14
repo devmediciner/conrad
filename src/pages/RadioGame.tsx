@@ -10,9 +10,10 @@ import { toast } from 'sonner';
 import { useCases } from '@/hooks/useCases';
 import { useDiseases } from '@/hooks/useGame';
 import { motion, AnimatePresence } from 'framer-motion';
-import { EXAM_TYPE_COLORS, EXAM_TYPE_LABELS, type ExamType } from '@/types/case';
+import { EXAM_TYPE_COLORS, EXAM_TYPE_LABELS, type ExamType, type Case } from '@/types/case';
 import { FormattedText } from '@/components/ui/FormattedText';
 import { removeAccents } from '@/lib/utils';
+import ImageViewer from '@/components/ImageViewer';
 
 
 interface QuizStats {
@@ -54,19 +55,34 @@ function saveStats(stats: QuizStats) {
 export default function RadioGame() {
   const navigate = useNavigate();
   const [step, setStep] = useState<'intro' | 'select' | 'playing' | 'result'>('intro');
-  const [currentCase, setCurrentCase] = useState<any | null>(null);
+  const [currentCase, setCurrentCase] = useState<Case | null>(null);
   const [guesses, setGuesses] = useState<string[]>([]);
   const [currentInput, setCurrentInput] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
   const [hasWon, setHasWon] = useState(false);
   const [stats, setStats] = useState<QuizStats>(getStats);
   const [statsRecorded, setStatsRecorded] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(0);
 
   const { data: cases, isLoading: loadingCases } = useCases({ search: '', examType: 'all' });
   const { data: diseasesData } = useDiseases();
   
   const diseasesList = useMemo(() => diseasesData?.map(d => d.name) || [], [diseasesData]);
-  const validCases = useMemo(() => cases?.filter((c: any) => c.disease && c.images && c.images.length > 0) || [], [cases]);
+  const validCases = useMemo(() => cases?.filter((c) => c.disease && c.images && c.images.length > 0) || [], [cases]);
+
+  const images = useMemo(() => currentCase?.images ?? [], [currentCase]);
+  const currentImage = useMemo(() => images[selectedImage], [images, selectedImage]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.search-input-container')) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
 
   const startRandom = () => {
     if (!validCases || validCases.length === 0) {
@@ -77,12 +93,13 @@ export default function RadioGame() {
     startGame(randomCase);
   };
 
-  const startGame = (gameCase: any) => {
+  const startGame = (gameCase: Case) => {
     setCurrentCase(gameCase);
     setGuesses([]);
     setCurrentInput('');
     setHasWon(false);
     setStatsRecorded(false);
+    setSelectedImage(0);
     setStep('playing');
   };
 
@@ -184,7 +201,7 @@ export default function RadioGame() {
 
   const highlightMatch = (text: string, query: string) => {
     if (!query) return <span>{text}</span>;
-    const parts = text.split(new RegExp(`(${query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')})`, 'gi'));
+    const parts = text.split(new RegExp(`(${query.replace(new RegExp('[-/\\\\^$*+?.()|[\\]{}]', 'g'), '\\$&')})`, 'gi'));
     return (
       <span>
         {parts.map((part, i) => 
@@ -247,32 +264,38 @@ export default function RadioGame() {
       </header>
 
       <main className="flex-1 flex flex-col items-center justify-center p-4">
-        <div className={`w-full transition-all duration-500 ${step === 'select' ? 'max-w-6xl' : 'max-w-xl'}`}>
+        <div className={`w-full transition-all duration-500 ${
+          step === 'select' 
+            ? 'max-w-6xl' 
+            : step === 'playing' || step === 'result'
+              ? 'max-w-5xl' 
+              : 'max-w-xl'
+        }`}>
           {step === 'intro' && (
-            <div className="relative bg-card/60 backdrop-blur-md border border-border/80 rounded-2xl p-6 sm:p-8 text-center space-y-6 shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-4">
+            <div className="relative bg-card/60 backdrop-blur-md border border-border/80 rounded-2xl p-5 sm:p-8 text-center space-y-4 sm:space-y-6 shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-4">
               {/* Pulsing glow background decoration */}
               <div className="absolute -top-12 -right-12 w-32 h-32 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
               <div className="absolute -bottom-12 -left-12 w-32 h-32 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
 
-              <div className="relative w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto text-primary shadow-[0_0_20px_-3px_rgba(var(--primary-rgb),0.35)] mb-2 group">
-                <Sparkles className="absolute -top-1 -right-1 w-5 h-5 text-amber-500 animate-pulse" />
-                <Stethoscope className="w-10 h-10 group-hover:scale-110 transition-transform duration-300" />
+              <div className="relative w-14 h-14 sm:w-20 sm:h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto text-primary shadow-[0_0_20px_-3px_rgba(var(--primary-rgb),0.35)] mb-2 group">
+                <Sparkles className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 text-amber-500 animate-pulse" />
+                <Stethoscope className="w-7 h-7 sm:w-10 sm:h-10 group-hover:scale-110 transition-transform duration-300" />
               </div>
 
-              <div className="space-y-2 relative z-10">
-                <span className="text-[10px] font-bold tracking-widest text-primary uppercase bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
+              <div className="space-y-1.5 sm:space-y-2 relative z-10">
+                <span className="text-[9px] sm:text-[10px] font-bold tracking-widest text-primary uppercase bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
                   Quiz CONRAD
                 </span>
-                <h2 className="text-3xl font-extrabold font-heading text-foreground tracking-tight">
+                <h2 className="text-2xl sm:text-3xl font-extrabold font-heading text-foreground tracking-tight">
                   Desafio Radiológico
                 </h2>
-                <p className="text-sm text-muted-foreground max-w-sm mx-auto leading-relaxed">
+                <p className="text-xs sm:text-sm text-muted-foreground max-w-sm mx-auto leading-relaxed">
                   Avalie seus conhecimentos! Analise exames de imagem reais, correlacione com a história clínica e descubra o diagnóstico.
                 </p>
               </div>
 
-              {/* Como Jogar - Beautiful Interactive Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left w-full relative z-10">
+              {/* Como Jogar - Beautiful Interactive Grid (hidden on mobile to keep page succinct) */}
+              <div className="hidden sm:grid grid-cols-1 sm:grid-cols-2 gap-3 text-left w-full relative z-10">
                 <div className="bg-muted/30 border border-border/40 p-3.5 rounded-xl flex gap-3 hover:border-primary/30 transition-colors group">
                   <div className="bg-primary/10 text-primary w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
                     <BookOpen className="w-4 h-4" />
@@ -480,168 +503,242 @@ export default function RadioGame() {
           )}
 
           {step === 'playing' && currentCase && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
-              <div className="bg-black rounded-2xl overflow-hidden shadow-xl border border-border aspect-[4/3] sm:aspect-video flex items-center justify-center relative">
-                <img src={currentCase.images?.[0]} alt="Caso Radiológico" className="max-w-full max-h-full object-contain opacity-95" />
-                <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md px-4 py-1.5 rounded-full text-sm font-medium text-white border border-white/10 shadow-sm">
-                  {currentCase.sex}, {currentCase.age} anos
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start animate-in fade-in slide-in-from-right-4">
+              {/* Coluna da Esquerda: Imagem */}
+              <div className="space-y-3 md:col-span-7">
+                {currentImage ? (
+                  <div className="relative">
+                    <ImageViewer
+                      src={currentImage}
+                      alt="Caso Radiológico"
+                      images={images}
+                      selectedImage={selectedImage}
+                      setSelectedImage={setSelectedImage}
+                      hideTools={true}
+                      aspectClass="aspect-[4/3] md:aspect-video"
+                      examType={currentCase.exam_type}
+                    />
+                    <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md px-4 py-1.5 rounded-full text-sm font-medium text-white border border-white/10 shadow-sm z-30 pointer-events-none">
+                      {currentCase.sex === 'M' ? 'Masculino' : currentCase.sex === 'F' ? 'Feminino' : currentCase.sex || 'Paciente'}, {currentCase.age} anos
+                    </div>
+                  </div>
+                ) : (
+                  <div className="aspect-square rounded-lg bg-secondary flex items-center justify-center text-muted-foreground">
+                    Sem imagem
+                  </div>
+                )}
+                {images.length > 1 && currentCase.exam_type?.toUpperCase() !== 'TC' && currentCase.exam_type?.toUpperCase() !== 'RM' && (
+                  <div className="flex gap-2 overflow-x-auto pb-1">
+                    {images.map((img, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setSelectedImage(i)}
+                        className={`w-16 h-16 rounded-md overflow-hidden border-2 flex-shrink-0 transition-colors ${
+                          i === selectedImage ? 'border-primary' : 'border-border'
+                        }`}
+                      >
+                        <img src={img} alt="" className="w-full h-full object-cover" />
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              <div className="space-y-4 bg-card p-5 rounded-2xl border border-border shadow-sm">
-                {/* Cabeçalho Compacto com Timeline de Dots */}
-                <div className="flex items-center justify-between border-b border-border/40 pb-3 mb-1">
-                  <span className="text-sm font-bold text-foreground uppercase tracking-wider">Histórico Clínico</span>
-                  <div className="flex items-center gap-1.5 bg-muted/50 px-2.5 py-1 rounded-full border border-border/50">
-                    <span className="text-[10px] text-muted-foreground font-mono font-bold mr-1.5">Tentativas:</span>
-                    {Array.from({ length: 4 }).map((_, idx) => {
-                      const guess = guesses[idx];
-                      if (guess === undefined) {
-                        return <span key={idx} className="w-2.5 h-2.5 rounded-full bg-border" />;
-                      }
-                      if (guess === '__hint__') {
-                        return <span key={idx} className="w-2.5 h-2.5 rounded-full bg-blue-500/80 animate-pulse" title="Dica pedida" />;
-                      }
-                      return <span key={idx} className="w-2.5 h-2.5 rounded-full bg-red-500/80" title={`Palpite errado: ${guess}`} />;
-                    })}
+              {/* Coluna da Direita: História & Formulário */}
+              <div className="space-y-4 md:col-span-5">
+                <div className="space-y-4 bg-card p-5 rounded-2xl border border-border shadow-sm">
+                  {/* Cabeçalho Compacto com Timeline de Dots */}
+                  <div className="flex items-center justify-between border-b border-border/40 pb-3 mb-1">
+                    <span className="text-sm font-bold text-foreground uppercase tracking-wider">Histórico Clínico</span>
+                    <div className="flex items-center gap-1.5 bg-muted/50 px-2.5 py-1 rounded-full border border-border/50">
+                      <span className="text-[10px] text-muted-foreground font-mono font-bold mr-1.5">Tentativas:</span>
+                      {Array.from({ length: 4 }).map((_, idx) => {
+                        const guess = guesses[idx];
+                        if (guess === undefined) {
+                          return <span key={idx} className="w-2.5 h-2.5 rounded-full bg-border" />;
+                        }
+                        if (guess === '__hint__') {
+                          return <span key={idx} className="w-2.5 h-2.5 rounded-full bg-blue-500/80 animate-pulse" title="Dica pedida" />;
+                        }
+                        return <span key={idx} className="w-2.5 h-2.5 rounded-full bg-red-500/80" title={`Palpite errado: ${guess}`} />;
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Feed de Dicas Unificado */}
+                  <div className="space-y-4 pt-1">
+                    {clues.filter(c => c.unlocked).length === 0 ? (
+                      <p className="text-sm text-muted-foreground/75 py-2 italic pl-1 animate-in fade-in">Nenhuma dica revelada ainda. Clique em "Dica" ou dê um palpite!</p>
+                    ) : (
+                      <div className="space-y-4">
+                        {clues.map((c, i) => c.unlocked && (
+                          <motion.div 
+                            key={i} 
+                            initial={{ x: -6, opacity: 0 }}
+                            animate={{ x: 0, opacity: 1 }}
+                            transition={{ duration: 0.2 }}
+                            className="text-sm border-l-2 border-primary/40 pl-3.5 py-0.5 space-y-1"
+                          >
+                            <div className="flex items-center justify-between text-xs text-muted-foreground font-bold tracking-wide">
+                              <span className="text-primary flex items-center gap-1">💡 DICA {i + 1}</span>
+                              {guesses[i] && guesses[i] !== '__hint__' && (
+                                <span className="text-[10px] text-red-500/90 line-through bg-red-500/5 border border-red-500/10 px-2 py-0.5 rounded font-medium">
+                                  Chute: {guesses[i]}
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-foreground/85 leading-relaxed font-medium pl-0.5">{c.text}</p>
+                          </motion.div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                {/* Feed de Dicas Unificado */}
-                <div className="space-y-4 pt-1">
-                  {clues.filter(c => c.unlocked).length === 0 ? (
-                    <p className="text-sm text-muted-foreground/75 py-2 italic pl-1 animate-in fade-in">Nenhuma dica revelada ainda. Clique em "Dica" ou dê um palpite!</p>
-                  ) : (
-                    <div className="space-y-4">
-                      {clues.map((c, i) => c.unlocked && (
-                        <motion.div 
-                          key={i} 
-                          initial={{ x: -6, opacity: 0 }}
-                          animate={{ x: 0, opacity: 1 }}
-                          transition={{ duration: 0.2 }}
-                          className="text-sm border-l-2 border-primary/40 pl-3.5 py-0.5 space-y-1"
+                {/* Controles Compactos h-11 */}
+                <div className="space-y-3 bg-card p-4 rounded-2xl border border-border shadow-sm">
+                  <div className="relative search-input-container">
+                    <Input
+                      value={currentInput}
+                      onChange={(e) => { setCurrentInput(e.target.value); setShowDropdown(true); }}
+                      onFocus={() => setShowDropdown(true)}
+                      placeholder="Pesquise o diagnóstico..."
+                      className="w-full bg-background text-base h-11 rounded-lg"
+                    />
+                    <AnimatePresence>
+                      {showDropdown && currentInput && filteredDiseases.length > 0 && (
+                        <motion.ul 
+                          initial={{ opacity: 0, y: 5, scale: 0.99 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 5, scale: 0.99 }}
+                          transition={{ duration: 0.1 }}
+                          className="absolute bottom-full mb-2 z-20 w-full bg-popover border border-border rounded-xl max-h-48 overflow-y-auto shadow-2xl p-1.5 custom-scrollbar"
                         >
-                          <div className="flex items-center justify-between text-xs text-muted-foreground font-bold tracking-wide">
-                            <span className="text-primary flex items-center gap-1">💡 DICA {i + 1}</span>
-                            {guesses[i] && guesses[i] !== '__hint__' && (
-                              <span className="text-[10px] text-red-500/90 line-through bg-red-500/5 border border-red-500/10 px-2 py-0.5 rounded font-medium">
-                                Chute: {guesses[i]}
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-foreground/85 leading-relaxed font-medium pl-0.5">{c.text}</p>
-                        </motion.div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Controles Compactos h-11 */}
-              <div className="space-y-3 bg-card p-4 rounded-2xl border border-border shadow-sm">
-                <div className="relative">
-                  <Input
-                    value={currentInput}
-                    onChange={(e) => { setCurrentInput(e.target.value); setShowDropdown(true); }}
-                    onFocus={() => setShowDropdown(true)}
-                    placeholder="Pesquise o diagnóstico..."
-                    className="w-full bg-background text-base h-11 rounded-lg"
-                  />
-                  <AnimatePresence>
-                    {showDropdown && currentInput && filteredDiseases.length > 0 && (
-                      <motion.ul 
-                        initial={{ opacity: 0, y: 5, scale: 0.99 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 5, scale: 0.99 }}
-                        transition={{ duration: 0.1 }}
-                        className="absolute bottom-full mb-2 z-20 w-full bg-popover border border-border rounded-xl max-h-48 overflow-y-auto shadow-2xl p-1.5 custom-scrollbar"
-                      >
-                        {filteredDiseases.map(d => (
-                          <li 
-                            key={d} 
-                            className="p-2.5 hover:bg-primary/10 hover:text-primary rounded-lg cursor-pointer text-sm font-medium transition-colors flex items-center justify-between group" 
-                            onClick={() => { setCurrentInput(d); setShowDropdown(false); }}
-                          >
-                            <span>{highlightMatch(d, currentInput)}</span>
-                            <span className="text-[10px] text-muted-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity">Selecionar</span>
-                          </li>
-                        ))}
-                      </motion.ul>
-                    )}
-                  </AnimatePresence>
-                </div>
-                <div className="flex gap-3">
-                  <Button 
-                    variant="outline"
-                    className="flex-1 h-11 text-sm gap-1.5 rounded-lg shrink-0" 
-                    onClick={handleRequestHint}
-                    disabled={guesses.length >= 3}
-                  >
-                    <span>💡 Dica</span>
-                    {guesses.length < 3 && (
-                      <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.2 rounded font-mono">
-                        {3 - guesses.length}
-                      </span>
-                    )}
-                  </Button>
-                  <Button 
-                    className="flex-[2] h-11 text-sm rounded-lg" 
-                    onClick={handleGuess} 
-                    disabled={!currentInput}
-                  >
-                    Confirmar
-                  </Button>
+                          {filteredDiseases.map(d => (
+                            <li 
+                              key={d} 
+                              className="p-2.5 hover:bg-primary/10 hover:text-primary rounded-lg cursor-pointer text-sm font-medium transition-colors flex items-center justify-between group" 
+                              onClick={() => { setCurrentInput(d); setShowDropdown(false); }}
+                            >
+                              <span>{highlightMatch(d, currentInput)}</span>
+                              <span className="text-[10px] text-muted-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity">Selecionar</span>
+                            </li>
+                          ))}
+                        </motion.ul>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                  <div className="flex gap-3">
+                    <Button 
+                      variant="outline"
+                      className="flex-1 h-11 text-sm gap-1.5 rounded-lg shrink-0" 
+                      onClick={handleRequestHint}
+                      disabled={guesses.length >= 3}
+                    >
+                      <span>💡 Dica</span>
+                      {guesses.length < 3 && (
+                        <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.2 rounded font-mono">
+                          {3 - guesses.length}
+                        </span>
+                      )}
+                    </Button>
+                    <Button 
+                      className="flex-[2] h-11 text-sm rounded-lg" 
+                      onClick={handleGuess} 
+                      disabled={!currentInput}
+                    >
+                      Confirmar
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
           )}
 
           {step === 'result' && currentCase && (
-            <div className="bg-card border border-border rounded-2xl p-6 sm:p-8 text-center space-y-5 shadow-xl animate-in zoom-in-95 w-full">
-              {/* Cabeçalho de Status */}
-              <div className="text-center space-y-2">
-                <div className={`w-14 h-14 rounded-full flex items-center justify-center mx-auto shadow-inner ${hasWon ? 'bg-emerald-500/20 text-emerald-500' : 'bg-red-500/20 text-red-500'}`}>
-                  {hasWon ? <Trophy className="w-7 h-7" /> : <XCircle className="w-7 h-7" />}
+            <div className="bg-card border border-border rounded-2xl p-6 sm:p-8 shadow-xl animate-in zoom-in-95 w-full">
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+                {/* Coluna da Esquerda: Imagem */}
+                <div className="space-y-3 md:col-span-7">
+                  {currentImage ? (
+                    <div className="relative">
+                      <ImageViewer
+                        src={currentImage}
+                        alt="Caso Radiológico"
+                        images={images}
+                        selectedImage={selectedImage}
+                        setSelectedImage={setSelectedImage}
+                        hideTools={true}
+                        aspectClass="aspect-[4/3] md:aspect-video"
+                        examType={currentCase.exam_type}
+                      />
+                      <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-xs font-medium text-white border border-white/10 shadow-sm z-30 pointer-events-none">
+                        {currentCase.sex === 'M' ? 'Masculino' : currentCase.sex === 'F' ? 'Feminino' : currentCase.sex || 'Paciente'}, {currentCase.age} anos
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="aspect-square rounded-lg bg-secondary flex items-center justify-center text-muted-foreground">
+                      Sem imagem
+                    </div>
+                  )}
+                  {images.length > 1 && currentCase.exam_type?.toUpperCase() !== 'TC' && currentCase.exam_type?.toUpperCase() !== 'RM' && (
+                    <div className="flex gap-2 overflow-x-auto pb-1">
+                      {images.map((img, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setSelectedImage(i)}
+                          className={`w-16 h-16 rounded-md overflow-hidden border-2 flex-shrink-0 transition-colors ${
+                            i === selectedImage ? 'border-primary' : 'border-border'
+                          }`}
+                        >
+                          <img src={img} alt="" className="w-full h-full object-cover" />
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <div>
-                  <h2 className="text-2xl font-bold font-heading text-foreground">{hasWon ? 'Parabéns!' : 'Fim de Jogo'}</h2>
-                  <p className="text-sm text-muted-foreground">{hasWon ? 'Você acertou o diagnóstico clínico!' : 'As tentativas de diagnóstico esgotaram.'}</p>
-                </div>
-              </div>
 
-              {/* Imagem do Caso */}
-              <div className="bg-black rounded-2xl overflow-hidden shadow-md border border-border aspect-[4/3] sm:aspect-video flex items-center justify-center relative w-full">
-                <img src={currentCase.images?.[0]} alt="Caso Radiológico" className="max-w-full max-h-full object-contain opacity-95" />
-                <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-xs font-medium text-white border border-white/10 shadow-sm">
-                  {currentCase.sex}, {currentCase.age} anos
-                </div>
-              </div>
-              {/* Discussão do Caso */}
-              <div className="space-y-4 text-left">
-                {/* História Clínica */}
-                <div className="bg-muted/30 border border-border/60 p-4 rounded-xl space-y-1.5">
-                  <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">História Clínica</h4>
-                  <FormattedText content={currentCase.clinical_case} className="text-sm text-foreground/85 leading-relaxed font-semibold" />
-                </div>
-                
-                {/* Diagnóstico Final e Discussão */}
-                <div className="bg-muted p-5 rounded-xl space-y-3">
-                  <div className={`flex items-center gap-2 font-bold text-lg border-b border-border/50 pb-3 ${hasWon ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500'}`}>
-                    {hasWon ? <CheckCircle2 className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
-                    <span>{currentCase.disease}</span>
+                {/* Coluna da Direita: Discussão, Cabeçalho de Status, Controles de Ação */}
+                <div className="space-y-5 md:col-span-5 text-center">
+                  {/* Cabeçalho de Status */}
+                  <div className="text-center space-y-2">
+                    <div className={`w-14 h-14 rounded-full flex items-center justify-center mx-auto shadow-inner ${hasWon ? 'bg-emerald-500/20 text-emerald-500' : 'bg-red-500/20 text-red-500'}`}>
+                      {hasWon ? <Trophy className="w-7 h-7" /> : <XCircle className="w-7 h-7" />}
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold font-heading text-foreground">{hasWon ? 'Parabéns!' : 'Fim de Jogo'}</h2>
+                      <p className="text-sm text-muted-foreground">{hasWon ? 'Você acertou o diagnóstico clínico!' : 'As tentativas de diagnóstico esgotaram.'}</p>
+                    </div>
                   </div>
-                  <FormattedText content={currentCase.diagnosis} className="text-sm text-foreground/80 leading-relaxed pt-1" />
-                </div>
-              </div>
 
-              {/* Controles de Ação */}
-              <div className="flex gap-3 pt-2">
-                <Button variant="outline" size="lg" className="flex-1 h-12" onClick={() => setStep('intro')}>
-                  Jogar Novamente
-                </Button>
-                <Button size="lg" className="flex-1 gap-2 h-12" onClick={handleShare}>
-                  <Share2 className="w-5 h-5" /> Compartilhar
-                </Button>
+                  {/* Discussão do Caso */}
+                  <div className="space-y-4 text-left">
+                    {/* História Clínica */}
+                    <div className="bg-muted/30 border border-border/60 p-4 rounded-xl space-y-1.5">
+                      <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">História Clínica</h4>
+                      <FormattedText content={currentCase.clinical_case} className="text-sm text-foreground/85 leading-relaxed font-semibold" />
+                    </div>
+                    
+                    {/* Diagnóstico Final e Discussão */}
+                    <div className="bg-muted p-5 rounded-xl space-y-3">
+                      <div className={`flex items-center gap-2 font-bold text-lg border-b border-border/50 pb-3 ${hasWon ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500'}`}>
+                        {hasWon ? <CheckCircle2 className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
+                        <span>{currentCase.disease}</span>
+                      </div>
+                      <FormattedText content={currentCase.diagnosis} className="text-sm text-foreground/80 leading-relaxed pt-1" />
+                    </div>
+                  </div>
+
+                  {/* Controles de Ação */}
+                  <div className="flex flex-col sm:flex-row gap-3 pt-2 w-full">
+                    <Button variant="outline" size="lg" className="w-full sm:flex-1 h-12 text-sm" onClick={() => setStep('intro')}>
+                      Jogar Novamente
+                    </Button>
+                    <Button size="lg" className="w-full sm:flex-1 gap-2 h-12 text-sm" onClick={handleShare}>
+                      <Share2 className="w-5 h-5" /> Compartilhar
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
           )}

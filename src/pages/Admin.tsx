@@ -78,7 +78,7 @@ const Admin = () => {
       }
     };
     fetchArticles();
-  }, [activeTab, refreshKey]);
+  }, [activeTab, refreshKey, isAdmin]);
 
   const { data: diseases, isLoading: loadingDiseases } = useDiseases();
   const deleteDisease = useDeleteDisease();
@@ -130,8 +130,8 @@ const Admin = () => {
     try {
       // Criamos um cliente temporário que NÃO salva a sessão. 
       // Isso impede que o Admin atual seja deslogado ao criar a nova conta.
-      const supabaseUrl = (supabase as any).supabaseUrl || import.meta.env.VITE_SUPABASE_URL;
-      const supabaseKey = (supabase as any).supabaseKey || import.meta.env.VITE_SUPABASE_ANON_KEY;
+      const supabaseUrl = (supabase as unknown as { supabaseUrl?: string }).supabaseUrl || import.meta.env.VITE_SUPABASE_URL;
+      const supabaseKey = (supabase as unknown as { supabaseKey?: string }).supabaseKey || import.meta.env.VITE_SUPABASE_ANON_KEY;
 
       if (!supabaseUrl || !supabaseKey) {
         return toast.error('Erro interno: Chaves de API do Supabase não encontradas.');
@@ -162,8 +162,8 @@ const Admin = () => {
       setNewUserEmail('');
       setNewUserPassword('');
       setRefreshKey(prev => prev + 1);
-    } catch (e: any) {
-      toast.error(e.message || 'Erro ao criar usuário.');
+    } catch (e) {
+      toast.error((e as Error).message || 'Erro ao criar usuário.');
     }
   };
 
@@ -173,7 +173,7 @@ const Admin = () => {
         .from('user_roles')
         .update({
           email: editUserEmail || null,
-          role: editUserRole as any,
+          role: editUserRole as 'admin' | 'user',
         })
         .eq('id', id);
 
@@ -182,8 +182,8 @@ const Admin = () => {
       toast.success('Usuário atualizado com sucesso!');
       setEditingUserId(null);
       setRefreshKey(prev => prev + 1);
-    } catch (e: any) {
-      toast.error(e.message || 'Erro ao atualizar usuário.');
+    } catch (e) {
+      toast.error((e as Error).message || 'Erro ao atualizar usuário.');
     }
   };
 
@@ -199,8 +199,8 @@ const Admin = () => {
 
       toast.success('Usuário excluído com sucesso!');
       setRefreshKey(prev => prev + 1);
-    } catch (e: any) {
-      toast.error(e.message || 'Erro ao excluir usuário.');
+    } catch (e) {
+      toast.error((e as Error).message || 'Erro ao excluir usuário.');
     }
   };
 
@@ -241,7 +241,7 @@ const Admin = () => {
           ].map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id as 'casos' | 'minigame' | 'artigos' | 'config')}
               className={`pb-3 px-2 text-sm font-semibold transition-colors border-b-2 whitespace-nowrap ${activeTab === tab.id ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground'}`}
             >
               {tab.label}
