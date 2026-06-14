@@ -24,3 +24,6 @@ dist-ssr
 *.sw?
 .env
 .env*
+
+# Vite timestamps
+vite.config.ts.timestamp-*

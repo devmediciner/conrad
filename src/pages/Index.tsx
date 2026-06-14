@@ -12,6 +12,10 @@ import type { Case } from '@/types/case';
 import type { Article } from '@/types/article';
 import backImage from '@/assets/back.jpg';
 import logo from '@/assets/logo.png';
+import rxImage from '@/assets/rx.png';
+import tcImage from '@/assets/tc.png';
+import usgImage from '@/assets/usg.png';
+import rmImage from '@/assets/rm.png';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { slugify, stripHtml } from '@/lib/utils';
@@ -94,10 +98,10 @@ const Index = () => {
             className="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-6 max-w-5xl mx-auto w-full"
           >
             {[
-              { id: 'RX', title: 'RX', desc: 'Raio-X' },
-              { id: 'TC', title: 'TC', desc: 'Tomografia' },
-              { id: 'USG', title: 'USG', desc: 'Ultrassom' },
-              { id: 'RM', title: 'RM', desc: 'Ressonância' },
+              { id: 'RX', title: 'RX', desc: 'Raio-X', img: rxImage },
+              { id: 'TC', title: 'TC', desc: 'Tomografia', img: tcImage },
+              { id: 'USG', title: 'USG', desc: 'Ultrassom', img: usgImage },
+              { id: 'RM', title: 'RM', desc: 'Ressonância', img: rmImage },
             ].map((mod) => (
               <button
                 key={mod.id}
@@ -107,6 +111,11 @@ const Index = () => {
                 }}
                 className="group relative flex flex-col items-center justify-center p-6 sm:p-8 rounded-3xl bg-card border border-border/60 shadow-sm hover:shadow-xl hover:border-primary/50 transition-all duration-500 hover:-translate-y-1 overflow-hidden"
               >
+                {/* Imagem de fundo no hover */}
+                <div 
+                  className="absolute inset-0 bg-cover bg-center opacity-0 group-hover:opacity-25 scale-100 group-hover:scale-110 transition-all duration-700 ease-out pointer-events-none"
+                  style={{ backgroundImage: `url(${mod.img})` }}
+                />
                 <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <span className="relative z-10 text-4xl sm:text-5xl font-bold text-foreground group-hover:text-primary transition-colors duration-300">
                   {mod.title}
