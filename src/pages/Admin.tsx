@@ -8,7 +8,7 @@ import { EXAM_TYPE_COLORS } from '@/types/case';
 import { stripHtml, slugify, removeAccents } from '@/lib/utils';
 import { CaseModal } from '@/components/CaseModal';
 
-import { Trash2, ArrowLeft, Loader2, Pencil, Plus, Gamepad2, List, FileText, ImagePlus, Save, X, CheckCircle, Settings, Users, UserPlus, Check, XCircle, Eye, Edit, Search } from 'lucide-react';
+import { Trash2, ArrowLeft, Loader2, Pencil, Plus, Gamepad2, List, FileText, ImagePlus, Save, X, CheckCircle, Settings, Users, UserPlus, Check, XCircle, Eye, EyeOff, Edit, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { EditCaseModal } from '@/components/EditCaseModal';
 import { SubmitCaseModal } from '@/components/SubmitCaseModal';
@@ -343,6 +343,21 @@ const Admin = () => {
                               </Button>
                             </>
                           )}
+
+                          {isAdmin && c.status === 'approved' && (
+                             <Button 
+                               size="icon" 
+                               variant="ghost"
+                               onClick={async () => {
+                                 updateCaseStatus.mutate({ id: c.id, status: 'pending' });
+                                 toast.success('Caso desativado e ocultado do público!');
+                               }} 
+                               className="text-amber-500 hover:text-amber-600 hover:bg-amber-500/10 h-8 w-8 shrink-0 transition-colors"
+                               title="Desativar Caso (Ocultar do público)"
+                             >
+                               <EyeOff className="w-4 h-4" />
+                             </Button>
+                           )}
 
                           {(isAdmin || c.submitted_by === user?.id) && (
                             <Button variant="ghost" size="icon" onClick={() => setEditingCase(c)} className="text-muted-foreground hover:text-primary h-8 w-8" title="Editar"><Pencil className="w-4 h-4" /></Button>

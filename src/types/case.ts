@@ -18,6 +18,8 @@ export interface Case {
   submitted_by: string | null;
   created_at: string;
   updated_at: string;
+  comments?: string | null;
+  laudo_images?: string[] | null;
 }
 
 export const EXAM_TYPE_COLORS: Record<ExamType, string> = {

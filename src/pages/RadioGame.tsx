@@ -726,6 +726,27 @@ export default function RadioGame() {
                         <span>{currentCase.disease}</span>
                       </div>
                       <FormattedText content={currentCase.diagnosis} className="text-sm text-foreground/80 leading-relaxed pt-1" />
+                      {currentCase.laudo_images && currentCase.laudo_images.length > 0 && (
+                        <div className="border-t border-border/40 pt-3 mt-2">
+                          <h5 className="text-xs font-bold uppercase tracking-wider text-primary mb-2">Imagens do Laudo</h5>
+                          <div className="grid grid-cols-2 gap-2">
+                            {currentCase.laudo_images.map((imgUrl, i) => (
+                              <div key={i} className="relative aspect-video rounded-md overflow-hidden border border-border group">
+                                <img src={imgUrl} alt="" className="w-full h-full object-cover" />
+                                <a href={imgUrl} target="_blank" rel="noreferrer" className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[10px] font-bold">
+                                  Visualizar
+                                </a>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {currentCase.comments && (
+                        <div className="border-t border-border/40 pt-3 mt-2">
+                          <h5 className="text-xs font-bold uppercase tracking-wider text-primary mb-1">Comentários Adicionais</h5>
+                          <FormattedText content={currentCase.comments} className="text-sm text-foreground/75 leading-relaxed" />
+                        </div>
+                      )}
                     </div>
                   </div>
 

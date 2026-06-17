@@ -9,6 +9,7 @@ export function useCases(filters?: { search?: string; examType?: string }) {
       let query = supabase
         .from('cases')
         .select('*')
+        .eq('status', 'approved')
         .order('created_at', { ascending: false });
 
       if (filters?.examType && filters.examType !== 'all') {
@@ -53,6 +54,7 @@ export function useSubmitCase() {
   return useMutation({
     mutationFn: async (caseData: {
       files: File[];
+      laudo_files: File[];
       exam_type: ExamType;
       age: number;
       sex: string;
@@ -64,6 +66,7 @@ export function useSubmitCase() {
       clue1?: string | null;
       clue2?: string | null;
       clue3?: string | null;
+      comments?: string | null;
     }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Não autenticado');
@@ -84,7 +87,9 @@ export function useSubmitCase() {
           clue1: caseData.clue1,
           clue2: caseData.clue2,
           clue3: caseData.clue3,
+          comments: caseData.comments,
           images: [],
+          laudo_images: [],
         })
         .select('id, case_number')
         .single();
@@ -96,6 +101,7 @@ export function useSubmitCase() {
       const examType = caseData.exam_type.toUpperCase();
 
       let uploadedUrls: string[] = [];
+      let uploadedLaudoUrls: string[] = [];
 
       try {
         // 2. Upload images directly to the official structured folder path
@@ -103,15 +109,25 @@ export function useSubmitCase() {
           uploadedUrls = await Promise.all(
             caseData.files.map(file => uploadCaseImage(file, examType, caseNumber))
           );
-
-          // 3. Update the case record in the database with the official URLs
-          const { error: updateImgError } = await supabase
-            .from('cases')
-            .update({ images: uploadedUrls })
-            .eq('id', caseId);
-
-          if (updateImgError) throw updateImgError;
         }
+
+        // 2.1 Upload laudo images
+        if (caseData.laudo_files && caseData.laudo_files.length > 0) {
+          uploadedLaudoUrls = await Promise.all(
+            caseData.laudo_files.map(file => uploadCaseImage(file, examType, caseNumber))
+          );
+        }
+
+        // 3. Update the case record in the database with the official URLs
+        const { error: updateImgError } = await supabase
+          .from('cases')
+          .update({ 
+            images: uploadedUrls,
+            laudo_images: uploadedLaudoUrls
+          })
+          .eq('id', caseId);
+
+        if (updateImgError) throw updateImgError;
       } catch (uploadError) {
         console.error("Erro no upload das imagens do novo caso:", uploadError);
         
@@ -130,6 +146,23 @@ export function useSubmitCase() {
               .from('radiology-images')
               .remove(fileNames)
               .catch(e => console.error("Erro ao remover arquivos após falha:", e));
+          }
+        }
+
+        if (uploadedLaudoUrls.length > 0) {
+          const fileNames = uploadedLaudoUrls
+            .map(url => {
+              const bucketMarker = '/radiology-images/';
+              const idx = url.indexOf(bucketMarker);
+              return idx !== -1 ? url.substring(idx + bucketMarker.length) : url.split('/').pop();
+            })
+            .filter(Boolean) as string[];
+
+          if (fileNames.length > 0) {
+            await supabase.storage
+              .from('radiology-images')
+              .remove(fileNames)
+              .catch(e => console.error("Erro ao remover arquivos do laudo após falha:", e));
           }
         }
 
@@ -158,6 +191,7 @@ export function useUpdateCase() {
     mutationFn: async ({ id, ...updates }: { 
       id: string; 
       images?: string[]; 
+      laudo_images?: string[];
       exam_type?: string; 
       age?: number | null; 
       sex?: string | null; 
@@ -169,6 +203,7 @@ export function useUpdateCase() {
       clue1?: string | null;
       clue2?: string | null;
       clue3?: string | null;
+      comments?: string | null;
     }) => {
       // If updates contain a new images array, clean up removed images from storage
       if (updates.images) {
@@ -181,6 +216,37 @@ export function useUpdateCase() {
         if (currentCase?.images) {
           const oldImages = currentCase.images as string[];
           const newImages = updates.images;
+          const removedImages = oldImages.filter(url => !newImages.includes(url));
+          
+          if (removedImages.length > 0) {
+            const fileNames = removedImages
+              .map(url => {
+                const bucketMarker = '/radiology-images/';
+                const idx = url.indexOf(bucketMarker);
+                return idx !== -1 ? url.substring(idx + bucketMarker.length) : url.split('/').pop();
+              })
+              .filter(Boolean) as string[];
+            
+            if (fileNames.length > 0) {
+              await supabase.storage
+                .from('radiology-images')
+                .remove(fileNames);
+            }
+          }
+        }
+      }
+
+      // If updates contain a new laudo_images array, clean up removed images from storage
+      if (updates.laudo_images) {
+        const { data: currentCase } = await supabase
+          .from('cases')
+          .select('laudo_images')
+          .eq('id', id)
+          .single();
+        
+        if (currentCase?.laudo_images) {
+          const oldImages = currentCase.laudo_images as string[];
+          const newImages = updates.laudo_images;
           const removedImages = oldImages.filter(url => !newImages.includes(url));
           
           if (removedImages.length > 0) {
@@ -226,7 +292,7 @@ export function useDeleteCase() {
       // 1. Fetch case to get images
       const { data: caseData } = await supabase
         .from('cases')
-        .select('images')
+        .select('images, laudo_images')
         .eq('id', id)
         .single();
 
@@ -237,6 +303,22 @@ export function useDeleteCase() {
       // 3. Delete images from storage
       if (caseData?.images && caseData.images.length > 0) {
         const fileNames = (caseData.images as string[])
+          .map(url => {
+            const bucketMarker = '/radiology-images/';
+            const idx = url.indexOf(bucketMarker);
+            return idx !== -1 ? url.substring(idx + bucketMarker.length) : url.split('/').pop();
+          })
+          .filter(Boolean) as string[];
+
+        if (fileNames.length > 0) {
+          await supabase.storage
+            .from('radiology-images')
+            .remove(fileNames);
+        }
+      }
+
+      if (caseData?.laudo_images && caseData.laudo_images.length > 0) {
+        const fileNames = (caseData.laudo_images as string[])
           .map(url => {
             const bucketMarker = '/radiology-images/';
             const idx = url.indexOf(bucketMarker);

@@ -32,6 +32,7 @@ interface ImageViewerProps {
   examType?: ExamType;
   layout?: 'default' | 'three-columns';
   caseDetails?: React.ReactNode;
+  leftColumnExtra?: React.ReactNode;
 }
 
 export default function ImageViewer({ 
@@ -44,7 +45,8 @@ export default function ImageViewer({
   aspectClass = 'aspect-square',
   examType,
   layout = 'default',
-  caseDetails
+  caseDetails,
+  leftColumnExtra
 }: ImageViewerProps) {
   const [localSelectedImage, setLocalSelectedImage] = useState(0);
   const selectedImage = propSelectedImage !== undefined ? propSelectedImage : localSelectedImage;
@@ -873,11 +875,11 @@ export default function ImageViewer({
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 md:h-full md:max-h-full md:flex md:flex-col min-h-0 flex-1">
       {layout === 'three-columns' ? (
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:items-stretch md:h-full md:max-h-full md:overflow-hidden min-h-0 flex-1">
           {/* Column 1: Controls (Left) */}
-          <div className="md:col-span-2 order-3 md:order-1 space-y-4">
+          <div className="md:col-span-2 order-3 md:order-1 space-y-4 md:h-full md:overflow-y-auto custom-scrollbar pr-1 pb-2">
             <div className="bg-secondary/40 border border-border/60 rounded-xl p-3.5 space-y-4 select-none">
               {/* Adjustments */}
               <div className="flex flex-col gap-3">
@@ -951,6 +953,11 @@ export default function ImageViewer({
                 )}
               </div>
 
+              {leftColumnExtra && (
+                <div className="pt-3 border-t border-border/20 animate-in fade-in duration-300">
+                  {leftColumnExtra}
+                </div>
+              )}
               <Button variant="outline" size="sm" className="text-xs h-8 mt-2 justify-start px-2.5 w-full border-destructive/20 text-destructive hover:bg-destructive/10" onClick={resetControls}>
                 <RotateCcw className="w-3.5 h-3.5 mr-2" /> Resetar
               </Button>
@@ -958,7 +965,7 @@ export default function ImageViewer({
           </div>
 
           {/* Column 2: Image (Middle) */}
-          <div className="md:col-span-7 order-1 md:order-2 space-y-4">
+          <div className="md:col-span-6 order-1 md:order-2 space-y-4 md:h-full md:flex md:flex-col md:justify-center min-h-0">
            {/* Normal Interactive Image Area & Vertical Slice Slider side-by-side */}
       <div className="flex items-stretch gap-4">
         {!isFullscreen && isSliceSeries && images && images.length > 1 && (
@@ -987,7 +994,7 @@ export default function ImageViewer({
           </div>
         )}
 
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 md:min-h-0 md:flex md:flex-col md:justify-center">
           {!isFullscreen && renderInteractiveContainer(false)}
         </div>
       </div>
@@ -1011,7 +1018,7 @@ export default function ImageViewer({
           </div>
 
           {/* Column 3: Case Details (Right) */}
-          <div className="md:col-span-3 order-2 md:order-3">
+          <div className="md:col-span-4 order-2 md:order-3 md:h-full md:overflow-y-auto custom-scrollbar pr-2 pb-4">
             {caseDetails}
           </div>
         </div>
