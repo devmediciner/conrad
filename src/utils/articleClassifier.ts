@@ -314,3 +314,37 @@ export function classifyArticle(title: string, content: string): ClassifiedArtic
 
   return { type, system };
 }
+
+/**
+ * Extracts explicit classification and system metadata stored in a hidden div in the article content.
+ */
+export function getMetadataFromContent(content: string): { type?: ClassificationType; system?: SystemType } {
+  if (!content) return {};
+  const match = content.match(/<div\s+id="article-metadata"\s+data-classification="([^"]+)"\s+data-system="([^"]+)"/i);
+  if (match) {
+    return {
+      type: match[1] as ClassificationType,
+      system: match[2] as SystemType,
+    };
+  }
+  return {};
+}
+
+/**
+ * Injects a hidden div with classification and system metadata into the article content.
+ */
+export function injectMetadataIntoContent(content: string, type: ClassificationType, system: SystemType): string {
+  const clean = stripMetadataFromContent(content);
+  return `${clean}\n<div id="article-metadata" data-classification="${type}" data-system="${system}" style="display: none;"></div>`;
+}
+
+/**
+ * Removes the hidden metadata div from the article content (useful for editing in React Quill).
+ */
+export function stripMetadataFromContent(content: string): string {
+  if (!content) return '';
+  return content
+    .replace(/<div\s+id="article-metadata"\s+data-classification="[^"]*"\s+data-system="[^"]*"\s*style="[^"]*"\s*><\/div>/gi, '')
+    .replace(/<div\s+id="article-metadata"\s+data-classification="[^"]*"\s+data-system="[^"]*"\s*style="[^"]*"\s*\/>/gi, '')
+    .trim();
+}

@@ -19,7 +19,7 @@ import rmImage from '@/assets/rm.png';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { slugify, stripHtml } from '@/lib/utils';
-import { classifyArticle, SYSTEM_LABELS, SYSTEM_COLORS, SystemType } from '@/utils/articleClassifier';
+import { classifyArticle, getMetadataFromContent, SYSTEM_LABELS, SYSTEM_COLORS, SystemType } from '@/utils/articleClassifier';
 
 const Index = () => {
   const [search, setSearch] = useState('');
@@ -63,8 +63,13 @@ const Index = () => {
 
   // Classify and group articles
   const classifiedArticles = filteredArticles.map(artigo => {
-    const { type, system } = classifyArticle(artigo.titulo || '', artigo.conteudo || '');
-    return { ...artigo, _type: type, _system: system };
+    const metadata = getMetadataFromContent(artigo.conteudo || '');
+    const fallback = classifyArticle(artigo.titulo || '', artigo.conteudo || '');
+    return {
+      ...artigo,
+      _type: metadata.type || fallback.type,
+      _system: metadata.system || fallback.system
+    };
   });
 
   const anatomyArticles = classifiedArticles.filter(a => a._type === 'anatomia');

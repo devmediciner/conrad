@@ -21,6 +21,7 @@ import type { Article } from '@/types/article';
 import { supabase } from '@/integrations/supabase/client'; 
 import { createClient } from '@supabase/supabase-js'; // ← Adicione esta importação
 import { ArticleEditor } from '@/components/ArticleEditor';
+import { getMetadataFromContent, injectMetadataIntoContent, stripMetadataFromContent, SYSTEM_LABELS, SystemType } from '@/utils/articleClassifier';
 
 const Admin = () => {
   const { user, isAdmin, loading: authLoading } = useAuth(); // Certifique-se de que o useAuth retorne o 'user' logado
@@ -30,13 +31,12 @@ const Admin = () => {
   const navigate = useNavigate();
   const [editingCase, setEditingCase] = useState<Case | null>(null);
   const [submitOpen, setSubmitOpen] = useState(false);
-  const [diseaseModalOpen, setDiseaseModalOpen] = useState(false);
   const [articleModalOpen, setArticleModalOpen] = useState(false);
   const [editingArticle, setEditingArticle] = useState<Article | null>(null);
   const [viewingCase, setViewingCase] = useState<Case | null>(null);
   const [casesSearchQuery, setCasesSearchQuery] = useState('');
   
-  const [activeTab, setActiveTab] = useState<'casos' | 'minigame' | 'artigos' | 'config'>('casos');
+  const [activeTab, setActiveTab] = useState<'casos' | 'artigos' | 'config'>('casos');
   const [articles, setArticles] = useState<Article[]>([]);
   const [users, setUsers] = useState<Record<string, unknown>[]>([]);
   const [loadingArticles, setLoadingArticles] = useState(false);
@@ -80,8 +80,7 @@ const Admin = () => {
     fetchArticles();
   }, [activeTab, refreshKey, isAdmin]);
 
-  const { data: diseases, isLoading: loadingDiseases } = useDiseases();
-  const deleteDisease = useDeleteDisease();
+
 
   if (authLoading) {
     return (
@@ -232,7 +231,6 @@ const Admin = () => {
         <div className="flex overflow-x-auto space-x-4 mb-8 border-b border-border">
           {[
             { id: 'casos', label: 'Casos' },
-            { id: 'minigame', label: 'Diagnósticos' },
             { id: 'artigos', label: 'Artigos' },
             // Abas restritas a administradores
             ...(isAdmin ? [
@@ -241,7 +239,7 @@ const Admin = () => {
           ].map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as 'casos' | 'minigame' | 'artigos' | 'config')}
+              onClick={() => setActiveTab(tab.id as 'casos' | 'artigos' | 'config')}
               className={`pb-3 px-2 text-sm font-semibold transition-colors border-b-2 whitespace-nowrap ${activeTab === tab.id ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground'}`}
             >
               {tab.label}
@@ -380,48 +378,7 @@ const Admin = () => {
             </div>
           )}
 
-          {/* CONTEÚDO: ABA MINIGAME */}
-          {activeTab === 'minigame' && (
-            <div className="space-y-4 max-w-2xl">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold font-heading text-foreground">Diagnósticos</h2>
-                {isAdmin && (
-                  <Button variant="outline" className="gap-2" onClick={() => setDiseaseModalOpen(true)}>
-                    <Plus className="w-4 h-4" /> Novo Diagnóstico
-                  </Button>
-                )}
-              </div>
-              <div className="bg-card border border-border p-4 rounded-xl shadow-sm">
-                  {loadingDiseases ? (
-                    <p className="text-sm text-center text-muted-foreground py-4">Carregando...</p>
-                  ) : diseases?.length === 0 ? (
-                    <div className="text-sm text-muted-foreground text-center py-10">Nenhum diagnóstico cadastrado.</div>
-                  ) : (
-                    <div className="space-y-2">
-                      {diseases?.map(d => (
-                        <div key={d.id} className="flex items-center justify-between bg-muted/30 px-3 py-2 rounded-lg border border-border">
-                          <span className="text-sm text-foreground font-medium">{d.name}</span>
-                          {isAdmin && (
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
-                              onClick={() => {
-                                if (confirm('Deseja excluir este diagnóstico permanentemente?')) {
-                                  deleteDisease.mutate(d.id);
-                                }
-                              }} 
-                              className="text-muted-foreground hover:text-destructive h-8 w-8"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-              </div>
-            </div>
-          )}
+
 
           {/* CONTEÚDO: ABA ARTIGOS */}
           {activeTab === 'artigos' && (
@@ -649,7 +606,7 @@ const Admin = () => {
         onOpenChange={(o) => !o && setEditingCase(null)}
       />
       <SubmitCaseModal open={submitOpen} onOpenChange={setSubmitOpen} />
-      <DiseaseModal open={diseaseModalOpen} onOpenChange={setDiseaseModalOpen} />
+
       <ArticleModal open={articleModalOpen} onOpenChange={setArticleModalOpen} isAdmin={isAdmin} onSuccess={() => setRefreshKey(prev => prev + 1)} articleToEdit={editingArticle} cases={approvedCases} />
       <CaseModal caseData={viewingCase} open={!!viewingCase} onOpenChange={(o) => !o && setViewingCase(null)} />
     </div>
@@ -661,6 +618,8 @@ const ArticleModal = ({ open, onOpenChange, isAdmin, onSuccess, articleToEdit, c
   // Estados para o formulário
   const [titulo, setTitulo] = useState('');
   const [categoria, setCategoria] = useState('rx');
+  const [classification, setClassification] = useState<'anatomia' | 'patologia'>('patologia');
+  const [systemFolder, setSystemFolder] = useState<SystemType>('outro');
   const [autor, setAutor] = useState('');
   const [dataPub, setDataPub] = useState('');
   const [imagemUrl, setImagemUrl] = useState('');
@@ -687,7 +646,14 @@ const ArticleModal = ({ open, onOpenChange, isAdmin, onSuccess, articleToEdit, c
         setAutor(cleanAutor);
         setDataPub(articleToEdit.data_publicacao ? articleToEdit.data_publicacao.split('T')[0] : '');
         setImagemUrl(articleToEdit.imagem_capa || '');
-        setConteudo(articleToEdit.conteudo || '');
+        
+        // Extract metadata from content and strip it from content editor
+        const metadata = getMetadataFromContent(articleToEdit.conteudo || '');
+        const cleanConteudo = stripMetadataFromContent(articleToEdit.conteudo || '');
+        setConteudo(cleanConteudo);
+        setClassification(metadata.type || 'patologia');
+        setSystemFolder(metadata.system || 'outro');
+        
         setRelatedCases(articleToEdit.related_cases_ids || []);
         setCaseToAdd('none');
         setCaseSearchQuery('');
@@ -698,6 +664,8 @@ const ArticleModal = ({ open, onOpenChange, isAdmin, onSuccess, articleToEdit, c
         setDataPub('');
         setImagemUrl('');
         setConteudo('');
+        setClassification('patologia');
+        setSystemFolder('outro');
         setRelatedCases([]);
         setCaseToAdd('none');
         setCaseSearchQuery('');
@@ -790,6 +758,9 @@ const ArticleModal = ({ open, onOpenChange, isAdmin, onSuccess, articleToEdit, c
         finalAutor = `${autor} | ${user.email}`;
       }
       
+      // Inject metadata hidden div
+      const contentWithMetadata = injectMetadataIntoContent(conteudo, classification, systemFolder);
+      
       if (articleToEdit) {
         // Modo de Edição
         const { error } = await supabase.from('articles').update({
@@ -798,7 +769,7 @@ const ArticleModal = ({ open, onOpenChange, isAdmin, onSuccess, articleToEdit, c
           autor: finalAutor, 
           data_publicacao: dataPub || new Date().toISOString(), 
           imagem_capa: imagemUrl, 
-          conteudo,
+          conteudo: contentWithMetadata,
           related_cases_ids: relatedCases.length > 0 ? relatedCases : null
         }).eq('id', articleToEdit.id);
         if (error) throw error;
@@ -811,7 +782,7 @@ const ArticleModal = ({ open, onOpenChange, isAdmin, onSuccess, articleToEdit, c
           autor: finalAutor, 
           data_publicacao: dataPub || new Date().toISOString(), 
           imagem_capa: imagemUrl, 
-          conteudo, 
+          conteudo: contentWithMetadata, 
           status: isAdmin ? 'approved' : 'pending',
           related_cases_ids: relatedCases.length > 0 ? relatedCases : null
         }]);
@@ -865,6 +836,31 @@ const ArticleModal = ({ open, onOpenChange, isAdmin, onSuccess, articleToEdit, c
                 <option value="tc">Tomografia (TC)</option>
                 <option value="usg">Ultrassom (USG)</option>
                 <option value="rm">Ressonância Magnética (RM)</option>
+              </select>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-semibold text-foreground">Classificação</label>
+              <select 
+                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1.5 text-xs ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring" 
+                value={classification} 
+                onChange={e => setClassification(e.target.value as 'anatomia' | 'patologia')}
+              >
+                <option value="anatomia">Anatomia</option>
+                <option value="patologia">Patologia</option>
+              </select>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-semibold text-foreground">Sistema Orgânico</label>
+              <select 
+                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1.5 text-xs ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring" 
+                value={systemFolder} 
+                onChange={e => setSystemFolder(e.target.value as SystemType)}
+              >
+                {Object.entries(SYSTEM_LABELS).map(([value, label]) => (
+                  <option key={value} value={value}>{label}</option>
+                ))}
               </select>
             </div>
             
