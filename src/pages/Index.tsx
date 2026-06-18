@@ -7,7 +7,7 @@ import { CaseModal } from '@/components/CaseModal';
 import { useCases } from '@/hooks/useCases';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { Activity, Instagram, Mail, FileText } from 'lucide-react';
+import { Activity, Instagram, Mail, FileText, Folder, FolderOpen, ChevronRight, ArrowLeft } from 'lucide-react';
 import type { Case } from '@/types/case';
 import type { Article } from '@/types/article';
 import backImage from '@/assets/back.jpg';
@@ -19,6 +19,7 @@ import rmImage from '@/assets/rm.png';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { slugify, stripHtml } from '@/lib/utils';
+import { classifyArticle, SYSTEM_LABELS, SYSTEM_COLORS, SystemType } from '@/utils/articleClassifier';
 
 const Index = () => {
   const [search, setSearch] = useState('');
@@ -30,6 +31,14 @@ const Index = () => {
 
   const [articles, setArticles] = useState<Article[]>([]);
   const [loadingArticles, setLoadingArticles] = useState(false);
+  
+  const [activeClassification, setActiveClassification] = useState<'anatomia' | 'patologia'>('anatomia');
+  const [selectedSystemFolder, setSelectedSystemFolder] = useState<SystemType | null>(null);
+
+  // Reset selected folder when modal/exam type changes
+  useEffect(() => {
+    setSelectedSystemFolder(null);
+  }, [examType]);
 
   useEffect(() => {
     const fetchArticles = async () => {
@@ -51,6 +60,36 @@ const Index = () => {
   const examLabel = examLabels[examType] || examType;
 
   const filteredArticles = articles.filter(a => a.categoria?.toLowerCase() === examType.toLowerCase());
+
+  // Classify and group articles
+  const classifiedArticles = filteredArticles.map(artigo => {
+    const { type, system } = classifyArticle(artigo.titulo || '', artigo.conteudo || '');
+    return { ...artigo, _type: type, _system: system };
+  });
+
+  const anatomyArticles = classifiedArticles.filter(a => a._type === 'anatomia');
+  const pathologyArticles = classifiedArticles.filter(a => a._type === 'patologia');
+
+  const currentClassificationArticles = activeClassification === 'anatomia' ? anatomyArticles : pathologyArticles;
+
+  // Group by system
+  const systemGroups: Record<SystemType, typeof currentClassificationArticles> = {
+    cardiaco: [],
+    pulmonar: [],
+    neuro: [],
+    abdominal: [],
+    musculoesqueletico: [],
+    urogenital: [],
+    outro: []
+  };
+
+  currentClassificationArticles.forEach(a => {
+    if (systemGroups[a._system]) {
+      systemGroups[a._system].push(a);
+    } else {
+      systemGroups.outro.push(a);
+    }
+  });
 
   return (
     
@@ -220,34 +259,137 @@ const Index = () => {
                   </div>
                 ) : filteredArticles.length > 0 ? (
                   <div className="space-y-4">
-                    {filteredArticles.map(artigo => (
-                      <Link 
-                        key={artigo.id} 
-                        to={`/artigo/${slugify(artigo.titulo)}`}
-                        className="group flex gap-5 p-5 bg-card hover:bg-muted/30 rounded-3xl border border-border/40 hover:border-primary/30 transition-all duration-300 shadow-sm"
+                    {/* Classificações Tabs */}
+                    <div className="flex bg-muted p-1 rounded-2xl w-full mb-6">
+                      <button
+                        onClick={() => {
+                          setActiveClassification('anatomia');
+                          setSelectedSystemFolder(null);
+                        }}
+                        className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${
+                          activeClassification === 'anatomia'
+                            ? 'bg-card text-foreground shadow-sm'
+                            : 'text-muted-foreground hover:text-foreground'
+                        }`}
                       >
-                        <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden bg-muted flex-shrink-0 border border-border/50 relative">
-                          {artigo.imagem_capa ? (
-                            <img src={artigo.imagem_capa} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-xs uppercase font-bold text-muted-foreground bg-secondary">{artigo.categoria}</div>
-                          )}
+                        Anatomia ({anatomyArticles.length})
+                      </button>
+                      <button
+                        onClick={() => {
+                          setActiveClassification('patologia');
+                          setSelectedSystemFolder(null);
+                        }}
+                        className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${
+                          activeClassification === 'patologia'
+                            ? 'bg-card text-foreground shadow-sm'
+                            : 'text-muted-foreground hover:text-foreground'
+                        }`}
+                      >
+                        Patologia ({pathologyArticles.length})
+                      </button>
+                    </div>
+
+                    {selectedSystemFolder === null ? (
+                      currentClassificationArticles.length === 0 ? (
+                        <div className="text-center py-12 bg-card rounded-2xl border border-dashed border-border/80">
+                          <p className="text-sm text-muted-foreground">Nenhum artigo de {activeClassification} nesta modalidade.</p>
                         </div>
-                        <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
-                          <div>
-                            <h4 className="text-base sm:text-lg font-bold text-foreground line-clamp-2 group-hover:text-primary transition-colors leading-snug mb-2">
-                              {artigo.titulo}
-                            </h4>
-                            <p className="text-xs sm:text-sm text-muted-foreground/80 line-clamp-2 leading-relaxed mb-3">
-                              {stripHtml(artigo.conteudo).substring(0, 110)}...
-                            </p>
-                          </div>
-                          <span className="text-xs text-muted-foreground font-medium">
-                            Por {artigo.autor?.split(' | ')[0]} • {new Date(artigo.data_publicacao).toLocaleDateString('pt-BR')}
+                      ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in duration-300">
+                          {Object.entries(SYSTEM_LABELS).map(([key, label]) => {
+                            const sysKey = key as SystemType;
+                            const count = systemGroups[sysKey].length;
+                            const colorClass = SYSTEM_COLORS[sysKey];
+                            return (
+                              <button
+                                key={sysKey}
+                                onClick={() => {
+                                  if (count > 0) {
+                                    setSelectedSystemFolder(sysKey);
+                                  }
+                                }}
+                                disabled={count === 0}
+                                className={`group relative flex items-center justify-between p-4 rounded-2xl bg-card border border-border/60 shadow-sm transition-all duration-300 ${
+                                  count > 0
+                                    ? 'hover:shadow-md hover:border-primary/45 cursor-pointer hover:bg-muted/10'
+                                    : 'opacity-50 cursor-not-allowed'
+                                }`}
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div className={`p-2.5 rounded-xl border ${colorClass} transition-colors group-hover:scale-105 duration-300`}>
+                                    <Folder className="w-5 h-5 fill-current opacity-70" />
+                                  </div>
+                                  <div className="text-left">
+                                    <span className="text-sm font-bold text-foreground block group-hover:text-primary transition-colors">
+                                      {label}
+                                    </span>
+                                    <span className="text-[11px] text-muted-foreground">
+                                      {count === 1 ? '1 artigo' : `${count} artigos`}
+                                    </span>
+                                  </div>
+                                </div>
+                                {count > 0 && (
+                                  <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )
+                    ) : (
+                      <div className="space-y-4 animate-in fade-in duration-300">
+                        <div className="flex items-center gap-2 mb-4">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setSelectedSystemFolder(null)}
+                            className="h-8 gap-1.5 text-xs text-muted-foreground hover:text-foreground pl-1.5"
+                          >
+                            <ArrowLeft className="w-3.5 h-3.5" />
+                            Voltar para pastas
+                          </Button>
+                          <span className="text-xs text-muted-foreground">/</span>
+                          <span className="text-xs font-semibold text-foreground uppercase tracking-wider bg-primary/10 text-primary border border-primary/20 px-2.5 py-0.5 rounded-full">
+                            {SYSTEM_LABELS[selectedSystemFolder]}
                           </span>
                         </div>
-                      </Link>
-                    ))}
+                        
+                        {systemGroups[selectedSystemFolder].map((artigo) => (
+                          <Link
+                            key={artigo.id}
+                            to={`/artigo/${slugify(artigo.titulo)}`}
+                            className="group flex gap-5 p-5 bg-card hover:bg-muted/30 rounded-3xl border border-border/40 hover:border-primary/30 transition-all duration-300 shadow-sm animate-in fade-in-50 duration-200"
+                          >
+                            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden bg-muted flex-shrink-0 border border-border/50 relative">
+                              {artigo.imagem_capa ? (
+                                <img
+                                  src={artigo.imagem_capa}
+                                  alt=""
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-xs uppercase font-bold text-muted-foreground bg-secondary">
+                                  {artigo.categoria}
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
+                              <div>
+                                <h4 className="text-base sm:text-lg font-bold text-foreground line-clamp-2 group-hover:text-primary transition-colors leading-snug mb-2">
+                                  {artigo.titulo}
+                                </h4>
+                                <p className="text-xs sm:text-sm text-muted-foreground/80 line-clamp-2 leading-relaxed mb-3">
+                                  {stripHtml(artigo.conteudo).substring(0, 110)}...
+                                </p>
+                              </div>
+                              <span className="text-xs text-muted-foreground font-medium">
+                                Por {artigo.autor?.split(' | ')[0]} • {new Date(artigo.data_publicacao).toLocaleDateString('pt-BR')}
+                              </span>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="text-center py-12 bg-card rounded-2xl border border-dashed border-border/80">
