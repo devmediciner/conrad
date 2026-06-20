@@ -52,6 +52,52 @@ const Admin = () => {
   const [editUserEmail, setEditUserEmail] = useState('');
   const [editUserRole, setEditUserRole] = useState('user');
 
+  // Estados para escolha do caso da semana
+  const [selectedCaseOfWeekId, setSelectedCaseOfWeekId] = useState<string>('');
+  const [isSavingCaseOfWeek, setIsSavingCaseOfWeek] = useState(false);
+
+  useEffect(() => {
+    if (cases) {
+      const active = cases.find(c => c.is_case_of_the_week);
+      if (active) {
+        setSelectedCaseOfWeekId(active.id);
+      }
+    }
+  }, [cases]);
+
+  const handleSaveCaseOfWeek = async () => {
+    if (!selectedCaseOfWeekId) {
+      toast.error("Por favor, selecione um caso.");
+      return;
+    }
+    setIsSavingCaseOfWeek(true);
+    try {
+      // Step 1: Update all cases is_case_of_the_week to false
+      const { error: err1 } = await supabase
+        .from('cases')
+        .update({ is_case_of_the_week: false } as any)
+        .neq('id', '00000000-0000-0000-0000-000000000000'); // update all
+
+      // Step 2: Set the selected case to true
+      const { error: err2 } = await supabase
+        .from('cases')
+        .update({ is_case_of_the_week: true } as any)
+        .eq('id', selectedCaseOfWeekId);
+
+      if (err1 || err2) {
+        throw new Error(err1?.message || err2?.message || "Erro de banco");
+      }
+
+      toast.success("Caso da Semana atualizado com sucesso!");
+      setRefreshKey(prev => prev + 1);
+    } catch (e: any) {
+      console.error(e);
+      toast.error("Erro ao salvar Caso da Semana. Verifique se a coluna is_case_of_the_week já existe no banco de dados.");
+    } finally {
+      setIsSavingCaseOfWeek(false);
+    }
+  };
+
   const getSubmitterName = (submittedBy: string | null) => {
     if (!submittedBy) return 'Desconhecido';
     if (submittedBy === user?.id && user?.email) {
@@ -475,8 +521,45 @@ const Admin = () => {
 
           {/* CONTEÚDO: ABA CONFIGURAÇÕES */}
           {activeTab === 'config' && (
-            <div className="space-y-4 max-w-2xl">
-              <div className="flex justify-between items-center mb-4">
+            <div className="space-y-6 max-w-2xl">
+              {/* Configurar Caso da Semana */}
+              <div className="bg-card border border-border p-5 rounded-xl shadow-sm space-y-4">
+                <h3 className="text-sm font-semibold flex items-center gap-2">
+                  <Settings className="w-4 h-4 text-primary" /> Configurações da Página Inicial
+                </h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Selecione qual caso clínico aprovado será destacado no topo da página inicial como "Caso da Semana". Caso nenhum caso seja selecionado, o sistema exibirá automaticamente o caso aprovado mais recente.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3 items-end sm:items-center">
+                  <div className="flex-1 w-full space-y-1.5">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Selecionar Caso Clínico</label>
+                    <select
+                      className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1.5 text-xs ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
+                      value={selectedCaseOfWeekId}
+                      onChange={e => setSelectedCaseOfWeekId(e.target.value)}
+                    >
+                      <option value="">-- Escolha um Caso Aprovado --</option>
+                      {approvedCases.map(c => (
+                        <option key={c.id} value={c.id}>
+                          Caso #{c.case_number} - {c.exam_type} - {c.disease || 'Sem Diagnóstico'}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <Button
+                    onClick={handleSaveCaseOfWeek}
+                    disabled={isSavingCaseOfWeek || !selectedCaseOfWeekId}
+                    className="w-full sm:w-auto h-9 text-xs font-semibold shrink-0"
+                  >
+                    {isSavingCaseOfWeek ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" /> : null}
+                    Definir Caso da Semana
+                  </Button>
+                </div>
+              </div>
+
+              <div className="border-t border-border/60 my-6 pt-4" />
+
+              <div className="flex justify-between items-center mb-2">
                 <h2 className="text-xl font-bold font-heading text-foreground">Gerenciar Usuários</h2>
               </div>
               

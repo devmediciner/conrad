@@ -37,6 +37,8 @@ export function EditCaseModal({ caseData, open, onOpenChange }: EditCaseModalPro
   const [clinicalCase, setClinicalCase] = useState('');
   const [comments, setComments] = useState('');
   const [diagnosis, setDiagnosis] = useState('');
+  const [author, setAuthor] = useState('');
+  const [imageSource, setImageSource] = useState('');
   
   // Main Images
   const [images, setImages] = useState<string[]>([]);
@@ -113,6 +115,8 @@ export function EditCaseModal({ caseData, open, onOpenChange }: EditCaseModalPro
       setClinicalCase(caseData.clinical_case);
       setComments(caseData.comments ?? '');
       setDiagnosis(caseData.diagnosis);
+      setAuthor(caseData.author ?? '');
+      setImageSource(caseData.image_source ?? '');
       setImages(caseData.images ?? []);
       setLaudoImages(caseData.laudo_images ?? []);
       setIsMinigame(!!caseData.disease);
@@ -300,7 +304,9 @@ export function EditCaseModal({ caseData, open, onOpenChange }: EditCaseModalPro
         clue1: isMinigame ? (clue1.trim() || clinicalCase) : null,
         clue2: isMinigame ? clue2 : null,
         clue3: isMinigame ? clue3 : null,
-        comments: comments.trim() || null
+        comments: comments.trim() || null,
+        author: author.trim() || null,
+        image_source: imageSource.trim() || null
       });
       toast.success('Caso atualizado com sucesso');
       setNewlyUploadedImages([]);
@@ -402,14 +408,35 @@ export function EditCaseModal({ caseData, open, onOpenChange }: EditCaseModalPro
               </div>
             </div>
 
-            <div>
-              <label className="text-[11px] font-semibold text-foreground block mb-1.5">Idade</label>
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-semibold text-foreground">Idade</label>
               <Input
                 type="number"
                 value={age}
                 onChange={(e) => setAge(e.target.value)}
                 className="bg-background border-border h-9 text-xs"
               />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-semibold text-foreground">Elaborado por (Autor)</label>
+                <Input
+                  value={author}
+                  onChange={(e) => setAuthor(e.target.value)}
+                  placeholder="Ex: Dr. Fulano / Liga CONRAD"
+                  className="bg-background border-border h-9 text-xs"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-semibold text-foreground">Fonte da Imagem</label>
+                <Input
+                  value={imageSource}
+                  onChange={(e) => setImageSource(e.target.value)}
+                  placeholder="Ex: Radiopaedia / Arquivo Pessoal"
+                  className="bg-background border-border h-9 text-xs"
+                />
+              </div>
             </div>
 
             <div className="space-y-1.5">

@@ -7,7 +7,7 @@ import { CaseModal } from '@/components/CaseModal';
 import { useCases } from '@/hooks/useCases';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { Activity, Instagram, Mail, FileText, Folder, FolderOpen, ChevronRight, ArrowLeft } from 'lucide-react';
+import { Activity, Instagram, Mail, FileText, Folder, FolderOpen, ChevronRight, ArrowLeft, Trophy, Sparkles, Eye, BookOpen, HelpCircle, CheckCircle2, XCircle, Heart, MessageCircle, ExternalLink, RefreshCw } from 'lucide-react';
 import type { Case } from '@/types/case';
 import type { Article } from '@/types/article';
 import backImage from '@/assets/back.jpg';
@@ -20,14 +20,23 @@ import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { slugify, stripHtml } from '@/lib/utils';
 import { classifyArticle, getMetadataFromContent, SYSTEM_LABELS, SYSTEM_COLORS, SystemType } from '@/utils/articleClassifier';
+import { EXAM_TYPE_COLORS } from '@/types/case';
 
 const Index = () => {
   const [search, setSearch] = useState('');
   const [examType, setExamType] = useState('all');
+  const [selectedModality, setSelectedModality] = useState<string | null>(null);
   const [selectedCase, setSelectedCase] = useState<Case | null>(null);
+  const [showDiagnosis, setShowDiagnosis] = useState(true);
+  const [revealedClues, setRevealedClues] = useState<boolean[]>([false, false, false]);
+  const [quizAnswer, setQuizAnswer] = useState<number | null>(null);
+  const [quizSubmitted, setQuizSubmitted] = useState(false);
+  const [selectedTipIndex, setSelectedTipIndex] = useState<number | null>(null);
   const navigate = useNavigate();
 
   const { data: cases, isLoading } = useCases({ search, examType });
+
+  const caseDaSemana = cases?.find(c => c.is_case_of_the_week) || (cases && cases.length > 0 ? cases[0] : null);
 
   const [articles, setArticles] = useState<Article[]>([]);
   const [loadingArticles, setLoadingArticles] = useState(false);
@@ -59,7 +68,7 @@ const Index = () => {
   };
   const examLabel = examLabels[examType] || examType;
 
-  const filteredArticles = articles.filter(a => a.categoria?.toLowerCase() === examType.toLowerCase());
+  const filteredArticles = articles.filter(a => a.categoria?.toLowerCase() === (selectedModality || '').toLowerCase());
 
   // Classify and group articles
   const classifiedArticles = filteredArticles.map(artigo => {
@@ -150,8 +159,10 @@ const Index = () => {
               <button
                 key={mod.id}
                 onClick={() => {
-                  setExamType(mod.id);
-                  document.getElementById('galeria')?.scrollIntoView({ behavior: 'smooth' });
+                  setSelectedModality(mod.id);
+                  setTimeout(() => {
+                    document.getElementById('artigos-modality')?.scrollIntoView({ behavior: 'smooth' });
+                  }, 50);
                 }}
                 className="group relative flex flex-col items-center justify-center p-6 sm:p-8 rounded-3xl bg-card border border-border/60 shadow-sm hover:shadow-xl hover:border-primary/50 transition-all duration-500 hover:-translate-y-1 overflow-hidden"
               >
@@ -170,14 +181,23 @@ const Index = () => {
               </button>
             ))}
 
-            {/* ARTIGOS Button */}
-            <button onClick={() => navigate('/artigos')} className="group relative flex flex-col items-center justify-center p-6 sm:p-8 rounded-3xl bg-card border border-border/60 shadow-sm hover:shadow-xl hover:border-primary/50 transition-all duration-500 hover:-translate-y-1 overflow-hidden col-span-2 md:col-span-1">
+            {/* CASOS Button */}
+            <button 
+              onClick={() => {
+                setSelectedModality(null);
+                setExamType('all');
+                setTimeout(() => {
+                  document.getElementById('galeria')?.scrollIntoView({ behavior: 'smooth' });
+                }, 50);
+              }}
+              className="group relative flex flex-col items-center justify-center p-6 sm:p-8 rounded-3xl bg-card border border-border/60 shadow-sm hover:shadow-xl hover:border-primary/50 transition-all duration-500 hover:-translate-y-1 overflow-hidden col-span-2 md:col-span-1"
+            >
               <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <span className="relative z-10 text-3xl sm:text-4xl font-bold text-foreground group-hover:text-primary transition-colors duration-300">
-                ARTIGOS
+                CASOS
               </span>
               <span className="relative z-10 text-[10px] sm:text-xs text-muted-foreground mt-3 font-semibold uppercase tracking-widest text-center group-hover:text-foreground transition-colors duration-300">
-                & Discussões
+                e Discussões
               </span>
             </button>
           </motion.div>
@@ -201,16 +221,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Filters */}
-      <section id="galeria" className="px-4 pb-8 scroll-mt-24">
-        <FiltersBar
-          search={search}
-          onSearchChange={setSearch}
-          examType={examType}
-          onExamTypeChange={setExamType}
-        />
-      </section>
-
       {/* Grid */}
       <section className="px-4 pb-20">
         <div className="container mx-auto">
@@ -226,146 +236,300 @@ const Index = () => {
                 </div>
               ))}
             </div>
-          ) : examType === 'all' ? (
-            cases && cases.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {cases.map((c, i) => (
-                  <CaseCard
-                    key={c.id}
-                    caseData={c}
-                    index={i}
-                    onClick={() => setSelectedCase(c)}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-20">
-                <p className="text-muted-foreground">Nenhum caso encontrado.</p>
-              </div>
-            )
-          ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-in fade-in duration-500">
-              {/* Coluna da Esquerda: Artigos */}
-              <div className="lg:col-span-6 space-y-6">
-                <div className="flex items-center justify-between border-b border-border/80 pb-4 mb-2">
-                  <h3 className="font-heading text-2xl font-bold text-foreground flex items-center gap-2">
-                    <FileText className="w-5 h-5 text-primary" />
-                    Artigos ({examLabel})
+          ) : selectedModality ? (
+            // Modality Articles Section (separated by anatomy/pathology)
+            <div id="artigos-modality" className="space-y-8 animate-in fade-in duration-500 max-w-4xl mx-auto scroll-mt-24">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-border pb-6">
+                <div>
+                  <h3 className="font-heading font-extrabold text-2xl md:text-3xl text-foreground flex items-center gap-2">
+                    <FileText className="w-6 h-6 text-primary" />
+                    Artigos de {examLabels[selectedModality]} ({selectedModality})
                   </h3>
-                  <Link to={`/artigos`} className="text-xs font-semibold text-primary hover:underline">
-                    Ver todos
-                  </Link>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                    Explore os artigos científicos e materiais educativos de {examLabels[selectedModality]} separados por anatomia e patologia.
+                  </p>
                 </div>
-                {loadingArticles ? (
-                  <div className="space-y-4">
-                    {Array.from({ length: 3 }).map((_, i) => (
-                      <Skeleton key={i} className="h-28 w-full rounded-3xl" />
-                    ))}
-                  </div>
-                ) : filteredArticles.length > 0 ? (
-                  <div className="space-y-4">
-                    {/* Classificações Tabs */}
-                    <div className="flex bg-muted p-1 rounded-2xl w-full mb-6">
-                      <button
-                        onClick={() => {
-                          setActiveClassification('anatomia');
-                          setSelectedSystemFolder(null);
-                        }}
-                        className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${
-                          activeClassification === 'anatomia'
-                            ? 'bg-card text-foreground shadow-sm'
-                            : 'text-muted-foreground hover:text-foreground'
-                        }`}
-                      >
-                        Anatomia ({anatomyArticles.length})
-                      </button>
-                      <button
-                        onClick={() => {
-                          setActiveClassification('patologia');
-                          setSelectedSystemFolder(null);
-                        }}
-                        className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${
-                          activeClassification === 'patologia'
-                            ? 'bg-card text-foreground shadow-sm'
-                            : 'text-muted-foreground hover:text-foreground'
-                        }`}
-                      >
-                        Patologia ({pathologyArticles.length})
-                      </button>
-                    </div>
+                <Button
+                  variant="outline"
+                  onClick={() => setSelectedModality(null)}
+                  className="rounded-full font-bold px-4 text-xs h-9 gap-1.5 hover:bg-secondary transition-colors"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" /> Voltar ao Início
+                </Button>
+              </div>
 
-                    {selectedSystemFolder === null ? (
-                      currentClassificationArticles.length === 0 ? (
-                        <div className="text-center py-12 bg-card rounded-2xl border border-dashed border-border/80">
-                          <p className="text-sm text-muted-foreground">Nenhum artigo de {activeClassification} nesta modalidade.</p>
+              {loadingArticles ? (
+                <div className="space-y-4">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <Skeleton key={i} className="h-28 w-full rounded-3xl" />
+                  ))}
+                </div>
+              ) : filteredArticles.length > 0 ? (
+                <div className="space-y-4">
+                  {/* Classificações Tabs */}
+                  <div className="flex bg-muted p-1 rounded-2xl w-full mb-6">
+                    <button
+                      onClick={() => {
+                        setActiveClassification('anatomia');
+                        setSelectedSystemFolder(null);
+                      }}
+                      className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${
+                        activeClassification === 'anatomia'
+                          ? 'bg-card text-foreground shadow-sm'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      Anatomia ({anatomyArticles.length})
+                    </button>
+                    <button
+                      onClick={() => {
+                        setActiveClassification('patologia');
+                        setSelectedSystemFolder(null);
+                      }}
+                      className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${
+                        activeClassification === 'patologia'
+                          ? 'bg-card text-foreground shadow-sm'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      Patologia ({pathologyArticles.length})
+                    </button>
+                  </div>
+
+                  {selectedSystemFolder === null ? (
+                    currentClassificationArticles.length === 0 ? (
+                      <div className="text-center py-12 bg-card rounded-2xl border border-dashed border-border/80">
+                        <p className="text-sm text-muted-foreground">Nenhum artigo de {activeClassification} nesta modalidade.</p>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in duration-300">
+                        {Object.entries(SYSTEM_LABELS).map(([key, label]) => {
+                          const sysKey = key as SystemType;
+                          const count = systemGroups[sysKey].length;
+                          const colorClass = SYSTEM_COLORS[sysKey];
+                          return (
+                            <button
+                              key={sysKey}
+                              onClick={() => {
+                                if (count > 0) {
+                                  setSelectedSystemFolder(sysKey);
+                                }
+                              }}
+                              disabled={count === 0}
+                              className={`group relative flex items-center justify-between p-4 rounded-2xl bg-card border border-border/60 shadow-sm transition-all duration-300 ${
+                                count > 0
+                                  ? 'hover:shadow-md hover:border-primary/45 cursor-pointer hover:bg-muted/10'
+                                  : 'opacity-50 cursor-not-allowed'
+                              }`}
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className={`p-2.5 rounded-xl border ${colorClass} transition-colors group-hover:scale-105 duration-300`}>
+                                  <Folder className="w-5 h-5 fill-current opacity-70" />
+                                </div>
+                                <div className="text-left">
+                                  <span className="text-sm font-bold text-foreground block group-hover:text-primary transition-colors">
+                                    {label}
+                                  </span>
+                                  <span className="text-[11px] text-muted-foreground">
+                                    {count === 1 ? '1 artigo' : `${count} artigos`}
+                                  </span>
+                                </div>
+                              </div>
+                              {count > 0 && (
+                                <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )
+                  ) : (
+                    <div className="space-y-4 animate-in fade-in duration-300">
+                      <div className="flex items-center gap-2 mb-4">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSelectedSystemFolder(null)}
+                          className="h-8 gap-1.5 text-xs text-muted-foreground hover:text-foreground pl-1.5"
+                        >
+                          <ArrowLeft className="w-3.5 h-3.5" />
+                          Voltar para pastas
+                        </Button>
+                        <span className="text-xs text-muted-foreground">/</span>
+                        <span className="text-xs font-semibold text-foreground uppercase tracking-wider bg-primary/10 text-primary border border-primary/20 px-2.5 py-0.5 rounded-full">
+                          {SYSTEM_LABELS[selectedSystemFolder]}
+                        </span>
+                      </div>
+                      
+                      {systemGroups[selectedSystemFolder].map((artigo) => (
+                        <Link
+                          key={artigo.id}
+                          to={`/artigo/${slugify(artigo.titulo)}`}
+                          className="group flex gap-5 p-5 bg-card hover:bg-muted/30 rounded-3xl border border-border/40 hover:border-primary/30 transition-all duration-300 shadow-sm animate-in fade-in-50 duration-200"
+                        >
+                          <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden bg-muted flex-shrink-0 border border-border/50 relative">
+                            {artigo.imagem_capa ? (
+                              <img
+                                src={artigo.imagem_capa}
+                                alt=""
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-xs uppercase font-bold text-muted-foreground bg-secondary">
+                                {artigo.categoria}
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
+                            <div>
+                              <h4 className="text-base sm:text-lg font-bold text-foreground line-clamp-2 group-hover:text-primary transition-colors leading-snug mb-2">
+                                {artigo.titulo}
+                              </h4>
+                              <p className="text-xs sm:text-sm text-muted-foreground/80 line-clamp-2 leading-relaxed mb-3">
+                                {stripHtml(artigo.conteudo).substring(0, 110)}...
+                              </p>
+                            </div>
+                            <span className="text-xs text-muted-foreground font-medium">
+                              Por {artigo.autor?.split(' | ')[0]} • {new Date(artigo.data_publicacao).toLocaleDateString('pt-BR')}
+                            </span>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-12 bg-card rounded-2xl border border-dashed border-border/80">
+                  <p className="text-sm text-muted-foreground">Nenhum artigo publicado nesta modalidade.</p>
+                </div>
+              )}
+            </div>
+          ) : !search ? (
+            // Full Home view (with Spotlights + Gallery)
+            <div className="space-y-16 animate-in fade-in duration-700">
+              {/* Seção 1: Destaques (Caso da Semana ao lado de Últimos Artigos) */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                {/* Coluna Esquerda: Caso da Semana */}
+                <div className="lg:col-span-8 space-y-4">
+                  <h3 className="font-heading font-extrabold text-xl text-foreground flex items-center gap-2 mb-2">
+                    <Trophy className="w-5 h-5 text-primary" /> Caso da Semana
+                  </h3>
+                  {caseDaSemana ? (
+                    <div className="relative overflow-hidden rounded-3xl border border-border/80 bg-card/40 p-6 md:p-8 shadow-sm flex flex-col justify-between min-h-[460px] h-full group/card hover:border-primary/30 transition-all duration-300 backdrop-blur-md">
+                      <div className="space-y-6">
+                        {/* Header Row */}
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className={`text-[9px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider border shadow-sm ${
+                            caseDaSemana.exam_type === 'RX' ? 'bg-blue-500/10 border-blue-500/25 text-blue-400' :
+                            caseDaSemana.exam_type === 'TC' ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400' :
+                            caseDaSemana.exam_type === 'RM' ? 'bg-purple-500/10 border-purple-500/25 text-purple-400' :
+                            'bg-amber-500/10 border-amber-500/25 text-amber-400'
+                          }`}>
+                            {caseDaSemana.exam_type}
+                          </span>
+                          {caseDaSemana.sex && (
+                            <span className="text-[9px] px-2.5 py-0.5 rounded-full bg-secondary/80 border border-border/60 text-muted-foreground font-semibold flex items-center gap-1">
+                              👤 {caseDaSemana.sex === 'M' || caseDaSemana.sex?.toLowerCase() === 'masculino' ? 'Masculino' : 'Feminino'}, {caseDaSemana.age} anos
+                            </span>
+                          )}
                         </div>
-                      ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in duration-300">
-                          {Object.entries(SYSTEM_LABELS).map(([key, label]) => {
-                            const sysKey = key as SystemType;
-                            const count = systemGroups[sysKey].length;
-                            const colorClass = SYSTEM_COLORS[sysKey];
-                            return (
-                              <button
-                                key={sysKey}
-                                onClick={() => {
-                                  if (count > 0) {
-                                    setSelectedSystemFolder(sysKey);
-                                  }
-                                }}
-                                disabled={count === 0}
-                                className={`group relative flex items-center justify-between p-4 rounded-2xl bg-card border border-border/60 shadow-sm transition-all duration-300 ${
-                                  count > 0
-                                    ? 'hover:shadow-md hover:border-primary/45 cursor-pointer hover:bg-muted/10'
-                                    : 'opacity-50 cursor-not-allowed'
-                                }`}
+
+                        {/* Split Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+                          {/* Left text column */}
+                          <div className="md:col-span-6 space-y-4">
+                            <h4 className="text-2xl md:text-3xl font-extrabold tracking-tight font-heading text-foreground" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                              Caso #{caseDaSemana.case_number}
+                            </h4>
+                            <div className="border-l-2 border-primary/40 pl-4 py-1.5 bg-primary/[0.01] rounded-r-xl">
+                              <p className="text-muted-foreground text-xs md:text-sm leading-relaxed line-clamp-6 italic font-medium">
+                                "{stripHtml(caseDaSemana.clinical_case)}"
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Right image column */}
+                          <div className="md:col-span-6 flex justify-center md:justify-end">
+                            <div className="relative w-full flex justify-center">
+                              <div 
+                                onClick={() => setSelectedCase(caseDaSemana)}
+                                className="relative cursor-pointer aspect-square w-full min-w-[200px] max-w-[260px] md:max-w-[280px] rounded-3xl p-1.5 border border-border bg-zinc-950/80 shadow-md hover:shadow-lg hover:border-primary/45 transition-all duration-300 hover:-translate-y-0.5"
                               >
-                                <div className="flex items-center gap-3">
-                                  <div className={`p-2.5 rounded-xl border ${colorClass} transition-colors group-hover:scale-105 duration-300`}>
-                                    <Folder className="w-5 h-5 fill-current opacity-70" />
-                                  </div>
-                                  <div className="text-left">
-                                    <span className="text-sm font-bold text-foreground block group-hover:text-primary transition-colors">
-                                      {label}
-                                    </span>
-                                    <span className="text-[11px] text-muted-foreground">
-                                      {count === 1 ? '1 artigo' : `${count} artigos`}
-                                    </span>
+                                <div className="w-full h-full rounded-[22px] overflow-hidden relative bg-black/60">
+                                  {caseDaSemana.images?.[0] ? (
+                                    <img
+                                      src={caseDaSemana.images[0]}
+                                      alt={`Caso ${caseDaSemana.case_number}`}
+                                      className="w-full h-full object-contain transition-transform duration-500 group-hover/card:scale-102"
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground p-4">
+                                      <BookOpen className="w-8 h-8 mb-2 text-muted-foreground/45" />
+                                      <span className="text-[10px] font-semibold">Sem imagem</span>
+                                    </div>
+                                  )}
+                                  
+                                  {/* Glass Overlay hover */}
+                                  <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px] opacity-0 group-hover/card:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-1.5">
+                                    <div className="p-2.5 rounded-full bg-white/10 border border-white/20 text-white shadow-lg">
+                                      <Eye className="w-4 h-4" />
+                                    </div>
+                                    <span className="text-[9px] font-bold text-white tracking-widest uppercase">Visualizar Exame</span>
                                   </div>
                                 </div>
-                                {count > 0 && (
-                                  <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
-                                )}
-                              </button>
-                            );
-                          })}
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                      )
-                    ) : (
-                      <div className="space-y-4 animate-in fade-in duration-300">
-                        <div className="flex items-center gap-2 mb-4">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setSelectedSystemFolder(null)}
-                            className="h-8 gap-1.5 text-xs text-muted-foreground hover:text-foreground pl-1.5"
-                          >
-                            <ArrowLeft className="w-3.5 h-3.5" />
-                            Voltar para pastas
-                          </Button>
-                          <span className="text-xs text-muted-foreground">/</span>
-                          <span className="text-xs font-semibold text-foreground uppercase tracking-wider bg-primary/10 text-primary border border-primary/20 px-2.5 py-0.5 rounded-full">
-                            {SYSTEM_LABELS[selectedSystemFolder]}
+                      </div>
+
+                      {/* Footer Button */}
+                      <div className="pt-6 border-t border-border/40 mt-6 flex items-center justify-between gap-4">
+                        {caseDaSemana.author ? (
+                          <span className="text-[10px] text-muted-foreground/60 font-medium select-none">
+                            Elaborado por: <span className="font-semibold text-muted-foreground/80">{caseDaSemana.author}</span>
                           </span>
-                        </div>
-                        
-                        {systemGroups[selectedSystemFolder].map((artigo) => (
+                        ) : (
+                          <div />
+                        )}
+                        <Button
+                          onClick={() => setSelectedCase(caseDaSemana)}
+                          size="sm"
+                          variant="outline"
+                          className="rounded-full font-bold px-5 h-9 text-xs border-border hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-300"
+                        >
+                          Explorar Caso & Diagnóstico <ChevronRight className="w-4 h-4 ml-1" />
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-12 bg-card rounded-3xl border border-dashed border-border min-h-[460px] flex items-center justify-center">
+                      <p className="text-muted-foreground text-sm">Nenhum caso em destaque cadastrado.</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Coluna Direita: Últimos Artigos */}
+                <div className="lg:col-span-4 space-y-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-heading font-extrabold text-xl text-foreground flex items-center gap-2">
+                      <FileText className="w-5 h-5 text-primary" /> Últimos Artigos
+                    </h3>
+                    <Link to="/artigos" className="text-xs font-bold text-primary hover:underline flex items-center gap-0.5">
+                      Ver todos <ChevronRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
+
+                  {articles.length > 0 ? (
+                    <div className="relative overflow-hidden rounded-3xl border border-border bg-card p-5 shadow-sm flex flex-col justify-between min-h-[460px] h-full">
+                      <div className="space-y-3 w-full">
+                        {articles.slice(0, 3).map((artigo) => (
                           <Link
                             key={artigo.id}
                             to={`/artigo/${slugify(artigo.titulo)}`}
-                            className="group flex gap-5 p-5 bg-card hover:bg-muted/30 rounded-3xl border border-border/40 hover:border-primary/30 transition-all duration-300 shadow-sm animate-in fade-in-50 duration-200"
+                            className="group flex gap-3 p-3 bg-secondary/30 hover:bg-secondary/60 rounded-2xl border border-border hover:border-primary/20 transition-all duration-300 shadow-sm"
                           >
-                            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden bg-muted flex-shrink-0 border border-border/50 relative">
+                            <div className="w-12 h-12 rounded-xl overflow-hidden bg-secondary border border-border flex-shrink-0">
                               {artigo.imagem_capa ? (
                                 <img
                                   src={artigo.imagem_capa}
@@ -373,61 +537,106 @@ const Index = () => {
                                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                 />
                               ) : (
-                                <div className="w-full h-full flex items-center justify-center text-xs uppercase font-bold text-muted-foreground bg-secondary">
+                                <div className="w-full h-full flex items-center justify-center text-[9px] uppercase font-bold text-muted-foreground bg-muted">
                                   {artigo.categoria}
                                 </div>
                               )}
                             </div>
-                            <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
+                            <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
                               <div>
-                                <h4 className="text-base sm:text-lg font-bold text-foreground line-clamp-2 group-hover:text-primary transition-colors leading-snug mb-2">
+                                <h5 className="text-[11px] sm:text-xs font-bold text-foreground line-clamp-2 group-hover:text-primary transition-colors leading-tight">
                                   {artigo.titulo}
-                                </h4>
-                                <p className="text-xs sm:text-sm text-muted-foreground/80 line-clamp-2 leading-relaxed mb-3">
-                                  {stripHtml(artigo.conteudo).substring(0, 110)}...
-                                </p>
+                                </h5>
+                                <span className="inline-block text-[7px] font-bold text-primary bg-primary/10 border border-primary/20 px-1.5 py-0.5 rounded mt-1 uppercase tracking-wider">
+                                  {artigo.categoria}
+                                </span>
                               </div>
-                              <span className="text-xs text-muted-foreground font-medium">
+                              <span className="text-[8px] text-muted-foreground font-semibold mt-1">
                                 Por {artigo.autor?.split(' | ')[0]} • {new Date(artigo.data_publicacao).toLocaleDateString('pt-BR')}
                               </span>
                             </div>
                           </Link>
                         ))}
                       </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="text-center py-12 bg-card rounded-2xl border border-dashed border-border/80">
-                    <p className="text-sm text-muted-foreground">Nenhum artigo publicado nesta modalidade.</p>
-                  </div>
-                )}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12 bg-card rounded-3xl border border-dashed border-border min-h-[460px] flex items-center justify-center">
+                      <p className="text-muted-foreground text-sm">Nenhum artigo cadastrado.</p>
+                    </div>
+                  )}
+                </div>
               </div>
 
-              {/* Coluna da Direita: Casos */}
-              <div className="lg:col-span-6 space-y-6">
-                <div className="border-b border-border/80 pb-4 mb-2">
-                  <h3 className="font-heading text-2xl font-bold text-foreground flex items-center gap-2">
-                    <Activity className="w-5 h-5 text-primary" />
-                    Casos ({examLabel})
+              {/* Divisor */}
+              <div className="border-t border-border/60 my-12" />
+
+              {/* Seção 2: Galeria Completa com Barra de Pesquisa */}
+              <div id="galeria" className="space-y-6 scroll-mt-24">
+                <div className="text-center max-w-xl mx-auto space-y-2 mb-6">
+                  <h3 className="font-heading font-extrabold text-2xl md:text-3xl text-foreground">
+                    Arquivo de Casos Clínicos
                   </h3>
+                  <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">
+                    Explore nossa coleção completa de exames de imagem, diagnósticos e discussões clínicas detalhadas desenvolvidas pela nossa liga.
+                  </p>
                 </div>
+
+                <FiltersBar
+                  search={search}
+                  onSearchChange={setSearch}
+                  examType={examType}
+                  onExamTypeChange={setExamType}
+                  showDiagnosis={showDiagnosis}
+                  onShowDiagnosisChange={setShowDiagnosis}
+                />
+
                 {cases && cases.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 pt-4">
                     {cases.map((c, i) => (
                       <CaseCard
                         key={c.id}
                         caseData={c}
                         index={i}
                         onClick={() => setSelectedCase(c)}
+                        showDiagnosis={showDiagnosis}
                       />
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-20 bg-card rounded-2xl border border-dashed border-border/80">
-                    <p className="text-muted-foreground">Nenhum caso encontrado nesta modalidade.</p>
+                  <div className="text-center py-12 bg-card rounded-3xl border border-dashed border-border/80">
+                    <p className="text-muted-foreground text-sm">Nenhum caso clínico encontrado nesta modalidade.</p>
                   </div>
                 )}
               </div>
+            </div>
+          ) : (
+            // Search Active view (always show gallery search results)
+            <div className="space-y-8 animate-in fade-in duration-500">
+              <FiltersBar
+                search={search}
+                onSearchChange={setSearch}
+                examType={examType}
+                onExamTypeChange={setExamType}
+                showDiagnosis={showDiagnosis}
+                onShowDiagnosisChange={setShowDiagnosis}
+              />
+              {cases && cases.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                  {cases.map((c, i) => (
+                    <CaseCard
+                      key={c.id}
+                      caseData={c}
+                      index={i}
+                      onClick={() => setSelectedCase(c)}
+                      showDiagnosis={showDiagnosis}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-20 bg-card rounded-2xl border border-dashed border-border/80">
+                  <p className="text-muted-foreground">Nenhum caso encontrado para a pesquisa.</p>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -481,6 +690,7 @@ const Index = () => {
         open={!!selectedCase}
         onOpenChange={(o) => !o && setSelectedCase(null)}
       />
+      {/* Modal list removed. Displayed inline in archive grid instead. */}
     </div>
     
   );

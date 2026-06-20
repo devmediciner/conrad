@@ -33,6 +33,7 @@ interface ImageViewerProps {
   layout?: 'default' | 'three-columns';
   caseDetails?: React.ReactNode;
   leftColumnExtra?: React.ReactNode;
+  imageSource?: string | null;
 }
 
 export default function ImageViewer({ 
@@ -46,7 +47,8 @@ export default function ImageViewer({
   examType,
   layout = 'default',
   caseDetails,
-  leftColumnExtra
+  leftColumnExtra,
+  imageSource
 }: ImageViewerProps) {
   const [localSelectedImage, setLocalSelectedImage] = useState(0);
   const selectedImage = propSelectedImage !== undefined ? propSelectedImage : localSelectedImage;
@@ -996,6 +998,11 @@ export default function ImageViewer({
 
         <div className="flex-1 min-w-0 md:min-h-0 md:flex md:flex-col md:justify-center">
           {!isFullscreen && renderInteractiveContainer(false)}
+          {imageSource && (
+            <p className="text-[10px] text-muted-foreground/50 text-center mt-1.5 font-sans leading-none">
+              Fonte da imagem: {imageSource}
+            </p>
+          )}
         </div>
       </div>
             
@@ -1028,6 +1035,11 @@ export default function ImageViewer({
           <div className="flex items-center gap-4">
             <div className="flex-1 min-w-0">
               {!isFullscreen && renderInteractiveContainer(false)}
+              {imageSource && (
+                <p className="text-[10px] text-muted-foreground/50 text-center mt-1.5 font-sans leading-none">
+                  Fonte da imagem: {imageSource}
+                </p>
+              )}
             </div>
             
             {!isFullscreen && isSliceSeries && images && images.length > 1 && (
@@ -1254,8 +1266,13 @@ export default function ImageViewer({
               </div>
             )}
 
-            <div className="flex-1 h-full min-w-0 flex items-center justify-center">
+            <div className="flex-1 h-full min-w-0 flex flex-col justify-center items-center">
               {renderInteractiveContainer(true)}
+              {imageSource && (
+                <p className="text-[10px] text-white/40 text-center mt-1.5 font-sans leading-none">
+                  Fonte da imagem: {imageSource}
+                </p>
+              )}
             </div>
           </div>
 

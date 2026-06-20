@@ -49,7 +49,8 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
   const [clinicalCase, setClinicalCase] = useState('');
   const [comments, setComments] = useState('');
   const [diagnosis, setDiagnosis] = useState('');
-  const [source, setSource] = useState('');
+  const [author, setAuthor] = useState('');
+  const [imageSource, setImageSource] = useState('');
   const [uploading, setUploading] = useState(false);
   
   // Game fields
@@ -213,7 +214,8 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
     setClinicalCase('');
     setComments('');
     setDiagnosis('');
-    setSource('');
+    setAuthor('');
+    setImageSource('');
     setIsMinigame(false);
     setDisease('');
     setClue1('');
@@ -245,7 +247,8 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
         sex: sex || 'Outro',
         clinical_case: clinicalCase,
         diagnosis,
-        source: source.trim() || undefined,
+        author: author.trim() || undefined,
+        image_source: imageSource.trim() || undefined,
         status: isAdmin ? 'approved' : 'pending',
         disease: disease || null,
         clue1: isMinigame ? (clue1.trim() || clinicalCase) : null,
@@ -322,24 +325,33 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
               </div>
             </div>
 
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-semibold text-foreground">Idade</label>
+              <Input
+                type="number"
+                value={age}
+                onChange={(e) => setAge(e.target.value)}
+                placeholder="Ex: 45"
+                className="bg-background border-border h-9 text-xs"
+              />
+            </div>
+
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <label className="text-[11px] font-semibold text-foreground">Idade</label>
+                <label className="text-[11px] font-semibold text-foreground">Elaborado por (Autor)</label>
                 <Input
-                  type="number"
-                  value={age}
-                  onChange={(e) => setAge(e.target.value)}
-                  placeholder="Ex: 45"
+                  value={author}
+                  onChange={(e) => setAuthor(e.target.value)}
+                  placeholder="Ex: Dr. Fulano / Liga CONRAD"
                   className="bg-background border-border h-9 text-xs"
                 />
               </div>
-
               <div className="space-y-1.5">
-                <label className="text-[11px] font-semibold text-foreground">Fonte</label>
+                <label className="text-[11px] font-semibold text-foreground">Fonte da Imagem</label>
                 <Input
-                  value={source}
-                  onChange={(e) => setSource(e.target.value)}
-                  placeholder="Ex: Radiopaedia"
+                  value={imageSource}
+                  onChange={(e) => setImageSource(e.target.value)}
+                  placeholder="Ex: Radiopaedia / Arquivo Pessoal"
                   className="bg-background border-border h-9 text-xs"
                 />
               </div>

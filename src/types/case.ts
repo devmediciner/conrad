@@ -20,6 +20,9 @@ export interface Case {
   updated_at: string;
   comments?: string | null;
   laudo_images?: string[] | null;
+  is_case_of_the_week?: boolean | null;
+  author?: string | null;
+  image_source?: string | null;
 }
 
 export const EXAM_TYPE_COLORS: Record<ExamType, string> = {

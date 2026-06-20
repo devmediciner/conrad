@@ -91,6 +91,7 @@ export function CaseModal({ caseData, open, onOpenChange }: CaseModalProps) {
               setSelectedImage={setSelectedImage}
               examType={caseData.exam_type}
               layout="three-columns"
+              imageSource={caseData.image_source}
               leftColumnExtra={
                 hasLaudoImages && showDiagnosis ? (
                   <div className="flex flex-col gap-1.5">
@@ -178,11 +179,13 @@ export function CaseModal({ caseData, open, onOpenChange }: CaseModalProps) {
                       </div>
                     )}
                   </div>
-                  {/* Source */}
-                  {caseData.source && (
-                    <p className="text-xs text-muted-foreground border-t border-border pt-3 mt-auto">
-                      Fonte: {caseData.source}
-                    </p>
+                  {/* Author */}
+                  {caseData.author && (
+                    <div className="text-[11px] text-muted-foreground border-t border-border pt-3 mt-auto">
+                      <p>
+                        Caso elaborado por: <span className="font-semibold text-foreground/80">{caseData.author}</span>
+                      </p>
+                    </div>
                   )}
                 </div>
               }
@@ -277,11 +280,13 @@ export function CaseModal({ caseData, open, onOpenChange }: CaseModalProps) {
                     </div>
                   )}
                 </div>
-                {/* Source */}
-                {caseData.source && (
-                  <p className="text-xs text-muted-foreground border-t border-border pt-3 mt-auto">
-                    Fonte: {caseData.source}
-                  </p>
+                {/* Author */}
+                {caseData.author && (
+                  <div className="text-[11px] text-muted-foreground border-t border-border pt-3 mt-auto">
+                    <p>
+                      Caso elaborado por: <span className="font-semibold text-foreground/80">{caseData.author}</span>
+                    </p>
+                  </div>
                 )}
               </div>
             </div>

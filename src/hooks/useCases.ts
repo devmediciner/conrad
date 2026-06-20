@@ -61,6 +61,8 @@ export function useSubmitCase() {
       clinical_case: string;
       diagnosis: string;
       source?: string;
+      author?: string;
+      image_source?: string;
       status?: string;
       disease?: string | null;
       clue1?: string | null;
@@ -81,6 +83,8 @@ export function useSubmitCase() {
           clinical_case: caseData.clinical_case,
           diagnosis: caseData.diagnosis,
           source: caseData.source,
+          author: caseData.author,
+          image_source: caseData.image_source,
           status: 'pending',
           submitted_by: user.id,
           disease: caseData.disease,
@@ -198,6 +202,8 @@ export function useUpdateCase() {
       clinical_case?: string; 
       diagnosis?: string; 
       source?: string | null; 
+      author?: string | null;
+      image_source?: string | null;
       status?: string;
       disease?: string | null;
       clue1?: string | null;
