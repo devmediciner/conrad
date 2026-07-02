@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, Calendar, User, Loader2, FileText, ArrowRight, X, ChevronLeft, ChevronRight, Eye, EyeOff } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { supabase } from '@/integrations/supabase/client';
-import { slugify, stripHtml } from '@/lib/utils';
+import { slugify, stripHtml, formatDisplayDate } from '@/lib/utils';
 import { FormattedText } from '@/components/ui/FormattedText';
 import { CaseModal } from '@/components/CaseModal';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
@@ -123,7 +123,7 @@ export default function LerArtigo() {
                 </div>
                 <div className="flex items-center gap-2 bg-muted/50 px-3 py-1.5 rounded-full border border-border/50">
                   <Calendar className="w-4 h-4" /> 
-                  {new Date(artigo.data_publicacao).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
+                  {formatDisplayDate(artigo.data_publicacao, { day: '2-digit', month: 'long', year: 'numeric' })}
                 </div>
               </div>
             </div>

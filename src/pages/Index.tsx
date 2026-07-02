@@ -18,7 +18,7 @@ import usgImage from '@/assets/usg.png';
 import rmImage from '@/assets/rm.png';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { slugify, stripHtml } from '@/lib/utils';
+import { slugify, stripHtml, formatDisplayDate } from '@/lib/utils';
 import { classifyArticle, getMetadataFromContent, SYSTEM_LABELS, SYSTEM_COLORS, SystemType } from '@/utils/articleClassifier';
 import { EXAM_TYPE_COLORS } from '@/types/case';
 
@@ -41,7 +41,7 @@ const Index = () => {
   const [articles, setArticles] = useState<Article[]>([]);
   const [loadingArticles, setLoadingArticles] = useState(false);
   
-  const [activeClassification, setActiveClassification] = useState<'anatomia' | 'patologia'>('anatomia');
+  const [activeClassification, setActiveClassification] = useState<'anatomia' | 'patologia' | 'geral'>('geral');
   const [selectedSystemFolder, setSelectedSystemFolder] = useState<SystemType | null>(null);
 
   // Reset selected folder when modal/exam type changes
@@ -83,8 +83,14 @@ const Index = () => {
 
   const anatomyArticles = classifiedArticles.filter(a => a._type === 'anatomia');
   const pathologyArticles = classifiedArticles.filter(a => a._type === 'patologia');
+  const generalArticles = classifiedArticles.filter(a => a._type === 'geral');
 
-  const currentClassificationArticles = activeClassification === 'anatomia' ? anatomyArticles : pathologyArticles;
+  const currentClassificationArticles = 
+    activeClassification === 'anatomia' 
+      ? anatomyArticles 
+      : activeClassification === 'patologia' 
+      ? pathologyArticles 
+      : generalArticles;
 
   // Group by system
   const systemGroups: Record<SystemType, typeof currentClassificationArticles> = {
@@ -246,7 +252,7 @@ const Index = () => {
                     Artigos de {examLabels[selectedModality]} ({selectedModality})
                   </h3>
                   <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                    Explore os artigos científicos e materiais educativos de {examLabels[selectedModality]} separados por anatomia e patologia.
+                    Explore os artigos científicos e materiais educativos de {examLabels[selectedModality]} separados por anatomia, patologia e geral.
                   </p>
                 </div>
                 <Button
@@ -268,6 +274,19 @@ const Index = () => {
                 <div className="space-y-4">
                   {/* Classificações Tabs */}
                   <div className="flex bg-muted p-1 rounded-2xl w-full mb-6">
+                    <button
+                      onClick={() => {
+                        setActiveClassification('geral');
+                        setSelectedSystemFolder(null);
+                      }}
+                      className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${
+                        activeClassification === 'geral'
+                          ? 'bg-card text-foreground shadow-sm'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      Geral ({generalArticles.length})
+                    </button>
                     <button
                       onClick={() => {
                         setActiveClassification('anatomia');
@@ -299,7 +318,11 @@ const Index = () => {
                   {selectedSystemFolder === null ? (
                     currentClassificationArticles.length === 0 ? (
                       <div className="text-center py-12 bg-card rounded-2xl border border-dashed border-border/80">
-                        <p className="text-sm text-muted-foreground">Nenhum artigo de {activeClassification} nesta modalidade.</p>
+                        <p className="text-sm text-muted-foreground">
+                          {activeClassification === 'geral'
+                            ? 'Nenhum artigo geral nesta modalidade.'
+                            : `Nenhum artigo de ${activeClassification} nesta modalidade.`}
+                        </p>
                       </div>
                     ) : (
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in duration-300">
@@ -390,7 +413,7 @@ const Index = () => {
                               </p>
                             </div>
                             <span className="text-xs text-muted-foreground font-medium">
-                              Por {artigo.autor?.split(' | ')[0]} • {new Date(artigo.data_publicacao).toLocaleDateString('pt-BR')}
+                              Por {artigo.autor?.split(' | ')[0]} • {formatDisplayDate(artigo.data_publicacao)}
                             </span>
                           </div>
                         </Link>
@@ -552,7 +575,7 @@ const Index = () => {
                                 </span>
                               </div>
                               <span className="text-[8px] text-muted-foreground font-semibold mt-1">
-                                Por {artigo.autor?.split(' | ')[0]} • {new Date(artigo.data_publicacao).toLocaleDateString('pt-BR')}
+                                Por {artigo.autor?.split(' | ')[0]} • {formatDisplayDate(artigo.data_publicacao)}
                               </span>
                             </div>
                           </Link>

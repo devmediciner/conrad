@@ -32,3 +32,18 @@ export function removeAccents(text: string | null | undefined): string {
     .toLowerCase();
 }
 
+export function formatDisplayDate(
+  dateStr: string | null | undefined,
+  options?: Intl.DateTimeFormatOptions
+): string {
+  if (!dateStr) return '';
+  const match = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (match) {
+    const year = parseInt(match[1], 10);
+    const month = parseInt(match[2], 10) - 1; // months are 0-indexed
+    const day = parseInt(match[3], 10);
+    return new Date(year, month, day).toLocaleDateString('pt-BR', options);
+  }
+  return new Date(dateStr).toLocaleDateString('pt-BR', options);
+}
+

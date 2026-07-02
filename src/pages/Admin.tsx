@@ -2,10 +2,11 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/hooks/authContent';
 import { useAllCases, useDeleteCase, useUpdateCaseStatus } from '@/hooks/useCases';
 import { EXAM_TYPE_COLORS } from '@/types/case';
-import { stripHtml, slugify, removeAccents } from '@/lib/utils';
+import { stripHtml, slugify, removeAccents, formatDisplayDate } from '@/lib/utils';
 import { CaseModal } from '@/components/CaseModal';
 
 import { Trash2, ArrowLeft, Loader2, Pencil, Plus, Gamepad2, List, FileText, ImagePlus, Save, X, CheckCircle, Settings, Users, UserPlus, Check, XCircle, Eye, EyeOff, Edit, Search } from 'lucide-react';
@@ -21,7 +22,7 @@ import type { Article } from '@/types/article';
 import { supabase } from '@/integrations/supabase/client'; 
 import { createClient } from '@supabase/supabase-js'; // ← Adicione esta importação
 import { ArticleEditor } from '@/components/ArticleEditor';
-import { getMetadataFromContent, injectMetadataIntoContent, stripMetadataFromContent, SYSTEM_LABELS, SystemType } from '@/utils/articleClassifier';
+import { classifyArticle, getMetadataFromContent, injectMetadataIntoContent, stripMetadataFromContent, SYSTEM_LABELS, SystemType } from '@/utils/articleClassifier';
 
 const Admin = () => {
   const { user, isAdmin, loading: authLoading } = useAuth(); // Certifique-se de que o useAuth retorne o 'user' logado
@@ -35,8 +36,11 @@ const Admin = () => {
   const [editingArticle, setEditingArticle] = useState<Article | null>(null);
   const [viewingCase, setViewingCase] = useState<Case | null>(null);
   const [casesSearchQuery, setCasesSearchQuery] = useState('');
+  const [articlesSearchQuery, setArticlesSearchQuery] = useState('');
   
   const [activeTab, setActiveTab] = useState<'casos' | 'artigos' | 'config'>('casos');
+  const [activeCasesModality, setActiveCasesModality] = useState<'all' | 'RX' | 'TC' | 'USG' | 'RM'>('all');
+  const [activeArticlesModality, setActiveArticlesModality] = useState<'all' | 'rx' | 'tc' | 'usg' | 'rm'>('all');
   const [articles, setArticles] = useState<Article[]>([]);
   const [users, setUsers] = useState<Record<string, unknown>[]>([]);
   const [loadingArticles, setLoadingArticles] = useState(false);
@@ -152,8 +156,11 @@ const Admin = () => {
   const approvedCases = cases?.filter(c => c.status === 'approved') ?? [];
   const pendingCases = cases?.filter(c => c.status === 'pending') ?? [];
   
-  // Mostra todos os casos para todos os usuários logados, filtrados pela busca
+  // Mostra todos os casos para todos os usuários logados, filtrados pela busca, pela modalidade selecionada e ordenados para agrupar visíveis/ocultos
   const displayCases = (cases ?? []).filter(c => {
+    if (activeCasesModality !== 'all' && c.exam_type !== activeCasesModality) {
+      return false;
+    }
     const query = removeAccents(casesSearchQuery).trim();
     if (!query) return true;
     return (
@@ -162,6 +169,28 @@ const Admin = () => {
       removeAccents(c.disease).includes(query) ||
       removeAccents(stripHtml(c.clinical_case)).includes(query)
     );
+  }).sort((a, b) => {
+    if (a.status === 'approved' && b.status === 'pending') return -1;
+    if (a.status === 'pending' && b.status === 'approved') return 1;
+    return 0;
+  });
+
+  // Filtra os artigos baseados na modalidade selecionada, busca e ordena para agrupar visíveis/ocultos
+  const displayArticles = articles.filter(artigo => {
+    if (activeArticlesModality !== 'all' && artigo.categoria?.toLowerCase() !== activeArticlesModality) {
+      return false;
+    }
+    const query = removeAccents(articlesSearchQuery).trim();
+    if (!query) return true;
+    return (
+      removeAccents(artigo.titulo || '').includes(query) ||
+      removeAccents(artigo.autor || '').includes(query) ||
+      removeAccents(stripHtml(artigo.conteudo || '')).includes(query)
+    );
+  }).sort((a, b) => {
+    if (a.status === 'approved' && b.status === 'pending') return -1;
+    if (a.status === 'pending' && b.status === 'approved') return 1;
+    return 0;
   });
 
   const approvedArticles = articles.filter(a => a.status === 'approved');
@@ -296,11 +325,34 @@ const Admin = () => {
         <div className="pb-20">
           {/* CONTEÚDO: ABA CASOS */}
           {activeTab === 'casos' && (
-            <div className="space-y-4 max-w-4xl">
-              <div className="flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center mb-4">
-                <h2 className="text-xl font-bold font-heading text-foreground">Casos (Todos)</h2>
-                <div className="flex items-center gap-3 w-full sm:w-auto">
-                  <div className="relative w-full sm:w-64">
+            <div className="space-y-4 max-w-6xl">
+              <div className="flex flex-col lg:flex-row gap-4 justify-between items-start lg:items-center mb-6">
+                {/* Sub-abas de Modalidades para Casos */}
+                <div className="flex bg-muted p-1 rounded-2xl shrink-0">
+                  {[
+                    { id: 'all', label: 'Todos' },
+                    { id: 'RX', label: 'Raio-X (RX)' },
+                    { id: 'TC', label: 'Tomografia (TC)' },
+                    { id: 'USG', label: 'Ultrassom (USG)' },
+                    { id: 'RM', label: 'Ressonância (RM)' },
+                  ].map((mod) => (
+                    <button
+                      key={mod.id}
+                      onClick={() => setActiveCasesModality(mod.id as any)}
+                      className={`px-4 py-2 text-xs font-bold rounded-xl transition-all ${
+                        activeCasesModality === mod.id
+                          ? 'bg-card text-foreground shadow-sm'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      {mod.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Pesquisa e Botão Novo Caso */}
+                <div className="flex items-center gap-3 w-full md:w-auto">
+                  <div className="relative w-full md:w-64">
                     <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
                       placeholder="Pesquisar por número, diagnóstico..."
@@ -358,50 +410,22 @@ const Admin = () => {
                             Visualizar
                           </Button>
                           
-                          {isAdmin && c.status === 'pending' && (
-                            <>
-                              <Button 
-                                size="icon" 
-                                onClick={async () => {
-                                  updateCaseStatus.mutate({ id: c.id, status: 'approved' });
-                                  toast.success('Caso aprovado!');
-                                }} 
-                                className="bg-emerald-500 hover:bg-emerald-600 text-white h-8 w-8 shrink-0 animate-in zoom-in-50 duration-200"
-                                title="Aprovar Caso"
-                              >
-                                <Check className="w-4 h-4" />
-                              </Button>
-                              <Button 
-                                size="icon" 
-                                onClick={() => {
-                                  if (confirm('Deseja recusar e excluir este caso?')) {
-                                    deleteCase.mutate(c.id);
-                                    toast.success('Caso recusado e excluído');
-                                  }
-                                }} 
-                                variant="destructive" 
-                                className="h-8 w-8 shrink-0 animate-in zoom-in-50 duration-200"
-                                title="Recusar Caso"
-                              >
-                                <XCircle className="w-4 h-4" />
-                              </Button>
-                            </>
+                          {isAdmin && (
+                            <div className="flex items-center gap-2 px-1 select-none" title={c.status === 'approved' ? "Ocultar Caso (Tornar Invisível)" : "Aprovar Caso (Tornar Visível)"}>
+                              <span className="text-xs font-semibold text-muted-foreground hidden sm:inline">
+                                {c.status === 'approved' ? 'Visível' : 'Oculto'}
+                              </span>
+                              <Switch
+                                checked={c.status === 'approved'}
+                                onCheckedChange={async (checked) => {
+                                  const newStatus = checked ? 'approved' : 'pending';
+                                  updateCaseStatus.mutate({ id: c.id, status: newStatus });
+                                  toast.success(checked ? 'Caso agora está Visível!' : 'Caso agora está Oculto!');
+                                }}
+                              />
+                            </div>
                           )}
 
-                          {isAdmin && c.status === 'approved' && (
-                             <Button 
-                               size="icon" 
-                               variant="ghost"
-                               onClick={async () => {
-                                 updateCaseStatus.mutate({ id: c.id, status: 'pending' });
-                                 toast.success('Caso desativado e ocultado do público!');
-                               }} 
-                               className="text-amber-500 hover:text-amber-600 hover:bg-amber-500/10 h-8 w-8 shrink-0 transition-colors"
-                               title="Desativar Caso (Ocultar do público)"
-                             >
-                               <EyeOff className="w-4 h-4" />
-                             </Button>
-                           )}
 
                           {(isAdmin || c.submitted_by === user?.id) && (
                             <Button variant="ghost" size="icon" onClick={() => setEditingCase(c)} className="text-muted-foreground hover:text-primary h-8 w-8" title="Editar"><Pencil className="w-4 h-4" /></Button>
@@ -428,37 +452,86 @@ const Admin = () => {
 
           {/* CONTEÚDO: ABA ARTIGOS */}
           {activeTab === 'artigos' && (
-            <div className="space-y-4 max-w-4xl">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold font-heading text-foreground">Artigos (Todos)</h2>
-                <Button variant="secondary" className="gap-2" onClick={() => { setEditingArticle(null); setArticleModalOpen(true); }}>
-                  <FileText className="w-4 h-4" /> Novo Artigo
-                </Button>
+            <div className="space-y-4 max-w-6xl">
+              <div className="flex flex-col lg:flex-row gap-4 justify-between items-start lg:items-center mb-6">
+                {/* Sub-abas de Modalidades para Artigos */}
+                <div className="flex bg-muted p-1 rounded-2xl shrink-0">
+                  {[
+                    { id: 'all', label: 'Todos' },
+                    { id: 'rx', label: 'Raio-X (RX)' },
+                    { id: 'tc', label: 'Tomografia (TC)' },
+                    { id: 'usg', label: 'Ultrassom (USG)' },
+                    { id: 'rm', label: 'Ressonância (RM)' },
+                  ].map((mod) => (
+                    <button
+                      key={mod.id}
+                      onClick={() => setActiveArticlesModality(mod.id as any)}
+                      className={`px-4 py-2 text-xs font-bold rounded-xl transition-all ${
+                        activeArticlesModality === mod.id
+                          ? 'bg-card text-foreground shadow-sm'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      {mod.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Pesquisa e Botão Novo Artigo */}
+                <div className="flex items-center gap-3 w-full md:w-auto">
+                  <div className="relative w-full md:w-64">
+                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Pesquisar por título, autor..."
+                      value={articlesSearchQuery}
+                      onChange={(e) => setArticlesSearchQuery(e.target.value)}
+                      className="pl-9 h-9 text-xs bg-card border-border"
+                    />
+                  </div>
+                  <Button variant="secondary" className="gap-2 h-9 text-xs shrink-0 bg-yellow-500 hover:bg-yellow-600 text-black border-none" onClick={() => { setEditingArticle(null); setArticleModalOpen(true); }}>
+                    <FileText className="w-4 h-4" /> Novo Artigo
+                  </Button>
+                </div>
               </div>
+
               {loadingArticles ? (
                 <p className="text-muted-foreground py-4">Carregando artigos...</p>
-              ) : articles.length === 0 ? (
+              ) : displayArticles.length === 0 ? (
                 <div className="text-center py-12 bg-card border border-dashed border-border rounded-xl shadow-sm"><p className="text-muted-foreground">Nenhum artigo encontrado.</p></div>
               ) : (
                 <div className="space-y-3">
-                  {articles.map(artigo => (
-                    <div key={artigo.id} className="bg-card border border-border rounded-xl p-4 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow">
-                      <div className="w-16 h-16 rounded-lg overflow-hidden bg-secondary flex-shrink-0">
-                        {artigo.imagem_capa ? <img src={artigo.imagem_capa} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xs uppercase bg-muted">{artigo.categoria}</div>}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-500 border border-blue-500/20 uppercase font-bold tracking-wider">{artigo.categoria}</span>
-                          {artigo.status === 'pending' && (
-                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20 uppercase font-bold tracking-wider">Em Análise</span>
-                          )}
-                          {artigo.status === 'approved' && (
-                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 uppercase font-bold tracking-wider">Aprovado</span>
-                          )}
+                  {displayArticles.map(artigo => {
+                    const metadata = getMetadataFromContent(artigo.conteudo || '');
+                    const fallback = classifyArticle(artigo.titulo || '', artigo.conteudo || '');
+                    const type = metadata.type || fallback.type;
+                    const typeClass = 
+                      type === 'anatomia' ? 'bg-purple-500/10 text-purple-500 border-purple-500/20' :
+                      type === 'patologia' ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' :
+                      'bg-slate-500/10 text-slate-500 border-slate-500/20';
+                    const typeLabel = 
+                      type === 'anatomia' ? 'Anatomia' :
+                      type === 'patologia' ? 'Patologia' :
+                      'Geral';
+
+                    return (
+                      <div key={artigo.id} className="bg-card border border-border rounded-xl p-4 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow">
+                        <div className="w-16 h-16 rounded-lg overflow-hidden bg-secondary flex-shrink-0">
+                          {artigo.imagem_capa ? <img src={artigo.imagem_capa} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xs uppercase bg-muted">{artigo.categoria}</div>}
                         </div>
-                        <p className="text-sm text-foreground truncate font-semibold">{artigo.titulo}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">{artigo.autor?.split(' | ')[0]} • {new Date(artigo.data_publicacao).toLocaleDateString('pt-BR')}</p>
-                      </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-500 border border-blue-500/20 uppercase font-bold tracking-wider">{artigo.categoria}</span>
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase font-bold tracking-wider border ${typeClass}`}>{typeLabel}</span>
+                            {artigo.status === 'pending' && (
+                              <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20 uppercase font-bold tracking-wider">Em Análise</span>
+                            )}
+                            {artigo.status === 'approved' && (
+                              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 uppercase font-bold tracking-wider">Aprovado</span>
+                            )}
+                          </div>
+                          <p className="text-sm text-foreground truncate font-semibold">{artigo.titulo}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">{artigo.autor?.split(' | ')[0]} • {formatDisplayDate(artigo.data_publicacao)}</p>
+                        </div>
                       <div className="flex gap-2 flex-shrink-0 items-center">
                         <Button 
                           variant="outline" 
@@ -469,33 +542,21 @@ const Admin = () => {
                           <Eye className="w-3.5 h-3.5" />
                           Visualizar
                         </Button>
-
-                        {isAdmin && artigo.status === 'pending' && (
-                          <>
-                            <Button 
-                              size="icon" 
-                              onClick={async () => {
-                                await handleApproveArticle(artigo.id);
-                              }} 
-                              className="bg-emerald-500 hover:bg-emerald-600 text-white h-8 w-8 shrink-0 animate-in zoom-in-50 duration-200"
-                              title="Aprovar Artigo"
-                            >
-                              <Check className="w-4 h-4" />
-                            </Button>
-                            <Button 
-                              size="icon" 
-                              onClick={async () => {
-                                if (confirm('Deseja recusar e excluir este artigo?')) {
-                                  await handleRejectArticle(artigo.id);
-                                }
-                              }} 
-                              variant="destructive" 
-                              className="h-8 w-8 shrink-0 animate-in zoom-in-50 duration-200"
-                              title="Recusar Artigo"
-                            >
-                              <XCircle className="w-4 h-4" />
-                            </Button>
-                          </>
+                        {isAdmin && (
+                          <div className="flex items-center gap-2 px-1 select-none" title={artigo.status === 'approved' ? "Ocultar Artigo (Tornar Invisível)" : "Aprovar Artigo (Tornar Visível)"}>
+                            <span className="text-xs font-semibold text-muted-foreground hidden sm:inline">
+                              {artigo.status === 'approved' ? 'Visível' : 'Oculto'}
+                            </span>
+                            <Switch
+                              checked={artigo.status === 'approved'}
+                              onCheckedChange={async (checked) => {
+                                const newStatus = checked ? 'approved' : 'pending';
+                                await supabase.from('articles').update({ status: newStatus }).eq('id', artigo.id);
+                                toast.success(checked ? 'Artigo agora está Visível!' : 'Artigo agora está Oculto!');
+                                setRefreshKey(prev => prev + 1);
+                              }}
+                            />
+                          </div>
                         )}
 
                         {(isAdmin || (artigo.autor && artigo.autor.includes(user?.email || ''))) && (
@@ -511,7 +572,8 @@ const Admin = () => {
                         )}
                       </div>
                     </div>
-                  ))}
+                  );
+                })}
                 </div>
               )}
             </div>
@@ -701,7 +763,7 @@ const ArticleModal = ({ open, onOpenChange, isAdmin, onSuccess, articleToEdit, c
   // Estados para o formulário
   const [titulo, setTitulo] = useState('');
   const [categoria, setCategoria] = useState('rx');
-  const [classification, setClassification] = useState<'anatomia' | 'patologia'>('patologia');
+  const [classification, setClassification] = useState<'anatomia' | 'patologia' | 'geral'>('geral');
   const [systemFolder, setSystemFolder] = useState<SystemType>('outro');
   const [autor, setAutor] = useState('');
   const [dataPub, setDataPub] = useState('');
@@ -734,7 +796,7 @@ const ArticleModal = ({ open, onOpenChange, isAdmin, onSuccess, articleToEdit, c
         const metadata = getMetadataFromContent(articleToEdit.conteudo || '');
         const cleanConteudo = stripMetadataFromContent(articleToEdit.conteudo || '');
         setConteudo(cleanConteudo);
-        setClassification(metadata.type || 'patologia');
+        setClassification(metadata.type || 'geral');
         setSystemFolder(metadata.system || 'outro');
         
         setRelatedCases(articleToEdit.related_cases_ids || []);
@@ -747,7 +809,7 @@ const ArticleModal = ({ open, onOpenChange, isAdmin, onSuccess, articleToEdit, c
         setDataPub('');
         setImagemUrl('');
         setConteudo('');
-        setClassification('patologia');
+        setClassification('geral');
         setSystemFolder('outro');
         setRelatedCases([]);
         setCaseToAdd('none');
@@ -927,10 +989,11 @@ const ArticleModal = ({ open, onOpenChange, isAdmin, onSuccess, articleToEdit, c
               <select 
                 className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1.5 text-xs ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring" 
                 value={classification} 
-                onChange={e => setClassification(e.target.value as 'anatomia' | 'patologia')}
+                onChange={e => setClassification(e.target.value as 'anatomia' | 'patologia' | 'geral')}
               >
                 <option value="anatomia">Anatomia</option>
                 <option value="patologia">Patologia</option>
+                <option value="geral">Geral</option>
               </select>
             </div>
 

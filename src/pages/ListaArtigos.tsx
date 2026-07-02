@@ -6,7 +6,7 @@ import { Navbar } from '@/components/Navbar';
 import { Search, Calendar, User, ArrowLeft, Filter, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
-import { slugify } from '@/lib/utils';
+import { slugify, formatDisplayDate } from '@/lib/utils';
 
 function getPreviewText(html: string): string {
   if (!html) return '';
@@ -160,7 +160,7 @@ const ListaArtigos = () => {
                                 <User className="w-3.5 h-3.5 text-primary/70" /> {artigo.autor?.split(' | ')[0]}
                               </span>
                               <span className="flex items-center gap-1.5">
-                                <Calendar className="w-3.5 h-3.5" /> {new Date(artigo.data_publicacao).toLocaleDateString('pt-BR')}
+                                <Calendar className="w-3.5 h-3.5" /> {formatDisplayDate(artigo.data_publicacao)}
                               </span>
                             </div>
                             <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/25 uppercase font-bold tracking-widest shadow-sm shrink-0">

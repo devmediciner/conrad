@@ -1,4 +1,4 @@
-export type ClassificationType = 'anatomia' | 'patologia';
+export type ClassificationType = 'anatomia' | 'patologia' | 'geral';
 
 export type SystemType =
   | 'cardiaco'
@@ -47,8 +47,8 @@ export function classifyArticle(title: string, content: string): ClassifiedArtic
   const normTitle = normalizeText(title);
   const normContent = normalizeText(content);
 
-  // 1. Classification type: Anatomia vs Patologia
-  let type: ClassificationType = 'patologia';
+  // 1. Classification type: Anatomia vs Patologia vs Geral
+  let type: ClassificationType = 'geral';
 
   const anatomyKeywords = [
     'anatomia',
@@ -103,6 +103,10 @@ export function classifyArticle(title: string, content: string): ClassifiedArtic
     normTitle.includes(indicator)
   );
 
+  const hasPathologyIndicators = pathologyIndicators.some(
+    (indicator) => normTitle.includes(indicator) || normContent.includes(indicator)
+  );
+
   if (
     (normTitle.includes('anatomia') || normTitle.includes('normal') || normTitle.includes('estruturas') || normTitle.includes('posicionamento')) &&
     !hasPathologyIndicatorsInTitle
@@ -111,6 +115,8 @@ export function classifyArticle(title: string, content: string): ClassifiedArtic
   } else if (hasAnatomyKeywords && !hasPathologyIndicatorsInTitle) {
     // Check if it really has anatomy content and very few pathology terms
     type = 'anatomia';
+  } else if (hasPathologyIndicators || hasPathologyIndicatorsInTitle) {
+    type = 'patologia';
   }
 
   // 2. System determination
