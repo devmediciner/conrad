@@ -18,10 +18,19 @@ CREATE OR REPLACE TRIGGER on_user_role_email_update
   FOR EACH ROW
   EXECUTE FUNCTION public.handle_sync_user_email();
 
--- Cascade deletes from public.user_roles to auth.users
+-- Cascade deletes from public.user_roles to auth.users and other dependent tables
 CREATE OR REPLACE FUNCTION public.handle_sync_user_delete()
 RETURNS TRIGGER AS $$
 BEGIN
+  -- Set cases submitted_by to NULL so we don't violate foreign key constraint
+  UPDATE public.cases
+  SET submitted_by = NULL
+  WHERE submitted_by = OLD.user_id;
+
+  -- Delete from profiles to satisfy foreign key constraint
+  DELETE FROM public.profiles WHERE id = OLD.user_id;
+
+  -- Now delete from auth.users
   IF EXISTS (SELECT 1 FROM auth.users WHERE id = OLD.user_id) THEN
     DELETE FROM auth.users WHERE id = OLD.user_id;
   END IF;
