@@ -811,7 +811,7 @@ export default function ImageViewer({
       <div
         ref={containerRef}
         className={`relative w-full overflow-hidden bg-black select-none outline-none focus:ring-1 focus:ring-primary/30 ${
-          isFS ? 'h-full max-h-full' : `${aspectClass} rounded-lg`
+          isFS ? 'h-full max-h-full' : imageTopContent ? 'flex-1 min-h-0 h-full rounded-lg' : `${aspectClass} rounded-lg`
         }`}
         style={{ 
           cursor: activeDrag 
@@ -976,7 +976,9 @@ export default function ImageViewer({
           </div>
 
           {/* Column 2: Image (Middle) */}
-          <div className="md:col-span-6 order-1 md:order-2 space-y-4 md:h-full md:flex md:flex-col md:justify-center min-h-0">
+          <div className={`md:col-span-6 order-1 md:order-2 md:h-full md:flex md:flex-col min-h-0 ${
+            imageTopContent ? 'gap-3 md:justify-start' : 'space-y-4 md:justify-center'
+          }`}>
            {/* Image type toggle — above the image */}
            {imageTopContent && (
              <div className="animate-in fade-in duration-300">
@@ -984,7 +986,9 @@ export default function ImageViewer({
              </div>
            )}
            {/* Normal Interactive Image Area & Vertical Slice Slider side-by-side */}
-      <div className="flex items-stretch gap-4">
+        <div className={`flex items-stretch gap-4 ${
+          imageTopContent ? 'md:flex-1 md:min-h-0 md:overflow-hidden' : ''
+        }`}>
         {!isFullscreen && isSliceSeries && images && images.length > 1 && (
           <div className="w-10 flex flex-col items-center justify-between bg-secondary/50 border border-border rounded-full py-4 shrink-0 select-none animate-in fade-in">
             <span className="text-[10px] font-bold text-foreground/80 select-none">
@@ -1011,7 +1015,9 @@ export default function ImageViewer({
           </div>
         )}
 
-        <div className="flex-1 min-w-0 md:min-h-0 md:flex md:flex-col md:justify-center">
+        <div className={`flex-1 min-w-0 md:min-h-0 md:flex md:flex-col md:justify-center ${
+          imageTopContent ? 'overflow-hidden' : ''
+        }`}>
           {!isFullscreen && renderInteractiveContainer(false)}
           {imageSource && (
             <p className="text-[10px] text-muted-foreground/50 text-center mt-1.5 font-sans leading-none">
