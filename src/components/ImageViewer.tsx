@@ -34,6 +34,7 @@ interface ImageViewerProps {
   caseDetails?: React.ReactNode;
   leftColumnExtra?: React.ReactNode;
   leftColumnTop?: React.ReactNode;
+  imageTopContent?: React.ReactNode;
   imageSource?: string | null;
 }
 
@@ -50,6 +51,7 @@ export default function ImageViewer({
   caseDetails,
   leftColumnExtra,
   leftColumnTop,
+  imageTopContent,
   imageSource
 }: ImageViewerProps) {
   const [localSelectedImage, setLocalSelectedImage] = useState(0);
@@ -975,6 +977,12 @@ export default function ImageViewer({
 
           {/* Column 2: Image (Middle) */}
           <div className="md:col-span-6 order-1 md:order-2 space-y-4 md:h-full md:flex md:flex-col md:justify-center min-h-0">
+           {/* Image type toggle — above the image */}
+           {imageTopContent && (
+             <div className="animate-in fade-in duration-300">
+               {imageTopContent}
+             </div>
+           )}
            {/* Normal Interactive Image Area & Vertical Slice Slider side-by-side */}
       <div className="flex items-stretch gap-4">
         {!isFullscreen && isSliceSeries && images && images.length > 1 && (

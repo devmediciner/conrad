@@ -138,36 +138,32 @@ export function CaseModal({ caseData, open, onOpenChange }: CaseModalProps) {
                   <Share2 className="w-3.5 h-3.5" /> Compartilhar
                 </Button>
               }
-              leftColumnExtra={
+              leftColumnExtra={null}
+              imageTopContent={
                 hasLaudoImages && showDiagnosis ? (
-                  <div className="flex flex-col gap-1.5">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                      Exibir Imagem
-                    </span>
-                    <div className="grid grid-cols-2 gap-1 bg-background border border-border/60 p-1 rounded-md">
-                      <button
-                        type="button"
-                        onClick={() => setViewingLaudoImages(false)}
-                        className={`flex items-center justify-center gap-1.5 text-[11px] py-1 rounded font-bold transition-all ${
-                          !viewingLaudoImages
-                            ? 'bg-primary text-primary-foreground shadow-sm'
-                            : 'text-muted-foreground hover:text-foreground hover:bg-secondary/30'
-                        }`}
-                      >
-                        <FileImage className="w-3.5 h-3.5" /> Caso
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setViewingLaudoImages(true)}
-                        className={`flex items-center justify-center gap-1.5 text-[11px] py-1 rounded font-bold transition-all ${
-                          viewingLaudoImages
-                            ? 'bg-blue-600 text-white shadow-sm'
-                            : 'text-muted-foreground hover:text-foreground hover:bg-secondary/30'
-                        }`}
-                      >
-                        <Stethoscope className="w-3.5 h-3.5" /> Laudo
-                      </button>
-                    </div>
+                  <div className="grid grid-cols-2 gap-2 bg-background border border-border/60 p-1.5 rounded-xl">
+                    <button
+                      type="button"
+                      onClick={() => setViewingLaudoImages(false)}
+                      className={`flex items-center justify-center gap-2 text-xs py-2.5 rounded-lg font-bold transition-all ${
+                        !viewingLaudoImages
+                          ? 'bg-primary text-primary-foreground shadow-sm'
+                          : 'text-muted-foreground hover:text-foreground hover:bg-secondary/40'
+                      }`}
+                    >
+                      <FileImage className="w-4 h-4" /> Imagem do Caso
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setViewingLaudoImages(true)}
+                      className={`flex items-center justify-center gap-2 text-xs py-2.5 rounded-lg font-bold transition-all ${
+                        viewingLaudoImages
+                          ? 'bg-blue-600 text-white shadow-sm'
+                          : 'text-muted-foreground hover:text-foreground hover:bg-secondary/40'
+                      }`}
+                    >
+                      <Stethoscope className="w-4 h-4" /> Imagem Detalhada
+                    </button>
                   </div>
                 ) : null
               }
@@ -306,28 +302,28 @@ export function CaseModal({ caseData, open, onOpenChange }: CaseModalProps) {
                           <h4 className="text-xs font-bold uppercase tracking-wider text-primary">
                             Exibir Imagem
                           </h4>
-                          <div className="grid grid-cols-2 gap-1 bg-background border border-border/60 p-1 rounded-md">
+                          <div className="grid grid-cols-2 gap-1.5 bg-background border border-border/60 p-1.5 rounded-lg">
                             <button
                               type="button"
                               onClick={() => setViewingLaudoImages(false)}
-                              className={`flex items-center justify-center gap-1.5 text-[11px] py-1.5 rounded font-bold transition-all ${
+                              className={`flex items-center justify-center gap-1.5 text-[11px] py-2 rounded-md font-bold transition-all ${
                                 !viewingLaudoImages
                                   ? 'bg-primary text-primary-foreground shadow-sm'
                                   : 'text-muted-foreground hover:text-foreground hover:bg-secondary/30'
                               }`}
                             >
-                              <FileImage className="w-3.5 h-3.5" /> Caso
+                              <FileImage className="w-3.5 h-3.5" /> Imagem do Caso
                             </button>
                             <button
                               type="button"
                               onClick={() => setViewingLaudoImages(true)}
-                              className={`flex items-center justify-center gap-1.5 text-[11px] py-1.5 rounded font-bold transition-all ${
+                              className={`flex items-center justify-center gap-1.5 text-[11px] py-2 rounded-md font-bold transition-all ${
                                 viewingLaudoImages
                                   ? 'bg-blue-600 text-white shadow-sm'
                                   : 'text-muted-foreground hover:text-foreground hover:bg-secondary/30'
                               }`}
                             >
-                              <Stethoscope className="w-3.5 h-3.5" /> Laudo
+                              <Stethoscope className="w-3.5 h-3.5" /> Imagem Detalhada
                             </button>
                           </div>
                         </div>
