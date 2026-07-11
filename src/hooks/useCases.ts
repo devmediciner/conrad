@@ -1,10 +1,23 @@
+// Helper: strip HTML tags from a string before text matching
+function stripHtmlTags(html: string): string {
+  return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+// Helper: normalize text for accent-insensitive, case-insensitive search
+function normalizeText(text: string): string {
+  return stripHtmlTags(text)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Case, ExamType } from '@/types/case';
 
 export function useCases(filters?: { search?: string; examType?: string }) {
   return useQuery({
-    queryKey: ['cases', filters],
+    queryKey: ['cases', filters?.examType],
     queryFn: async () => {
       let query = supabase
         .from('cases')
@@ -15,23 +28,40 @@ export function useCases(filters?: { search?: string; examType?: string }) {
       if (filters?.examType && filters.examType !== 'all') {
         query = query.eq('exam_type', filters.examType);
       }
-      if (filters?.search) {
-        const s = filters.search.trim();
-        const cleanId = s.replace(/^#/, '');
-        // If numeric, search by case_number
-        if (/^\d+$/.test(cleanId)) {
-          query = query.eq('case_number', parseInt(cleanId, 10));
-        } else if (/^[0-9a-fA-F-]{4,36}$/.test(cleanId)) {
-          query = query.or(`id.ilike.%${cleanId}%,clinical_case.ilike.%${s}%`);
-        } else {
-          query = query.ilike('clinical_case', `%${s}%`);
-        }
-      }
 
       const { data, error } = await query;
       if (error) throw error;
       return data as Case[];
     },
+    select: (data) => {
+      if (!filters?.search) return data;
+      
+      const searchNormalized = filters.search
+        .trim()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+        
+      if (!searchNormalized) return data;
+
+      return data.filter(c => {
+        // Numeric search matches case_number exactly
+        const cleanId = searchNormalized.replace(/^#/, '');
+        if (/^\d+$/.test(cleanId) && c.case_number === parseInt(cleanId, 10)) {
+          return true;
+        }
+
+        const clinicalCaseClean = normalizeText(c.clinical_case || '');
+        const diagnosisClean = normalizeText(c.diagnosis || '');
+        const diseaseClean = normalizeText(c.disease || '');
+        const idClean = (c.id || '').toLowerCase();
+
+        return clinicalCaseClean.includes(searchNormalized) || 
+               diagnosisClean.includes(searchNormalized) ||
+               diseaseClean.includes(searchNormalized) ||
+               idClean.includes(searchNormalized);
+      });
+    }
   });
 }
 

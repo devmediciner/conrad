@@ -36,7 +36,9 @@ const Index = () => {
 
   const { data: cases, isLoading } = useCases({ search, examType });
 
-  const caseDaSemana = cases?.find(c => c.is_case_of_the_week) || (cases && cases.length > 0 ? cases[0] : null);
+  // Fetch unfiltered cases for the spotlight section — must not be affected by the search query
+  const { data: allCasesForSpotlight } = useCases({ examType });
+  const caseDaSemana = allCasesForSpotlight?.find(c => c.is_case_of_the_week) || (allCasesForSpotlight && allCasesForSpotlight.length > 0 ? allCasesForSpotlight[0] : null);
 
   const [articles, setArticles] = useState<Article[]>([]);
   const [loadingArticles, setLoadingArticles] = useState(false);
@@ -419,7 +421,7 @@ const Index = () => {
             // Home / Search Area
             <div className="space-y-12">
               {/* Conditionally show Spotlights if search is empty (using CSS display hidden to preserve focus and layout DOM nodes) */}
-              <div className={`space-y-16 animate-in fade-in duration-700 ${search ? 'hidden' : ''}`}>
+              <div className="space-y-16 animate-in fade-in duration-700">
                 {/* Seção 1: Destaques (Caso da Semana ao lado de Últimos Artigos) */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                   {/* Coluna Esquerda: Caso da Semana */}
@@ -608,11 +610,11 @@ const Index = () => {
               </div>
 
               {/* Divisor */}
-              <div className={`border-t border-border/60 my-12 ${search ? 'hidden' : ''}`} />
+              <div className="border-t border-border/60 my-12" />
 
               {/* Seção 2: Galeria Completa com Barra de Pesquisa */}
               <div id="galeria" className="space-y-6 scroll-mt-24">
-                <div className={`text-center max-w-xl mx-auto space-y-2 mb-6 ${search ? 'hidden' : ''}`}>
+                <div className="text-center max-w-xl mx-auto space-y-2 mb-6">
                   <h3 className="font-heading font-extrabold text-2xl md:text-3xl text-foreground">
                     Arquivo de Casos Clínicos
                   </h3>
