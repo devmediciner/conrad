@@ -171,7 +171,7 @@ export function CaseModal({ caseData, open, onOpenChange }: CaseModalProps) {
                 <div className="space-y-4">
                   <div className="flex flex-nowrap items-center gap-1.5 w-full overflow-x-auto">
                     <span className="text-[11px] px-2.5 py-1 rounded-full font-bold font-mono bg-secondary text-secondary-foreground whitespace-nowrap flex-shrink-0">
-                      #{caseNum}
+                      Caso #{caseNum}
                     </span>
                     <span className={`text-[11px] px-2.5 py-1 rounded-full font-medium whitespace-nowrap flex-shrink-0 ${badgeClass}`}>{examLabel}</span>
                     {caseData.age && (
@@ -240,7 +240,7 @@ export function CaseModal({ caseData, open, onOpenChange }: CaseModalProps) {
               <div className="space-y-4">
                 <div className="flex flex-nowrap items-center gap-1.5 w-full overflow-x-auto">
                   <span className="text-[11px] px-2.5 py-1 rounded-full font-bold font-mono bg-secondary text-secondary-foreground whitespace-nowrap flex-shrink-0">
-                    #{caseNum}
+                    Caso #{caseNum}
                   </span>
                   <span className={`text-[11px] px-2.5 py-1 rounded-full font-medium whitespace-nowrap flex-shrink-0 ${badgeClass}`}>{examLabel}</span>
                   {caseData.age && (
