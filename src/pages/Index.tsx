@@ -415,201 +415,204 @@ const Index = () => {
                 </div>
               )}
             </div>
-          ) : !search ? (
-            // Full Home view (with Spotlights + Gallery)
-            <div className="space-y-16 animate-in fade-in duration-700">
-              {/* Seção 1: Destaques (Caso da Semana ao lado de Últimos Artigos) */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                {/* Coluna Esquerda: Caso da Semana */}
-                <div className="lg:col-span-8 space-y-4">
-                  <h3 className="font-heading font-extrabold text-xl text-foreground flex items-center gap-2 mb-2">
-                    <Trophy className="w-5 h-5 text-primary" /> Caso da Semana
-                  </h3>
-                  {isLoading ? (
-                        <div className="relative overflow-hidden rounded-3xl border border-border bg-card/40 p-6 md:p-8 min-h-[460px] h-full animate-pulse flex flex-col justify-between backdrop-blur-md">
-                          <div className="space-y-6">
-                            <div className="flex gap-2">
-                              <Skeleton className="h-4 w-12 rounded-full" />
-                              <Skeleton className="h-4 w-24 rounded-full" />
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-                              <div className="md:col-span-6 space-y-4">
-                                <Skeleton className="h-8 w-1/3" />
-                                <div className="space-y-2 border-l-2 border-primary/20 pl-4 py-1.5">
-                                  <Skeleton className="h-3 w-full" />
-                                  <Skeleton className="h-3 w-full" />
-                                  <Skeleton className="h-3 w-5/6" />
-                                </div>
-                              </div>
-                              <div className="md:col-span-6 flex justify-center md:justify-end">
-                                <Skeleton className="aspect-square w-full max-w-[260px] rounded-3xl" />
-                              </div>
-                            </div>
+          ) : (
+            // Home / Search Area
+            <div className="space-y-12">
+              {/* Conditionally show Spotlights if search is empty (using CSS display hidden to preserve focus and layout DOM nodes) */}
+              <div className={`space-y-16 animate-in fade-in duration-700 ${search ? 'hidden' : ''}`}>
+                {/* Seção 1: Destaques (Caso da Semana ao lado de Últimos Artigos) */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                  {/* Coluna Esquerda: Caso da Semana */}
+                  <div className="lg:col-span-8 space-y-4">
+                    <h3 className="font-heading font-extrabold text-xl text-foreground flex items-center gap-2 mb-2">
+                      <Trophy className="w-5 h-5 text-primary" /> Caso da Semana
+                    </h3>
+                    {isLoading ? (
+                      <div className="relative overflow-hidden rounded-3xl border border-border bg-card/40 p-6 md:p-8 min-h-[460px] h-full animate-pulse flex flex-col justify-between backdrop-blur-md">
+                        <div className="space-y-6">
+                          <div className="flex gap-2">
+                            <Skeleton className="h-4 w-12 rounded-full" />
+                            <Skeleton className="h-4 w-24 rounded-full" />
                           </div>
-                          <div className="pt-6 border-t border-border/40 mt-6 flex justify-between items-center">
-                            <Skeleton className="h-3.5 w-32" />
-                            <Skeleton className="h-9 w-44 rounded-full" />
+                          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+                            <div className="md:col-span-6 space-y-4">
+                              <Skeleton className="h-8 w-1/3" />
+                              <div className="space-y-2 border-l-2 border-primary/20 pl-4 py-1.5">
+                                <Skeleton className="h-3 w-full" />
+                                <Skeleton className="h-3 w-full" />
+                                <Skeleton className="h-3 w-5/6" />
+                              </div>
+                            </div>
+                            <div className="md:col-span-6 flex justify-center md:justify-end">
+                              <Skeleton className="aspect-square w-full max-w-[260px] rounded-3xl" />
+                            </div>
                           </div>
                         </div>
-                      ) : caseDaSemana ? (
-                    <div className="relative overflow-hidden rounded-3xl border border-border/80 bg-card/40 p-6 md:p-8 shadow-sm flex flex-col justify-between min-h-[460px] h-full group/card hover:border-primary/30 transition-all duration-300 backdrop-blur-md">
-                      <div className="space-y-6">
-                        {/* Header Row */}
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className={`text-[9px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider border shadow-sm ${
-                            caseDaSemana.exam_type === 'RX' ? 'bg-blue-500/10 border-blue-500/25 text-blue-400' :
-                            caseDaSemana.exam_type === 'TC' ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400' :
-                            caseDaSemana.exam_type === 'RM' ? 'bg-purple-500/10 border-purple-500/25 text-purple-400' :
-                            'bg-amber-500/10 border-amber-500/25 text-amber-400'
-                          }`}>
-                            {caseDaSemana.exam_type}
-                          </span>
-                          {caseDaSemana.sex && (
-                            <span className="text-[9px] px-2.5 py-0.5 rounded-full bg-secondary/80 border border-border/60 text-muted-foreground font-semibold flex items-center gap-1">
-                              👤 {caseDaSemana.sex === 'M' || caseDaSemana.sex?.toLowerCase() === 'masculino' ? 'Masculino' : 'Feminino'}, {caseDaSemana.age} anos
+                        <div className="pt-6 border-t border-border/40 mt-6 flex justify-between items-center">
+                          <Skeleton className="h-3.5 w-32" />
+                          <Skeleton className="h-9 w-44 rounded-full" />
+                        </div>
+                      </div>
+                    ) : caseDaSemana ? (
+                      <div className="relative overflow-hidden rounded-3xl border border-border/80 bg-card/40 p-6 md:p-8 shadow-sm flex flex-col justify-between min-h-[460px] h-full group/card hover:border-primary/30 transition-all duration-300 backdrop-blur-md">
+                        <div className="space-y-6">
+                          {/* Header Row */}
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className={`text-[9px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider border shadow-sm ${
+                              caseDaSemana.exam_type === 'RX' ? 'bg-blue-500/10 border-blue-500/25 text-blue-400' :
+                              caseDaSemana.exam_type === 'TC' ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400' :
+                              caseDaSemana.exam_type === 'RM' ? 'bg-purple-500/10 border-purple-500/25 text-purple-400' :
+                              'bg-amber-500/10 border-amber-500/25 text-amber-400'
+                            }`}>
+                              {caseDaSemana.exam_type}
                             </span>
-                          )}
-                        </div>
-
-                        {/* Split Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-                          {/* Left text column */}
-                          <div className="md:col-span-6 space-y-4">
-                            <h4 className="text-2xl md:text-3xl font-extrabold tracking-tight font-heading text-foreground" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                              Caso #{caseDaSemana.case_number}
-                            </h4>
-                            <div className="border-l-2 border-primary/40 pl-4 py-1.5 bg-primary/[0.01] rounded-r-xl">
-                              <p className="text-muted-foreground text-xs md:text-sm leading-relaxed line-clamp-6 italic font-medium">
-                                "{stripHtml(caseDaSemana.clinical_case)}"
-                              </p>
-                            </div>
+                            {caseDaSemana.sex && (
+                              <span className="text-[9px] px-2.5 py-0.5 rounded-full bg-secondary/80 border border-border/60 text-muted-foreground font-semibold flex items-center gap-1">
+                                👤 {caseDaSemana.sex === 'M' || caseDaSemana.sex?.toLowerCase() === 'masculino' ? 'Masculino' : 'Feminino'}, {caseDaSemana.age} anos
+                              </span>
+                            )}
                           </div>
 
-                          {/* Right image column */}
-                          <div className="md:col-span-6 flex justify-center md:justify-end">
-                            <div className="relative w-full flex justify-center">
-                              <div 
-                                onClick={() => setSelectedCase(caseDaSemana)}
-                                className="relative cursor-pointer aspect-square w-full min-w-[200px] max-w-[260px] md:max-w-[280px] rounded-3xl p-1.5 border border-border bg-zinc-950/80 shadow-md hover:shadow-lg hover:border-primary/45 transition-all duration-300 hover:-translate-y-0.5"
-                              >
-                                <div className="w-full h-full rounded-[22px] overflow-hidden relative bg-black/60">
-                                  {caseDaSemana.images?.[0] ? (
-                                    <img
-                                      src={caseDaSemana.images[0]}
-                                      alt={`Caso ${caseDaSemana.case_number}`}
-                                      className="w-full h-full object-contain transition-transform duration-500 group-hover/card:scale-102"
-                                    />
-                                  ) : (
-                                    <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground p-4">
-                                      <BookOpen className="w-8 h-8 mb-2 text-muted-foreground/45" />
-                                      <span className="text-[10px] font-semibold">Sem imagem</span>
+                          {/* Split Grid */}
+                          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+                            {/* Left text column */}
+                            <div className="md:col-span-6 space-y-4">
+                              <h4 className="text-2xl md:text-3xl font-extrabold tracking-tight font-heading text-foreground" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                                Caso #{caseDaSemana.case_number}
+                              </h4>
+                              <div className="border-l-2 border-primary/40 pl-4 py-1.5 bg-primary/[0.01] rounded-r-xl">
+                                <p className="text-muted-foreground text-xs md:text-sm leading-relaxed line-clamp-6 italic font-medium">
+                                  "{stripHtml(caseDaSemana.clinical_case)}"
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Right image column */}
+                            <div className="md:col-span-6 flex justify-center md:justify-end">
+                              <div className="relative w-full flex justify-center">
+                                <div 
+                                  onClick={() => setSelectedCase(caseDaSemana)}
+                                  className="relative cursor-pointer aspect-square w-full min-w-[200px] max-w-[260px] md:max-w-[280px] rounded-3xl p-1.5 border border-border bg-zinc-950/80 shadow-md hover:shadow-lg hover:border-primary/45 transition-all duration-300 hover:-translate-y-0.5"
+                                >
+                                  <div className="w-full h-full rounded-[22px] overflow-hidden relative bg-black/60">
+                                    {caseDaSemana.images?.[0] ? (
+                                      <img
+                                        src={caseDaSemana.images[0]}
+                                        alt={`Caso ${caseDaSemana.case_number}`}
+                                        className="w-full h-full object-contain transition-transform duration-500 group-hover/card:scale-102"
+                                      />
+                                    ) : (
+                                      <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground p-4">
+                                        <BookOpen className="w-8 h-8 mb-2 text-muted-foreground/45" />
+                                        <span className="text-[10px] font-semibold">Sem imagem</span>
+                                      </div>
+                                    )}
+                                    
+                                    {/* Glass Overlay hover */}
+                                    <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px] opacity-0 group-hover/card:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-1.5">
+                                      <div className="p-2.5 rounded-full bg-white/10 border border-white/20 text-white shadow-lg">
+                                        <Eye className="w-4 h-4" />
+                                      </div>
+                                      <span className="text-[9px] font-bold text-white tracking-widest uppercase">Visualizar Exame</span>
                                     </div>
-                                  )}
-                                  
-                                  {/* Glass Overlay hover */}
-                                  <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px] opacity-0 group-hover/card:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-1.5">
-                                    <div className="p-2.5 rounded-full bg-white/10 border border-white/20 text-white shadow-lg">
-                                      <Eye className="w-4 h-4" />
-                                    </div>
-                                    <span className="text-[9px] font-bold text-white tracking-widest uppercase">Visualizar Exame</span>
                                   </div>
                                 </div>
                               </div>
                             </div>
                           </div>
                         </div>
-                      </div>
 
-                      {/* Footer Button */}
-                      <div className="pt-6 border-t border-border/40 mt-6 flex items-center justify-between gap-4">
-                        {caseDaSemana.author ? (
-                          <span className="text-[10px] text-muted-foreground/60 font-medium select-none">
-                            Elaborado por: <span className="font-semibold text-muted-foreground/80">{caseDaSemana.author}</span>
-                          </span>
-                        ) : (
-                          <div />
-                        )}
-                        <Button
-                          onClick={() => setSelectedCase(caseDaSemana)}
-                          size="sm"
-                          variant="outline"
-                          className="rounded-full font-bold px-5 h-9 text-xs border-border hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-300"
-                        >
-                          Explorar Caso & Diagnóstico <ChevronRight className="w-4 h-4 ml-1" />
-                        </Button>
+                        {/* Footer Button */}
+                        <div className="pt-6 border-t border-border/40 mt-6 flex items-center justify-between gap-4">
+                          {caseDaSemana.author ? (
+                            <span className="text-[10px] text-muted-foreground/60 font-medium select-none">
+                              Elaborado por: <span className="font-semibold text-muted-foreground/80">{caseDaSemana.author}</span>
+                            </span>
+                          ) : (
+                            <div />
+                          )}
+                          <Button
+                            onClick={() => setSelectedCase(caseDaSemana)}
+                            size="sm"
+                            variant="outline"
+                            className="rounded-full font-bold px-5 h-9 text-xs border-border hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-300"
+                          >
+                            Explorar Caso & Diagnóstico <ChevronRight className="w-4 h-4 ml-1" />
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                  ) : (
-                    <div className="text-center py-12 bg-card rounded-3xl border border-dashed border-border min-h-[460px] flex items-center justify-center">
-                      <p className="text-muted-foreground text-sm">Nenhum caso em destaque cadastrado.</p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Coluna Direita: Últimos Artigos */}
-                <div className="lg:col-span-4 space-y-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-heading font-extrabold text-xl text-foreground flex items-center gap-2">
-                      <FileText className="w-5 h-5 text-primary" /> Últimos Artigos
-                    </h3>
-                    <Link to="/artigos" className="text-xs font-bold text-primary hover:underline flex items-center gap-0.5">
-                      Ver todos <ChevronRight className="w-3.5 h-3.5" />
-                    </Link>
+                    ) : (
+                      <div className="text-center py-12 bg-card rounded-3xl border border-dashed border-border min-h-[460px] flex items-center justify-center">
+                        <p className="text-muted-foreground text-sm">Nenhum caso em destaque cadastrado.</p>
+                      </div>
+                    )}
                   </div>
 
-                  {articles.length > 0 ? (
-                    <div className="relative overflow-hidden rounded-3xl border border-border bg-card p-5 shadow-sm flex flex-col justify-between min-h-[460px] h-full">
-                      <div className="space-y-3 w-full">
-                        {articles.slice(0, 3).map((artigo) => (
-                          <Link
-                            key={artigo.id}
-                            to={`/artigo/${slugify(artigo.titulo)}`}
-                            className="group flex gap-3 p-3 bg-secondary/30 hover:bg-secondary/60 rounded-2xl border border-border hover:border-primary/20 transition-all duration-300 shadow-sm"
-                          >
-                            <div className="w-12 h-12 rounded-xl overflow-hidden bg-secondary border border-border flex-shrink-0">
-                              {artigo.imagem_capa ? (
-                                <img
-                                  src={artigo.imagem_capa}
-                                  alt=""
-                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center text-[9px] uppercase font-bold text-muted-foreground bg-muted">
-                                  {artigo.categoria}
+                  {/* Coluna Direita: Últimos Artigos */}
+                  <div className="lg:col-span-4 space-y-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="font-heading font-extrabold text-xl text-foreground flex items-center gap-2">
+                        <FileText className="w-5 h-5 text-primary" /> Últimos Artigos
+                      </h3>
+                      <Link to="/artigos" className="text-xs font-bold text-primary hover:underline flex items-center gap-0.5">
+                        Ver todos <ChevronRight className="w-3.5 h-3.5" />
+                      </Link>
+                    </div>
+
+                    {articles.length > 0 ? (
+                      <div className="relative overflow-hidden rounded-3xl border border-border bg-card p-5 shadow-sm flex flex-col justify-between min-h-[460px] h-full">
+                        <div className="space-y-3 w-full">
+                          {articles.slice(0, 3).map((artigo) => (
+                            <Link
+                              key={artigo.id}
+                              to={`/artigo/${slugify(artigo.titulo)}`}
+                              className="group flex gap-3 p-3 bg-secondary/30 hover:bg-secondary/60 rounded-2xl border border-border hover:border-primary/20 transition-all duration-300 shadow-sm"
+                            >
+                              <div className="w-12 h-12 rounded-xl overflow-hidden bg-secondary border border-border flex-shrink-0">
+                                {artigo.imagem_capa ? (
+                                  <img
+                                    src={artigo.imagem_capa}
+                                    alt=""
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center text-[9px] uppercase font-bold text-muted-foreground bg-muted">
+                                    {artigo.categoria}
+                                  </div>
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
+                                <div>
+                                  <h5 className="text-[11px] sm:text-xs font-bold text-foreground line-clamp-2 group-hover:text-primary transition-colors leading-tight">
+                                    {artigo.titulo}
+                                  </h5>
+                                  <span className="inline-block text-[7px] font-bold text-primary bg-primary/10 border border-primary/20 px-1.5 py-0.5 rounded mt-1 uppercase tracking-wider">
+                                    {artigo.categoria}
+                                  </span>
                                 </div>
-                              )}
-                            </div>
-                            <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
-                              <div>
-                                <h5 className="text-[11px] sm:text-xs font-bold text-foreground line-clamp-2 group-hover:text-primary transition-colors leading-tight">
-                                  {artigo.titulo}
-                                </h5>
-                                <span className="inline-block text-[7px] font-bold text-primary bg-primary/10 border border-primary/20 px-1.5 py-0.5 rounded mt-1 uppercase tracking-wider">
-                                  {artigo.categoria}
+                                <span className="text-[8px] text-muted-foreground font-semibold mt-1">
+                                  Por {artigo.author?.split(' | ')[0]} • {formatDisplayDate(artigo.data_publicacao)}
                                 </span>
                               </div>
-                              <span className="text-[8px] text-muted-foreground font-semibold mt-1">
-                                Por {artigo.autor?.split(' | ')[0]} • {formatDisplayDate(artigo.data_publicacao)}
-                              </span>
-                            </div>
-                          </Link>
-                        ))}
+                            </Link>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  ) : (
-                    <div className="text-center py-12 bg-card rounded-3xl border border-dashed border-border min-h-[460px] flex items-center justify-center">
-                      <p className="text-muted-foreground text-sm">Nenhum artigo cadastrado.</p>
-                    </div>
-                  )}
+                    ) : (
+                      <div className="text-center py-12 bg-card rounded-3xl border border-dashed border-border min-h-[460px] flex items-center justify-center">
+                        <p className="text-muted-foreground text-sm">Nenhum artigo cadastrado.</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
               {/* Divisor */}
-              <div className="border-t border-border/60 my-12" />
+              <div className={`border-t border-border/60 my-12 ${search ? 'hidden' : ''}`} />
 
               {/* Seção 2: Galeria Completa com Barra de Pesquisa */}
               <div id="galeria" className="space-y-6 scroll-mt-24">
-                <div className="text-center max-w-xl mx-auto space-y-2 mb-6">
+                <div className={`text-center max-w-xl mx-auto space-y-2 mb-6 ${search ? 'hidden' : ''}`}>
                   <h3 className="font-heading font-extrabold text-2xl md:text-3xl text-foreground">
                     Arquivo de Casos Clínicos
                   </h3>
@@ -654,39 +657,12 @@ const Index = () => {
                   </div>
                 ) : (
                   <div className="text-center py-12 bg-card rounded-3xl border border-dashed border-border/80">
-                    <p className="text-muted-foreground text-sm">Nenhum caso clínico encontrado nesta modalidade.</p>
+                    <p className="text-muted-foreground text-sm">
+                      {search ? "Nenhum caso encontrado para a pesquisa." : "Nenhum caso clínico encontrado nesta modalidade."}
+                    </p>
                   </div>
                 )}
               </div>
-            </div>
-          ) : (
-            // Search Active view (always show gallery search results)
-            <div className="space-y-8 animate-in fade-in duration-500">
-              <FiltersBar
-                search={search}
-                onSearchChange={setSearch}
-                examType={examType}
-                onExamTypeChange={setExamType}
-                showDiagnosis={showDiagnosis}
-                onShowDiagnosisChange={setShowDiagnosis}
-              />
-              {cases && cases.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                  {cases.map((c, i) => (
-                    <CaseCard
-                      key={c.id}
-                      caseData={c}
-                      index={i}
-                      onClick={() => setSelectedCase(c)}
-                      showDiagnosis={showDiagnosis}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-20 bg-card rounded-2xl border border-dashed border-border/80">
-                  <p className="text-muted-foreground">Nenhum caso encontrado para a pesquisa.</p>
-                </div>
-              )}
             </div>
           )}
         </div>
