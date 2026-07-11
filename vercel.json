@@ -1,6 +1,14 @@
 {
   "rewrites": [
     {
+      "source": "/caso/:idOrNum",
+      "destination": "/api/preview?type=caso&id=:idOrNum"
+    },
+    {
+      "source": "/artigo/:slug",
+      "destination": "/api/preview?type=artigo&id=:slug"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

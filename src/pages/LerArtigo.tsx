@@ -3,13 +3,15 @@ import type { Article } from '@/types/article';
 import type { Case } from '@/types/case';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Calendar, User, Loader2, FileText, ArrowRight, X, ChevronLeft, ChevronRight, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, Calendar, User, Loader2, FileText, ArrowRight, X, ChevronLeft, ChevronRight, Eye, EyeOff, Share2 } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { supabase } from '@/integrations/supabase/client';
 import { slugify, stripHtml, formatDisplayDate } from '@/lib/utils';
 import { FormattedText } from '@/components/ui/FormattedText';
 import { CaseModal } from '@/components/CaseModal';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 import 'react-quill/dist/quill.snow.css';
 
 export default function LerArtigo() {
@@ -28,6 +30,41 @@ export default function LerArtigo() {
         setSelectedImageUrl(src);
       }
     }
+  };
+
+  const handleShare = async () => {
+    if (!artigo) return;
+    const shareUrl = window.location.href;
+    const shareTitle = `${artigo.titulo} - CONRAD`;
+    const cleanContent = stripHtml(artigo.conteudo);
+    const shareText = `Confira este artigo na Liga Acadêmica de Radiologia CONRAD:\n\n"${artigo.titulo}"\n\n${cleanContent.substring(0, 120)}...`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: shareTitle,
+          text: shareText,
+          url: shareUrl,
+        });
+        toast.success('Artigo compartilhado com sucesso!');
+      } catch (err) {
+        if ((err as Error).name !== 'AbortError') {
+          copyToClipboard(shareUrl);
+        }
+      }
+    } else {
+      copyToClipboard(shareUrl);
+    }
+  };
+
+  const copyToClipboard = (url: string) => {
+    navigator.clipboard.writeText(url)
+      .then(() => {
+        toast.success('Link do artigo copiado para a área de transferência! 📋');
+      })
+      .catch(() => {
+        toast.error('Erro ao copiar o link.');
+      });
   };
 
   useEffect(() => {
@@ -104,9 +141,20 @@ export default function LerArtigo() {
         {/* Container do Cabeçalho e Capa - Mais largo para impacto visual */}
         <div className="container mx-auto max-w-4xl">
           <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-            <Link to="/artigos" className="inline-flex items-center gap-2 text-sm text-primary font-semibold hover:underline mb-10 transition-colors">
-              <ArrowLeft className="w-4 h-4" /> Voltar para Artigos
-            </Link>
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-10">
+              <Link to="/artigos" className="inline-flex items-center gap-2 text-sm text-primary font-semibold hover:underline transition-colors">
+                <ArrowLeft className="w-4 h-4" /> Voltar para Artigos
+              </Link>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleShare}
+                className="rounded-full font-bold px-5 h-9 text-xs border-border hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-300 flex items-center gap-2"
+              >
+                <Share2 className="w-4 h-4" /> Compartilhar Artigo
+              </Button>
+            </div>
 
             {/* Cabeçalho do Artigo */}
             <div className="mb-10 text-center space-y-6">
