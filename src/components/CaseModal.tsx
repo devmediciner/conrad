@@ -69,7 +69,6 @@ export function CaseModal({ caseData, open, onOpenChange }: CaseModalProps) {
         await navigator.share({
           title: shareTitle,
           text: shareText,
-          url: shareUrl,
         });
         toast.success('Caso compartilhado com sucesso!');
       } catch (err) {
