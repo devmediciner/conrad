@@ -230,19 +230,7 @@ const Index = () => {
       {/* Grid */}
       <section className="px-4 pb-20">
         <div className="container mx-auto">
-          {isLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="rounded-xl overflow-hidden">
-                  <Skeleton className="aspect-square w-full" />
-                  <div className="p-4 space-y-2">
-                    <Skeleton className="h-5 w-24" />
-                    <Skeleton className="h-4 w-full" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : selectedModality ? (
+          {selectedModality ? (
             // Modality Articles Section (separated by anatomy/pathology)
             <div id="artigos-modality" className="space-y-8 animate-in fade-in duration-500 max-w-4xl mx-auto scroll-mt-24">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-border pb-6">
@@ -437,7 +425,33 @@ const Index = () => {
                   <h3 className="font-heading font-extrabold text-xl text-foreground flex items-center gap-2 mb-2">
                     <Trophy className="w-5 h-5 text-primary" /> Caso da Semana
                   </h3>
-                  {caseDaSemana ? (
+                  {isLoading ? (
+                        <div className="relative overflow-hidden rounded-3xl border border-border bg-card/40 p-6 md:p-8 min-h-[460px] h-full animate-pulse flex flex-col justify-between backdrop-blur-md">
+                          <div className="space-y-6">
+                            <div className="flex gap-2">
+                              <Skeleton className="h-4 w-12 rounded-full" />
+                              <Skeleton className="h-4 w-24 rounded-full" />
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+                              <div className="md:col-span-6 space-y-4">
+                                <Skeleton className="h-8 w-1/3" />
+                                <div className="space-y-2 border-l-2 border-primary/20 pl-4 py-1.5">
+                                  <Skeleton className="h-3 w-full" />
+                                  <Skeleton className="h-3 w-full" />
+                                  <Skeleton className="h-3 w-5/6" />
+                                </div>
+                              </div>
+                              <div className="md:col-span-6 flex justify-center md:justify-end">
+                                <Skeleton className="aspect-square w-full max-w-[260px] rounded-3xl" />
+                              </div>
+                            </div>
+                          </div>
+                          <div className="pt-6 border-t border-border/40 mt-6 flex justify-between items-center">
+                            <Skeleton className="h-3.5 w-32" />
+                            <Skeleton className="h-9 w-44 rounded-full" />
+                          </div>
+                        </div>
+                      ) : caseDaSemana ? (
                     <div className="relative overflow-hidden rounded-3xl border border-border/80 bg-card/40 p-6 md:p-8 shadow-sm flex flex-col justify-between min-h-[460px] h-full group/card hover:border-primary/30 transition-all duration-300 backdrop-blur-md">
                       <div className="space-y-6">
                         {/* Header Row */}
@@ -613,7 +627,20 @@ const Index = () => {
                   onShowDiagnosisChange={setShowDiagnosis}
                 />
 
-                {cases && cases.length > 0 ? (
+                {isLoading ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 pt-4 animate-pulse">
+                    {Array.from({ length: 8 }).map((_, i) => (
+                      <div key={i} className="rounded-2xl overflow-hidden bg-card/30 border border-border/50 p-4 space-y-4">
+                        <Skeleton className="aspect-square w-full rounded-xl" />
+                        <div className="space-y-2">
+                          <Skeleton className="h-4.5 w-1/3" />
+                          <Skeleton className="h-3.5 w-full" />
+                          <Skeleton className="h-3.5 w-3/4" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : cases && cases.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 pt-4">
                     {cases.map((c, i) => (
                       <CaseCard
