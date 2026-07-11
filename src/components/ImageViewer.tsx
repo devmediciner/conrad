@@ -33,6 +33,7 @@ interface ImageViewerProps {
   layout?: 'default' | 'three-columns';
   caseDetails?: React.ReactNode;
   leftColumnExtra?: React.ReactNode;
+  leftColumnTop?: React.ReactNode;
   imageSource?: string | null;
 }
 
@@ -48,6 +49,7 @@ export default function ImageViewer({
   layout = 'default',
   caseDetails,
   leftColumnExtra,
+  leftColumnTop,
   imageSource
 }: ImageViewerProps) {
   const [localSelectedImage, setLocalSelectedImage] = useState(0);
@@ -883,6 +885,11 @@ export default function ImageViewer({
           {/* Column 1: Controls (Left) */}
           <div className="md:col-span-2 order-3 md:order-1 space-y-4 md:h-full md:overflow-y-auto custom-scrollbar pr-1 pb-2">
             <div className="bg-secondary/40 border border-border/60 rounded-xl p-3.5 space-y-4 select-none">
+              {leftColumnTop && (
+                <div className="pb-3 border-b border-border/20 animate-in fade-in duration-300">
+                  {leftColumnTop}
+                </div>
+              )}
               {/* Adjustments */}
               <div className="flex flex-col gap-3">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">

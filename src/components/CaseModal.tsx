@@ -62,8 +62,7 @@ export function CaseModal({ caseData, open, onOpenChange }: CaseModalProps) {
     e.stopPropagation();
     const shareUrl = `${window.location.origin}/caso/${caseData.case_number}`;
     const shareTitle = `Caso Clínico #${caseData.case_number} - Galeria Radiológica CONRAD`;
-    const cleanCaseText = stripHtml(caseData.clinical_case);
-    const shareText = `Confira este caso clínico de ${EXAM_TYPE_LABELS[caseData.exam_type as keyof typeof EXAM_TYPE_LABELS] || caseData.exam_type} na Galeria Radiológica CONRAD:\n\n"${cleanCaseText.substring(0, 120)}..."`;
+    const shareText = `Confira este caso clínico de ${EXAM_TYPE_LABELS[caseData.exam_type as keyof typeof EXAM_TYPE_LABELS] || caseData.exam_type} no site da CONRAD:\n ${shareUrl}`;
 
     if (navigator.share) {
       try {
@@ -130,6 +129,25 @@ export function CaseModal({ caseData, open, onOpenChange }: CaseModalProps) {
               examType={caseData.exam_type}
               layout="three-columns"
               imageSource={caseData.image_source}
+              leftColumnTop={
+                <div className="flex flex-col gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleShare}
+                    className="w-full h-8 rounded-lg border-border hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-300 flex items-center justify-center gap-2 text-xs font-bold"
+                  >
+                    <Share2 className="w-3.5 h-3.5" /> Compartilhar Caso
+                  </Button>
+                  <Link 
+                    to={`/caso/${caseData.case_number}`}
+                    onClick={handleClose}
+                    className="w-full h-8 rounded-lg border border-border bg-background hover:bg-secondary text-muted-foreground hover:text-foreground transition-all duration-300 flex items-center justify-center gap-2 text-xs font-bold"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" /> Abrir em Página Cheia
+                  </Link>
+                </div>
+              }
               leftColumnExtra={
                 hasLaudoImages && showDiagnosis ? (
                   <div className="flex flex-col gap-1.5">
@@ -178,24 +196,6 @@ export function CaseModal({ caseData, open, onOpenChange }: CaseModalProps) {
                         {caseData.sex === 'M' || caseData.sex?.toLowerCase() === 'masculino' ? 'Masculino' : caseData.sex === 'F' || caseData.sex?.toLowerCase() === 'feminino' ? 'Feminino' : 'Outro'}
                       </span>
                     )}
-                    <div className="ml-auto flex items-center gap-1.5">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleShare}
-                        className="h-7 px-2.5 rounded-full border-border hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-300 flex items-center gap-1 text-[10px] font-bold"
-                      >
-                        <Share2 className="w-3 h-3" /> Compartilhar
-                      </Button>
-                      <Link 
-                        to={`/caso/${caseData.case_number}`}
-                        onClick={handleClose}
-                        title="Ver em página cheia"
-                        className="flex items-center justify-center h-7 w-7 rounded-full border border-border bg-background hover:bg-secondary text-muted-foreground hover:text-foreground transition-all duration-300"
-                      >
-                        <ExternalLink className="w-3.5 h-3.5" />
-                      </Link>
-                    </div>
                   </div>
                   <div>
                     <h4 className="text-sm font-semibold text-muted-foreground mb-1">Caso Clínico</h4>

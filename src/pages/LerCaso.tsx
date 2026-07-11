@@ -76,8 +76,7 @@ export default function LerCaso() {
     if (!caso) return;
     const shareUrl = `${window.location.origin}/caso/${caso.case_number}`;
     const shareTitle = `Caso Clínico #${caso.case_number} - Galeria Radiológica CONRAD`;
-    const cleanCaseText = stripHtml(caso.clinical_case);
-    const shareText = `Confira este caso clínico de ${EXAM_TYPE_LABELS[caso.exam_type] || caso.exam_type} na Galeria Radiológica CONRAD:\n\n"${cleanCaseText.substring(0, 120)}..."`;
+    const shareText = `Confira este caso clínico de ${EXAM_TYPE_LABELS[caso.exam_type as keyof typeof EXAM_TYPE_LABELS] || caso.exam_type} no site da CONRAD:\n ${shareUrl}`;
 
     if (navigator.share) {
       try {
@@ -146,22 +145,13 @@ export default function LerCaso() {
             className="space-y-6"
           >
             {/* Header row */}
-            <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="mb-4">
               <Link 
                 to="/" 
                 className="inline-flex items-center gap-2 text-sm text-primary font-semibold hover:underline transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" /> Voltar para o Início
               </Link>
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleShare}
-                className="rounded-full font-bold px-5 h-9 text-xs border-border hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-300 flex items-center gap-2"
-              >
-                <Share2 className="w-4 h-4" /> Compartilhar Caso
-              </Button>
             </div>
 
             {/* Main Content card */}
@@ -176,6 +166,16 @@ export default function LerCaso() {
                   examType={caso.exam_type}
                   layout="three-columns"
                   imageSource={caso.image_source}
+                  leftColumnTop={
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleShare}
+                      className="w-full h-8 rounded-lg border-border hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-300 flex items-center justify-center gap-2 text-xs font-bold"
+                    >
+                      <Share2 className="w-3.5 h-3.5" /> Compartilhar Caso
+                    </Button>
+                  }
                   leftColumnExtra={
                     hasLaudoImages && showDiagnosis ? (
                       <div className="flex flex-col gap-1.5">
@@ -280,7 +280,7 @@ export default function LerCaso() {
                     Sem imagem
                   </div>
                   <div className="space-y-4">
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2 w-full">
                       <span className="text-xs px-3 py-1 rounded-full font-bold font-mono bg-secondary text-secondary-foreground">
                         Caso #{caseNum}
                       </span>
@@ -293,6 +293,14 @@ export default function LerCaso() {
                           {caso.sex === 'M' || caso.sex?.toLowerCase() === 'masculino' ? 'Masculino' : caso.sex === 'F' || caso.sex?.toLowerCase() === 'feminino' ? 'Feminino' : 'Outro'}
                         </span>
                       )}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleShare}
+                        className="ml-auto h-7 px-2.5 rounded-full border-border hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-300 flex items-center gap-1.5 text-[11px] font-bold"
+                      >
+                        <Share2 className="w-3.5 h-3.5" /> Compartilhar Caso
+                      </Button>
                     </div>
                     <div>
                       <h4 className="text-sm font-semibold text-muted-foreground mb-1">Caso Clínico</h4>
