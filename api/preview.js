@@ -94,17 +94,23 @@ export default async function handler(req, res) {
     console.error('Error fetching preview data:', error);
   }
 
-  // Load the index.html template
-  let htmlPath = path.join(process.cwd(), 'index.html');
-  if (!fs.existsSync(htmlPath)) {
-    htmlPath = path.join(process.cwd(), 'dist', 'index.html');
+  // Load the index.html template (dist/index.html in production, fallback to index.html in dev)
+  let htmlContent = '';
+  try {
+    const distPath = path.join(process.cwd(), 'dist', 'index.html');
+    const rootPath = path.join(process.cwd(), 'index.html');
+    
+    if (fs.existsSync(distPath)) {
+      htmlContent = fs.readFileSync(distPath, 'utf8');
+    } else if (fs.existsSync(rootPath)) {
+      htmlContent = fs.readFileSync(rootPath, 'utf8');
+    } else {
+      return res.status(500).send('Template HTML não encontrado.');
+    }
+  } catch (err) {
+    console.error('Erro ao ler index.html:', err);
+    return res.status(500).send('Erro interno ao ler template.');
   }
-
-  if (!fs.existsSync(htmlPath)) {
-    return res.status(500).send('index.html not found');
-  }
-
-  let htmlContent = fs.readFileSync(htmlPath, 'utf8');
 
   // Replace titles and descriptions and images
   htmlContent = htmlContent
