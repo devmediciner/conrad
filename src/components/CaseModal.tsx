@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Dialog,
   DialogContent,
@@ -10,7 +11,9 @@ import type { Case } from '@/types/case';
 import { EXAM_TYPE_COLORS, EXAM_TYPE_LABELS } from '@/types/case';
 import ImageViewer from './ImageViewer';
 import { FormattedText } from './ui/FormattedText';
-import { FileImage, Stethoscope } from 'lucide-react';
+import { FileImage, Stethoscope, Share2, ExternalLink } from 'lucide-react';
+import { toast } from 'sonner';
+import { stripHtml } from '@/lib/utils';
 
 interface CaseModalProps {
   caseData: Case | null;
@@ -53,6 +56,41 @@ export function CaseModal({ caseData, open, onOpenChange }: CaseModalProps) {
     setShowDiagnosis(false);
     setSelectedImage(0);
     setViewingLaudoImages(false);
+  };
+
+  const handleShare = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const shareUrl = `${window.location.origin}/caso/${caseData.case_number}`;
+    const shareTitle = `Caso Clínico #${caseData.case_number} - Galeria Radiológica CONRAD`;
+    const cleanCaseText = stripHtml(caseData.clinical_case);
+    const shareText = `Confira este caso clínico de ${EXAM_TYPE_LABELS[caseData.exam_type as keyof typeof EXAM_TYPE_LABELS] || caseData.exam_type} na Galeria Radiológica CONRAD:\n\n"${cleanCaseText.substring(0, 120)}..."`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: shareTitle,
+          text: shareText,
+          url: shareUrl,
+        });
+        toast.success('Caso compartilhado com sucesso!');
+      } catch (err) {
+        if ((err as Error).name !== 'AbortError') {
+          copyToClipboard(shareUrl);
+        }
+      }
+    } else {
+      copyToClipboard(shareUrl);
+    }
+  };
+
+  const copyToClipboard = (url: string) => {
+    navigator.clipboard.writeText(url)
+      .then(() => {
+        toast.success('Link do caso copiado para a área de transferência! 📋');
+      })
+      .catch(() => {
+        toast.error('Erro ao copiar o link.');
+      });
   };
 
   return (
@@ -127,7 +165,7 @@ export function CaseModal({ caseData, open, onOpenChange }: CaseModalProps) {
               }
               caseDetails={
                 <div className="space-y-4">
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2 w-full">
                     <span className="text-xs px-3 py-1 rounded-full font-bold font-mono bg-secondary text-secondary-foreground">
                       Caso #{caseNum}
                     </span>
@@ -137,9 +175,27 @@ export function CaseModal({ caseData, open, onOpenChange }: CaseModalProps) {
                     )}
                     {caseData.sex && (
                       <span className="text-xs px-3 py-1 rounded-full bg-secondary text-secondary-foreground">
-                        {caseData.sex === 'M' ? 'Masculino' : caseData.sex === 'F' ? 'Feminino' : 'Outro'}
+                        {caseData.sex === 'M' || caseData.sex?.toLowerCase() === 'masculino' ? 'Masculino' : caseData.sex === 'F' || caseData.sex?.toLowerCase() === 'feminino' ? 'Feminino' : 'Outro'}
                       </span>
                     )}
+                    <div className="ml-auto flex items-center gap-1.5">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleShare}
+                        className="h-7 px-2.5 rounded-full border-border hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-300 flex items-center gap-1 text-[10px] font-bold"
+                      >
+                        <Share2 className="w-3 h-3" /> Compartilhar
+                      </Button>
+                      <Link 
+                        to={`/caso/${caseData.case_number}`}
+                        onClick={handleClose}
+                        title="Ver em página cheia"
+                        className="flex items-center justify-center h-7 w-7 rounded-full border border-border bg-background hover:bg-secondary text-muted-foreground hover:text-foreground transition-all duration-300"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </Link>
+                    </div>
                   </div>
                   <div>
                     <h4 className="text-sm font-semibold text-muted-foreground mb-1">Caso Clínico</h4>
@@ -196,7 +252,7 @@ export function CaseModal({ caseData, open, onOpenChange }: CaseModalProps) {
                 Sem imagem
               </div>
               <div className="space-y-4">
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2 w-full">
                   <span className="text-xs px-3 py-1 rounded-full font-bold font-mono bg-secondary text-secondary-foreground">
                     Caso #{caseNum}
                   </span>
@@ -206,9 +262,27 @@ export function CaseModal({ caseData, open, onOpenChange }: CaseModalProps) {
                   )}
                   {caseData.sex && (
                     <span className="text-xs px-3 py-1 rounded-full bg-secondary text-secondary-foreground">
-                      {caseData.sex === 'M' ? 'Masculino' : caseData.sex === 'F' ? 'Feminino' : 'Outro'}
+                      {caseData.sex === 'M' || caseData.sex?.toLowerCase() === 'masculino' ? 'Masculino' : caseData.sex === 'F' || caseData.sex?.toLowerCase() === 'feminino' ? 'Feminino' : 'Outro'}
                     </span>
                   )}
+                  <div className="ml-auto flex items-center gap-1.5">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleShare}
+                      className="h-7 px-2.5 rounded-full border-border hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-300 flex items-center gap-1 text-[10px] font-bold"
+                    >
+                      <Share2 className="w-3 h-3" /> Compartilhar
+                    </Button>
+                    <Link 
+                      to={`/caso/${caseData.case_number}`}
+                      onClick={handleClose}
+                      title="Ver em página cheia"
+                      className="flex items-center justify-center h-7 w-7 rounded-full border border-border bg-background hover:bg-secondary text-muted-foreground hover:text-foreground transition-all duration-300"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
                 </div>
                 <div>
                   <h4 className="text-sm font-semibold text-muted-foreground mb-1">Caso Clínico</h4>

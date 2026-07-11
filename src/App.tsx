@@ -7,6 +7,7 @@ import { AuthProvider } from '@/hooks/authContent';  // ← movido para o topo
 import Index from "./pages/Index.tsx";
 import ListaArtigos from "./pages/ListaArtigos.tsx";
 import LerArtigo from "./pages/LerArtigo.tsx";
+import LerCaso from "./pages/LerCaso.tsx";
 import Login from "./pages/Login.tsx";
 import Admin from "./pages/Admin.tsx";
 import RadioGame from "./pages/RadioGame.tsx";
@@ -29,6 +30,7 @@ const App = () => (
             <Route path="/artigos" element={<ListaArtigos />} />
             <Route path="/artigos/:categoria" element={<ListaArtigos />} />
             <Route path="/artigo/:slug" element={<LerArtigo />} />
+            <Route path="/caso/:idOrNum" element={<LerCaso />} />
             <Route path="/login" element={<Login />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/game" element={<RadioGame />} />
