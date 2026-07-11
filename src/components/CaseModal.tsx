@@ -130,23 +130,14 @@ export function CaseModal({ caseData, open, onOpenChange }: CaseModalProps) {
               layout="three-columns"
               imageSource={caseData.image_source}
               leftColumnTop={
-                <div className="flex flex-col gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleShare}
-                    className="w-full h-8 rounded-lg border-border hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-300 flex items-center justify-center gap-2 text-xs font-bold"
-                  >
-                    <Share2 className="w-3.5 h-3.5" /> Compartilhar Caso
-                  </Button>
-                  <Link 
-                    to={`/caso/${caseData.case_number}`}
-                    onClick={handleClose}
-                    className="w-full h-8 rounded-lg border border-border bg-background hover:bg-secondary text-muted-foreground hover:text-foreground transition-all duration-300 flex items-center justify-center gap-2 text-xs font-bold"
-                  >
-                    <ExternalLink className="w-3.5 h-3.5" /> Abrir em Página Cheia
-                  </Link>
-                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleShare}
+                  className="w-full h-8 rounded-lg border-border hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-300 flex items-center justify-center gap-1.5 text-xs font-bold px-2"
+                >
+                  <Share2 className="w-3.5 h-3.5" /> Compartilhar
+                </Button>
               }
               leftColumnExtra={
                 hasLaudoImages && showDiagnosis ? (

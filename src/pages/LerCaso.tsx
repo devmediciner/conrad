@@ -171,9 +171,9 @@ export default function LerCaso() {
                       variant="outline"
                       size="sm"
                       onClick={handleShare}
-                      className="w-full h-8 rounded-lg border-border hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-300 flex items-center justify-center gap-2 text-xs font-bold"
+                      className="w-full h-8 rounded-lg border-border hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-300 flex items-center justify-center gap-1.5 text-xs font-bold px-2"
                     >
-                      <Share2 className="w-3.5 h-3.5" /> Compartilhar Caso
+                      <Share2 className="w-3.5 h-3.5" /> Compartilhar
                     </Button>
                   }
                   leftColumnExtra={
@@ -299,7 +299,7 @@ export default function LerCaso() {
                         onClick={handleShare}
                         className="ml-auto h-7 px-2.5 rounded-full border-border hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-300 flex items-center gap-1.5 text-[11px] font-bold"
                       >
-                        <Share2 className="w-3.5 h-3.5" /> Compartilhar Caso
+                        <Share2 className="w-3.5 h-3.5" /> Compartilhar
                       </Button>
                     </div>
                     <div>
