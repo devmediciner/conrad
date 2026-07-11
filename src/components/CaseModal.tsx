@@ -169,17 +169,17 @@ export function CaseModal({ caseData, open, onOpenChange }: CaseModalProps) {
               }
               caseDetails={
                 <div className="space-y-4">
-                  <div className="flex flex-wrap items-center gap-2 w-full">
-                    <span className="text-xs px-3 py-1 rounded-full font-bold font-mono bg-secondary text-secondary-foreground">
-                      Caso #{caseNum}
+                  <div className="flex flex-nowrap items-center gap-1.5 w-full overflow-x-auto">
+                    <span className="text-[11px] px-2.5 py-1 rounded-full font-bold font-mono bg-secondary text-secondary-foreground whitespace-nowrap flex-shrink-0">
+                      #{caseNum}
                     </span>
-                    <span className={`text-xs px-3 py-1 rounded-full font-medium ${badgeClass}`}>{examLabel}</span>
+                    <span className={`text-[11px] px-2.5 py-1 rounded-full font-medium whitespace-nowrap flex-shrink-0 ${badgeClass}`}>{examLabel}</span>
                     {caseData.age && (
-                      <span className="text-xs px-3 py-1 rounded-full bg-secondary text-secondary-foreground">{caseData.age} anos</span>
+                      <span className="text-[11px] px-2.5 py-1 rounded-full bg-secondary text-secondary-foreground whitespace-nowrap flex-shrink-0">{caseData.age}a</span>
                     )}
                     {caseData.sex && (
-                      <span className="text-xs px-3 py-1 rounded-full bg-secondary text-secondary-foreground">
-                        {caseData.sex === 'M' || caseData.sex?.toLowerCase() === 'masculino' ? 'Masculino' : caseData.sex === 'F' || caseData.sex?.toLowerCase() === 'feminino' ? 'Feminino' : 'Outro'}
+                      <span className="text-[11px] px-2.5 py-1 rounded-full bg-secondary text-secondary-foreground whitespace-nowrap flex-shrink-0">
+                        {caseData.sex === 'M' || caseData.sex?.toLowerCase() === 'masculino' ? 'Masc.' : caseData.sex === 'F' || caseData.sex?.toLowerCase() === 'feminino' ? 'Fem.' : 'Outro'}
                       </span>
                     )}
                   </div>
@@ -238,17 +238,17 @@ export function CaseModal({ caseData, open, onOpenChange }: CaseModalProps) {
                 Sem imagem
               </div>
               <div className="space-y-4">
-                <div className="flex flex-wrap items-center gap-2 w-full">
-                  <span className="text-xs px-3 py-1 rounded-full font-bold font-mono bg-secondary text-secondary-foreground">
-                    Caso #{caseNum}
+                <div className="flex flex-nowrap items-center gap-1.5 w-full overflow-x-auto">
+                  <span className="text-[11px] px-2.5 py-1 rounded-full font-bold font-mono bg-secondary text-secondary-foreground whitespace-nowrap flex-shrink-0">
+                    #{caseNum}
                   </span>
-                  <span className={`text-xs px-3 py-1 rounded-full font-medium ${badgeClass}`}>{examLabel}</span>
+                  <span className={`text-[11px] px-2.5 py-1 rounded-full font-medium whitespace-nowrap flex-shrink-0 ${badgeClass}`}>{examLabel}</span>
                   {caseData.age && (
-                    <span className="text-xs px-3 py-1 rounded-full bg-secondary text-secondary-foreground">{caseData.age} anos</span>
+                    <span className="text-[11px] px-2.5 py-1 rounded-full bg-secondary text-secondary-foreground whitespace-nowrap flex-shrink-0">{caseData.age}a</span>
                   )}
                   {caseData.sex && (
-                    <span className="text-xs px-3 py-1 rounded-full bg-secondary text-secondary-foreground">
-                      {caseData.sex === 'M' || caseData.sex?.toLowerCase() === 'masculino' ? 'Masculino' : caseData.sex === 'F' || caseData.sex?.toLowerCase() === 'feminino' ? 'Feminino' : 'Outro'}
+                    <span className="text-[11px] px-2.5 py-1 rounded-full bg-secondary text-secondary-foreground whitespace-nowrap flex-shrink-0">
+                      {caseData.sex === 'M' || caseData.sex?.toLowerCase() === 'masculino' ? 'Masc.' : caseData.sex === 'F' || caseData.sex?.toLowerCase() === 'feminino' ? 'Fem.' : 'Outro'}
                     </span>
                   )}
                   <div className="ml-auto flex items-center gap-1.5">
