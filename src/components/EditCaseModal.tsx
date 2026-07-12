@@ -27,7 +27,7 @@ interface EditCaseModalProps {
 export function EditCaseModal({ caseData, open, onOpenChange }: EditCaseModalProps) {
   const updateCase = useUpdateCase();
   const { data: diseases } = useDiseases();
-  
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const laudoFileInputRef = useRef<HTMLInputElement>(null);
 
@@ -39,7 +39,7 @@ export function EditCaseModal({ caseData, open, onOpenChange }: EditCaseModalPro
   const [diagnosis, setDiagnosis] = useState('');
   const [author, setAuthor] = useState('');
   const [imageSource, setImageSource] = useState('');
-  
+
   // Main Images
   const [images, setImages] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -74,7 +74,7 @@ export function EditCaseModal({ caseData, open, onOpenChange }: EditCaseModalPro
     const newImages = [...images];
     const [draggedImage] = newImages.splice(draggedIndex, 1);
     newImages.splice(index, 0, draggedImage);
-    
+
     setImages(newImages);
     setDraggedIndex(index);
   };
@@ -98,7 +98,7 @@ export function EditCaseModal({ caseData, open, onOpenChange }: EditCaseModalPro
     const newImages = [...laudoImages];
     const [draggedImage] = newImages.splice(draggedLaudoIndex, 1);
     newImages.splice(index, 0, draggedImage);
-    
+
     setLaudoImages(newImages);
     setDraggedLaudoIndex(index);
   };
@@ -247,7 +247,7 @@ export function EditCaseModal({ caseData, open, onOpenChange }: EditCaseModalPro
   const handleRemoveImage = (index: number) => {
     const removedUrl = images[index];
     setImages(prev => prev.filter((_, i) => i !== index));
-    
+
     if (newlyUploadedImages.includes(removedUrl)) {
       const fileName = removedUrl.split('/').pop();
       if (fileName) {
@@ -265,7 +265,7 @@ export function EditCaseModal({ caseData, open, onOpenChange }: EditCaseModalPro
   const handleRemoveLaudoImage = (index: number) => {
     const removedUrl = laudoImages[index];
     setLaudoImages(prev => prev.filter((_, i) => i !== index));
-    
+
     if (newlyUploadedLaudoImages.includes(removedUrl)) {
       const fileName = removedUrl.split('/').pop();
       if (fileName) {
@@ -323,7 +323,7 @@ export function EditCaseModal({ caseData, open, onOpenChange }: EditCaseModalPro
         const fileNames = newlyUploadedImages
           .map(url => url.split('/').pop())
           .filter(Boolean) as string[];
-        
+
         if (fileNames.length > 0) {
           supabase.storage
             .from('radiology-images')
@@ -335,7 +335,7 @@ export function EditCaseModal({ caseData, open, onOpenChange }: EditCaseModalPro
         const fileNames = newlyUploadedLaudoImages
           .map(url => url.split('/').pop())
           .filter(Boolean) as string[];
-        
+
         if (fileNames.length > 0) {
           supabase.storage
             .from('radiology-images')
@@ -356,7 +356,7 @@ export function EditCaseModal({ caseData, open, onOpenChange }: EditCaseModalPro
   return (
     <div className="fixed inset-0 z-50 bg-background flex flex-col overflow-hidden animate-in fade-in duration-200">
       <div className="bg-card w-full h-full flex flex-col relative">
-        
+
         {/* Header Bar */}
         <div className="border-b border-border bg-muted/30 shrink-0">
           <div className="max-w-7xl mx-auto w-full flex items-center justify-between py-3 px-6">
@@ -372,11 +372,11 @@ export function EditCaseModal({ caseData, open, onOpenChange }: EditCaseModalPro
 
         {/* Fullscreen Workspace */}
         <div className="flex-1 flex flex-col lg:flex-row overflow-hidden bg-background">
-          
+
           {/* Left Column: Metadata & Images (Scrollable) */}
           <div className="w-full lg:w-[380px] lg:shrink-0 lg:border-r border-border bg-muted/15 overflow-y-auto p-6 space-y-5 lg:h-full max-h-[35vh] lg:max-h-none shrink-0 border-b lg:border-b-0 custom-scrollbar">
             <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground border-b border-border pb-1.5">Informações do Caso</h3>
-            
+
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <label className="text-[11px] font-semibold text-foreground">Tipo de Exame</label>
@@ -441,11 +441,11 @@ export function EditCaseModal({ caseData, open, onOpenChange }: EditCaseModalPro
 
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <label className="text-[11px] font-semibold text-foreground">Diagnóstico (Doença correspondente) *</label>
-                <Button 
-                  type="button" 
-                  variant="link" 
-                  size="sm" 
+                <label className="text-[11px] font-semibold text-foreground">Diagnóstico *</label>
+                <Button
+                  type="button"
+                  variant="link"
+                  size="sm"
                   className="h-auto p-0 text-[10px] text-primary font-bold flex items-center gap-1 hover:underline"
                   onClick={() => setDiseaseModalOpen(true)}
                 >
@@ -475,9 +475,8 @@ export function EditCaseModal({ caseData, open, onOpenChange }: EditCaseModalPro
                     onDragStart={(e) => handleDragStart(e, i)}
                     onDragOver={(e) => handleDragOver(e, i)}
                     onDragEnd={handleDragEnd}
-                    className={`relative w-16 h-16 rounded-md overflow-hidden border transition-all cursor-grab active:cursor-grabbing group ${
-                      draggedIndex === i ? 'opacity-40 border-primary scale-90' : 'border-border'
-                    }`}
+                    className={`relative w-16 h-16 rounded-md overflow-hidden border transition-all cursor-grab active:cursor-grabbing group ${draggedIndex === i ? 'opacity-40 border-primary scale-90' : 'border-border'
+                      }`}
                   >
                     <img src={img} alt="" className="w-full h-full object-cover" draggable="false" />
                     <button
@@ -491,7 +490,7 @@ export function EditCaseModal({ caseData, open, onOpenChange }: EditCaseModalPro
                     </button>
                   </div>
                 ))}
-                
+
                 <label className="w-16 h-16 rounded-md border border-dashed border-border hover:border-primary flex flex-col items-center justify-center cursor-pointer transition-colors text-muted-foreground hover:text-primary">
                   {uploading ? (
                     <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
@@ -527,9 +526,8 @@ export function EditCaseModal({ caseData, open, onOpenChange }: EditCaseModalPro
                     onDragStart={(e) => handleLaudoDragStart(e, i)}
                     onDragOver={(e) => handleLaudoDragOver(e, i)}
                     onDragEnd={handleLaudoDragEnd}
-                    className={`relative w-16 h-16 rounded-md overflow-hidden border transition-all cursor-grab active:cursor-grabbing group ${
-                      draggedLaudoIndex === i ? 'opacity-40 border-primary scale-90' : 'border-border'
-                    }`}
+                    className={`relative w-16 h-16 rounded-md overflow-hidden border transition-all cursor-grab active:cursor-grabbing group ${draggedLaudoIndex === i ? 'opacity-40 border-primary scale-90' : 'border-border'
+                      }`}
                   >
                     <img src={img} alt="" className="w-full h-full object-cover" draggable="false" />
                     <button
@@ -543,7 +541,7 @@ export function EditCaseModal({ caseData, open, onOpenChange }: EditCaseModalPro
                     </button>
                   </div>
                 ))}
-                
+
                 <label className="w-16 h-16 rounded-md border border-dashed border-border hover:border-primary flex flex-col items-center justify-center cursor-pointer transition-colors text-muted-foreground hover:text-primary">
                   {uploading ? (
                     <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
@@ -569,7 +567,7 @@ export function EditCaseModal({ caseData, open, onOpenChange }: EditCaseModalPro
 
           {/* Right Column: Writing Area & Quiz (Scrollable) */}
           <div className="flex-1 overflow-y-auto p-6 space-y-6 lg:h-full custom-scrollbar">
-            
+
             <div className="space-y-2">
               <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">Caso Clínico</label>
               <RichTextEditor
@@ -611,37 +609,37 @@ export function EditCaseModal({ caseData, open, onOpenChange }: EditCaseModalPro
                   Disponível no Quiz Radiológico
                 </label>
               </div>
-              
+
               {isMinigame && (
                 <div className="space-y-4 animate-in fade-in duration-300">
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-foreground">Dica 1 (Após 1º erro)</label>
-                    <Input 
-                      value={clue1} 
-                      onChange={e => setClue1(e.target.value)} 
-                      placeholder="Dica inicial sobre a história clínica" 
-                      className="bg-card border-border h-10 text-xs" 
+                    <Input
+                      value={clue1}
+                      onChange={e => setClue1(e.target.value)}
+                      placeholder="Dica inicial sobre a história clínica"
+                      className="bg-card border-border h-10 text-xs"
                     />
                   </div>
-                  
+
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <label className="text-xs font-semibold text-foreground">Dica 2 (Após 2º erro)</label>
-                      <Input 
-                        value={clue2} 
-                        onChange={e => setClue2(e.target.value)} 
-                        placeholder="Dica anatômica ou epidemiológica" 
-                        className="bg-card border-border h-10 text-xs" 
+                      <Input
+                        value={clue2}
+                        onChange={e => setClue2(e.target.value)}
+                        placeholder="Dica anatômica ou epidemiológica"
+                        className="bg-card border-border h-10 text-xs"
                       />
                     </div>
-                    
+
                     <div className="space-y-1.5">
                       <label className="text-xs font-semibold text-foreground">Dica 3 (Após 3º erro)</label>
-                      <Input 
-                        value={clue3} 
-                        onChange={e => setClue3(e.target.value)} 
-                        placeholder="Dica laboratorial ou achado chave" 
-                        className="bg-card border-border h-10 text-xs" 
+                      <Input
+                        value={clue3}
+                        onChange={e => setClue3(e.target.value)}
+                        placeholder="Dica laboratorial ou achado chave"
+                        className="bg-card border-border h-10 text-xs"
                       />
                     </div>
                   </div>

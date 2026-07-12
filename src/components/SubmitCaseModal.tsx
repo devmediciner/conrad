@@ -27,10 +27,10 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
   const { user, isAdmin } = useAuth();
   const submitCase = useSubmitCase();
   const { data: diseases } = useDiseases();
-  
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const laudoFileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const [diseaseModalOpen, setDiseaseModalOpen] = useState(false);
 
   // Main Images States
@@ -52,7 +52,7 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
   const [author, setAuthor] = useState('');
   const [imageSource, setImageSource] = useState('');
   const [uploading, setUploading] = useState(false);
-  
+
   // Game fields
   const [isMinigame, setIsMinigame] = useState(false);
   const [disease, setDisease] = useState('');
@@ -74,13 +74,13 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
 
     const newImages = [...images];
     const newPreviews = [...previews];
-    
+
     const [draggedImage] = newImages.splice(draggedIndex, 1);
     const [draggedPreview] = newPreviews.splice(draggedIndex, 1);
-    
+
     newImages.splice(index, 0, draggedImage);
     newPreviews.splice(index, 0, draggedPreview);
-    
+
     setImages(newImages);
     setPreviews(newPreviews);
     setDraggedIndex(index);
@@ -104,13 +104,13 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
 
     const newImages = [...laudoImages];
     const newPreviews = [...laudoPreviews];
-    
+
     const [draggedImage] = newImages.splice(draggedLaudoIndex, 1);
     const [draggedPreview] = newPreviews.splice(draggedLaudoIndex, 1);
-    
+
     newImages.splice(index, 0, draggedImage);
     newPreviews.splice(index, 0, draggedPreview);
-    
+
     setLaudoImages(newImages);
     setLaudoPreviews(newPreviews);
     setDraggedLaudoIndex(index);
@@ -256,7 +256,7 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
         clue3: isMinigame ? clue3 : null,
         comments: comments.trim() || null
       });
-      
+
       toast.success(isAdmin ? 'Caso adicionado à galeria!' : 'Caso enviado para aprovação!');
       resetForm();
       onOpenChange(false);
@@ -273,7 +273,7 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
   return (
     <div className="fixed inset-0 z-50 bg-background flex flex-col overflow-hidden animate-in fade-in duration-200">
       <div className="bg-card w-full h-full flex flex-col relative">
-        
+
         {/* Header Bar */}
         <div className="border-b border-border bg-muted/30 shrink-0">
           <div className="max-w-7xl mx-auto w-full flex items-center justify-between py-3 px-6">
@@ -289,11 +289,11 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
 
         {/* Fullscreen Workspace */}
         <div className="flex-1 flex flex-col lg:flex-row overflow-hidden bg-background">
-          
+
           {/* Left Column: Metadata & Images (Scrollable) */}
           <div className="w-full lg:w-[380px] lg:shrink-0 lg:border-r border-border bg-muted/15 overflow-y-auto p-6 space-y-5 lg:h-full max-h-[35vh] lg:max-h-none shrink-0 border-b lg:border-b-0 custom-scrollbar">
             <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground border-b border-border pb-1.5">Informações Gerais</h3>
-            
+
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <label className="text-[11px] font-semibold text-foreground">Tipo de Exame *</label>
@@ -359,11 +359,11 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
 
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <label className="text-[11px] font-semibold text-foreground">Diagnóstico (Doença correspondente) *</label>
-                <Button 
-                  type="button" 
-                  variant="link" 
-                  size="sm" 
+                <label className="text-[11px] font-semibold text-foreground">Diagnóstico *</label>
+                <Button
+                  type="button"
+                  variant="link"
+                  size="sm"
                   className="h-auto p-0 text-[10px] text-primary font-bold flex items-center gap-1 hover:underline"
                   onClick={() => setDiseaseModalOpen(true)}
                 >
@@ -394,7 +394,7 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
                 onChange={(e) => handleFiles(e.target.files, 'main')}
                 disabled={uploading}
               />
-              
+
               <div className="flex flex-wrap gap-2">
                 {previews.map((src, i) => (
                   <div
@@ -403,9 +403,8 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
                     onDragStart={(e) => handleDragStart(e, i)}
                     onDragOver={(e) => handleDragOver(e, i)}
                     onDragEnd={handleDragEnd}
-                    className={`relative w-16 h-16 rounded-md overflow-hidden border transition-all cursor-grab active:cursor-grabbing ${
-                      draggedIndex === i ? 'opacity-40 border-primary scale-90' : 'border-border'
-                    }`}
+                    className={`relative w-16 h-16 rounded-md overflow-hidden border transition-all cursor-grab active:cursor-grabbing ${draggedIndex === i ? 'opacity-40 border-primary scale-90' : 'border-border'
+                      }`}
                   >
                     <img src={src} alt="" className="w-full h-full object-cover" draggable="false" />
                     <button
@@ -420,7 +419,7 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
                     </button>
                   </div>
                 ))}
-                
+
                 <button
                   onClick={() => !uploading && fileInputRef.current?.click()}
                   disabled={uploading}
@@ -439,7 +438,7 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
                 <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">Imagens do Laudo</label>
                 <span className="text-[9px] bg-primary/10 text-primary border border-primary/20 px-1.5 py-0.2 rounded font-bold">Laudo apenas</span>
               </div>
-              
+
               <input
                 ref={laudoFileInputRef}
                 type="file"
@@ -449,7 +448,7 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
                 onChange={(e) => handleFiles(e.target.files, 'laudo')}
                 disabled={uploading}
               />
-              
+
               <div className="flex flex-wrap gap-2">
                 {laudoPreviews.map((src, i) => (
                   <div
@@ -458,9 +457,8 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
                     onDragStart={(e) => handleLaudoDragStart(e, i)}
                     onDragOver={(e) => handleLaudoDragOver(e, i)}
                     onDragEnd={handleLaudoDragEnd}
-                    className={`relative w-16 h-16 rounded-md overflow-hidden border transition-all cursor-grab active:cursor-grabbing ${
-                      draggedLaudoIndex === i ? 'opacity-40 border-primary scale-90' : 'border-border'
-                    }`}
+                    className={`relative w-16 h-16 rounded-md overflow-hidden border transition-all cursor-grab active:cursor-grabbing ${draggedLaudoIndex === i ? 'opacity-40 border-primary scale-90' : 'border-border'
+                      }`}
                   >
                     <img src={src} alt="" className="w-full h-full object-cover" draggable="false" />
                     <button
@@ -475,7 +473,7 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
                     </button>
                   </div>
                 ))}
-                
+
                 <button
                   onClick={() => !uploading && laudoFileInputRef.current?.click()}
                   disabled={uploading}
@@ -492,7 +490,7 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
 
           {/* Right Column: Writing Area & Quiz (Scrollable) */}
           <div className="flex-1 overflow-y-auto p-6 space-y-6 lg:h-full custom-scrollbar">
-            
+
             <div className="space-y-2">
               <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">Caso Clínico *</label>
               <RichTextEditor
@@ -537,37 +535,37 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
                   Ativar Caso no Quiz Radiológico
                 </label>
               </div>
-              
+
               {isMinigame && (
                 <div className="space-y-4 animate-in fade-in duration-300">
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-foreground">Dica 1 (Revelada após o 1º erro ou ao pedir dica)</label>
-                    <Input 
-                      value={clue1} 
-                      onChange={e => setClue1(e.target.value)} 
-                      placeholder="Dica inicial sobre a história clínica (Ex: Sintoma de início súbito...)" 
-                      className="bg-card border-border h-10 text-xs" 
+                    <Input
+                      value={clue1}
+                      onChange={e => setClue1(e.target.value)}
+                      placeholder="Dica inicial sobre a história clínica (Ex: Sintoma de início súbito...)"
+                      className="bg-card border-border h-10 text-xs"
                     />
                   </div>
-                  
+
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <label className="text-xs font-semibold text-foreground">Dica 2 (Revelada após o 2º erro)</label>
-                      <Input 
-                        value={clue2} 
-                        onChange={e => setClue2(e.target.value)} 
-                        placeholder="Dica anatômica ou epidemiológica" 
-                        className="bg-card border-border h-10 text-xs" 
+                      <Input
+                        value={clue2}
+                        onChange={e => setClue2(e.target.value)}
+                        placeholder="Dica anatômica ou epidemiológica"
+                        className="bg-card border-border h-10 text-xs"
                       />
                     </div>
-                    
+
                     <div className="space-y-1.5">
                       <label className="text-xs font-semibold text-foreground">Dica 3 (Revelada após o 3º erro)</label>
-                      <Input 
-                        value={clue3} 
-                        onChange={e => setClue3(e.target.value)} 
-                        placeholder="Dica laboratorial ou achado chave" 
-                        className="bg-card border-border h-10 text-xs" 
+                      <Input
+                        value={clue3}
+                        onChange={e => setClue3(e.target.value)}
+                        placeholder="Dica laboratorial ou achado chave"
+                        className="bg-card border-border h-10 text-xs"
                       />
                     </div>
                   </div>
