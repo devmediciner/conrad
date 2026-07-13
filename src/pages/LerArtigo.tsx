@@ -116,6 +116,17 @@ export default function LerArtigo() {
     if (slug) fetchArtigo();
   }, [slug]);
 
+  useEffect(() => {
+    if (artigo) {
+      document.title = `${artigo.titulo} | CONRAD`;
+    } else if (!loading) {
+      document.title = 'Artigo não encontrado | CONRAD';
+    }
+    return () => {
+      document.title = 'GALERIA - CONRAD';
+    };
+  }, [artigo, loading]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center">

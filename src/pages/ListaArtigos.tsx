@@ -31,6 +31,17 @@ const ListaArtigos = () => {
   const [artigos, setArtigos] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    if (selectedCategory === 'todos') {
+      document.title = 'Artigos | CONRAD';
+    } else {
+      document.title = `Artigos: ${selectedCategory.toUpperCase()} | CONRAD`;
+    }
+    return () => {
+      document.title = 'GALERIA - CONRAD';
+    };
+  }, [selectedCategory]);
+
   // Busca artigos do Supabase ao abrir a página ou trocar a categoria
   useEffect(() => {
     const fetchArtigos = async () => {

@@ -72,6 +72,19 @@ export default function LerCaso() {
     fetchCaso();
   }, [idOrNum]);
 
+  useEffect(() => {
+    if (caso) {
+      const examLabel = EXAM_TYPE_LABELS[caso.exam_type as keyof typeof EXAM_TYPE_LABELS] || caso.exam_type;
+      const diseaseSuffix = caso.disease ? ` - ${caso.disease}` : '';
+      document.title = `Caso Clínico #${caso.case_number} (${examLabel})${diseaseSuffix} | CONRAD`;
+    } else if (!loading) {
+      document.title = 'Caso Clínico não encontrado | CONRAD';
+    }
+    return () => {
+      document.title = 'GALERIA - CONRAD';
+    };
+  }, [caso, loading]);
+
   const handleShare = async () => {
     if (!caso) return;
     const shareUrl = `${window.location.origin}/caso/${caso.case_number}`;

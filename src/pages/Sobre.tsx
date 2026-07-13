@@ -1,9 +1,17 @@
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Instagram, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import logo from '@/assets/logo.png';
 
 const Sobre = () => {
+  useEffect(() => {
+    document.title = 'Sobre a CONRAD | CONRAD';
+    return () => {
+      document.title = 'GALERIA - CONRAD';
+    };
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-12 max-w-3xl">

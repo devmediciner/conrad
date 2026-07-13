@@ -54,6 +54,14 @@ function saveStats(stats: QuizStats) {
 
 export default function RadioGame() {
   const navigate = useNavigate();
+  
+  useEffect(() => {
+    document.title = 'RadioGame - Desafio Radiológico | CONRAD';
+    return () => {
+      document.title = 'GALERIA - CONRAD';
+    };
+  }, []);
+
   const [step, setStep] = useState<'intro' | 'select' | 'playing' | 'result'>('intro');
   const [currentCase, setCurrentCase] = useState<Case | null>(null);
   const [guesses, setGuesses] = useState<string[]>([]);
