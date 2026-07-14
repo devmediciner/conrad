@@ -9,6 +9,18 @@
       "destination": "/api/preview?type=artigo&id=:slug"
     },
     {
+      "source": "/tutorial",
+      "destination": "/api/preview?type=tutorial"
+    },
+    {
+      "source": "/tutorial-casos",
+      "destination": "/api/preview?type=tutorial"
+    },
+    {
+      "source": "/tutorial-artigos",
+      "destination": "/api/preview?type=tutorial"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
