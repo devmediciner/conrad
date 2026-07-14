@@ -601,37 +601,38 @@ export default function TutorialCasos() {
 
           <section className="step" id="step-7">
             <div className="step-head"><span className="step-num">PASSO 07</span><h2>Adicione as imagens do caso</h2></div>
-            <p className="desc">Envie as imagens do exame usando os botões de upload. Prefira imagens bem enquadradas e com boa resolução, como nos exemplos comparativos (2 a 2) abaixo:</p>
-
+            <p className="desc">
+              Há dois campos. O primeiro campo é destinado às imagens do caso (você pode enviar várias imagens, como PA, perfil e outras incidências). O segundo é para imagens explicativas, anotadas ou coloridas pelo próprio usuário, destacando os principais achados, como nos exemplos abaixo.
+            </p>
             <div className="example-grid-2x2">
               {/* Par 01 */}
               <div className="example-card">
                 <img src="/tutorial/step_img_7.jpeg" alt="Exemplo de imagem do caso" />
-                <div className="cap">CASO · FIG. 06</div>
+                <div className="cap">IMAGEM CASO 1</div>
               </div>
               <div className="example-card">
                 <img src="/tutorial/step_img_8.jpeg" alt="Exemplo de imagem detalhada" />
-                <div className="cap">DETALHADA · FIG. 07</div>
+                <div className="cap">IMAGEM DETALHADA 1</div>
               </div>
 
               {/* Par 02 */}
               <div className="example-card">
                 <img src="/tutorial/step_img_9.jpeg" alt="Exemplo de imagem do caso" />
-                <div className="cap">CASO · FIG. 08</div>
+                <div className="cap">IMAGEM CASO 2</div>
               </div>
               <div className="example-card">
                 <img src="/tutorial/step_img_11.jpeg" alt="Exemplo de imagem detalhada" />
-                <div className="cap">DETALHADA · FIG. 09</div>
+                <div className="cap">IMAGEM DETALHADA 2</div>
               </div>
 
               {/* Par 03 */}
               <div className="example-card">
                 <img src="/tutorial/step_img_12.jpeg" alt="Exemplo de imagem do caso" />
-                <div className="cap">CASO · FIG. 10</div>
+                <div className="cap">IMAGEM CASO 3</div>
               </div>
               <div className="example-card">
                 <img src="/tutorial/step_img_13.jpeg" alt="Exemplo de imagem detalhada" />
-                <div className="cap">DETALHADA · FIG. 11</div>
+                <div className="cap">IMAGEM DETALHADA 3</div>
               </div>
             </div>
           </section>
