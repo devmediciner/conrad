@@ -368,6 +368,13 @@ const Admin = () => {
                       className="pl-9 h-9 text-xs bg-card border-border"
                     />
                   </div>
+                  <Button 
+                    variant="outline" 
+                    className="gap-2 h-9 text-xs shrink-0 border-border hover:bg-secondary" 
+                    onClick={() => navigate('/tutorial')}
+                  >
+                    <HelpCircle className="w-4 h-4" /> Tutorial
+                  </Button>
                   <Button variant="default" className="gap-2 h-9 text-xs shrink-0" onClick={() => setSubmitOpen(true)}>
                     <Plus className="w-4 h-4" /> Novo Caso
                   </Button>
