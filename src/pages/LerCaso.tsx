@@ -255,7 +255,7 @@ export default function LerCaso() {
                             
                             <div className="border border-border rounded-lg p-3 bg-muted/20">
                               <h4 className="text-xs font-bold uppercase tracking-wider text-primary mb-1.5">
-                                Laudo Clínico
+                                Laudo Radiológico
                               </h4>
                               <FormattedText content={caso.diagnosis} className="text-sm text-foreground leading-relaxed" />
                             </div>
@@ -332,7 +332,7 @@ export default function LerCaso() {
                           
                           <div className="border border-border rounded-lg p-3 bg-muted/20">
                             <h4 className="text-xs font-bold uppercase tracking-wider text-primary mb-1.5">
-                              Laudo Clínico
+                              Laudo Radiológico
                             </h4>
                             <FormattedText content={caso.diagnosis} className="text-sm text-foreground leading-relaxed" />
                           </div>

@@ -514,10 +514,7 @@ export function EditCaseModal({ caseData, open, onOpenChange }: EditCaseModalPro
 
             {/* Imagens do Laudo */}
             <div className="space-y-2 pt-2 border-t border-border">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">Imagens Detalhadas</label>
-                <span className="text-[9px] bg-primary/10 text-primary border border-primary/20 px-1.5 py-0.2 rounded font-bold">Detalhada apenas</span>
-              </div>
+              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">Imagens Detalhadas</label>
               <div className="flex flex-wrap gap-2">
                 {laudoImages.map((img, i) => (
                   <div
@@ -578,7 +575,7 @@ export function EditCaseModal({ caseData, open, onOpenChange }: EditCaseModalPro
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">Laudo *</label>
+              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">Laudo Radiológico *</label>
               <RichTextEditor
                 value={diagnosis}
                 onChange={setDiagnosis}
