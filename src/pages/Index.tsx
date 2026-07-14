@@ -40,16 +40,26 @@ const Index = () => {
   const { data: allCasesForSpotlight } = useCases({ examType });
   const caseDaSemana = allCasesForSpotlight?.find(c => c.is_case_of_the_week) || (allCasesForSpotlight && allCasesForSpotlight.length > 0 ? allCasesForSpotlight[0] : null);
 
+  const { data: modalityCases, isLoading: isLoadingModalityCases } = useCases({
+    examType: selectedModality || 'all'
+  });
+
   const [articles, setArticles] = useState<Article[]>([]);
   const [loadingArticles, setLoadingArticles] = useState(false);
   
-  const [activeClassification, setActiveClassification] = useState<'anatomia' | 'patologia' | 'geral'>('geral');
+  const [activeClassification, setActiveClassification] = useState<'casos' | 'anatomia' | 'patologia' | 'geral'>('casos');
   const [selectedSystemFolder, setSelectedSystemFolder] = useState<SystemType | null>(null);
 
   // Reset selected folder when modal/exam type changes
   useEffect(() => {
     setSelectedSystemFolder(null);
   }, [examType]);
+
+  // Reset selected folder and classification when selectedModality changes
+  useEffect(() => {
+    setSelectedSystemFolder(null);
+    setActiveClassification('casos');
+  }, [selectedModality]);
 
   useEffect(() => {
     const fetchArticles = async () => {
@@ -92,7 +102,9 @@ const Index = () => {
       ? anatomyArticles 
       : activeClassification === 'patologia' 
       ? pathologyArticles 
-      : generalArticles;
+      : activeClassification === 'geral'
+      ? generalArticles
+      : [];
 
   // Group by system
   const systemGroups: Record<SystemType, typeof currentClassificationArticles> = {
@@ -239,10 +251,10 @@ const Index = () => {
                 <div>
                   <h3 className="font-heading font-extrabold text-2xl md:text-3xl text-foreground flex items-center gap-2">
                     <FileText className="w-6 h-6 text-primary" />
-                    Artigos de {examLabels[selectedModality]} ({selectedModality})
+                    Conteúdo de {examLabels[selectedModality]} ({selectedModality})
                   </h3>
                   <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                    Explore os artigos científicos e materiais educativos de {examLabels[selectedModality]} separados por anatomia, patologia e geral.
+                    Explore os casos clínicos, artigos científicos e materiais educativos de {examLabels[selectedModality]} separados por casos, anatomia, patologia e geral.
                   </p>
                 </div>
                 <Button
@@ -260,10 +272,23 @@ const Index = () => {
                     <Skeleton key={i} className="h-28 w-full rounded-3xl" />
                   ))}
                 </div>
-              ) : filteredArticles.length > 0 ? (
+              ) : (filteredArticles.length > 0 || (modalityCases && modalityCases.length > 0)) ? (
                 <div className="space-y-4">
                   {/* Classificações Tabs */}
                   <div className="flex bg-muted p-1 rounded-2xl w-full mb-6">
+                    <button
+                      onClick={() => {
+                        setActiveClassification('casos');
+                        setSelectedSystemFolder(null);
+                      }}
+                      className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${
+                        activeClassification === 'casos'
+                          ? 'bg-card text-foreground shadow-sm'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      Casos ({modalityCases?.length || 0})
+                    </button>
                     <button
                       onClick={() => {
                         setActiveClassification('geral');
@@ -305,7 +330,38 @@ const Index = () => {
                     </button>
                   </div>
 
-                  {selectedSystemFolder === null ? (
+                  {activeClassification === 'casos' ? (
+                    isLoadingModalityCases ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 pt-4 animate-pulse">
+                        {Array.from({ length: 3 }).map((_, i) => (
+                          <div key={i} className="rounded-2xl overflow-hidden bg-card/30 border border-border/50 p-4 space-y-4">
+                            <Skeleton className="aspect-square w-full rounded-xl" />
+                            <div className="space-y-2">
+                              <Skeleton className="h-4.5 w-1/3" />
+                              <Skeleton className="h-3.5 w-full" />
+                              <Skeleton className="h-3.5 w-3/4" />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : modalityCases && modalityCases.length > 0 ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 pt-4 animate-in fade-in duration-300">
+                        {modalityCases.map((c, i) => (
+                          <CaseCard
+                            key={c.id}
+                            caseData={c}
+                            index={i}
+                            onClick={() => setSelectedCase(c)}
+                            showDiagnosis={showDiagnosis}
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-12 bg-card rounded-2xl border border-dashed border-border/80">
+                        <p className="text-sm text-muted-foreground">Nenhum caso clínico encontrado nesta modalidade.</p>
+                      </div>
+                    )
+                  ) : selectedSystemFolder === null ? (
                     currentClassificationArticles.length === 0 ? (
                       <div className="text-center py-12 bg-card rounded-2xl border border-dashed border-border/80">
                         <p className="text-sm text-muted-foreground">
@@ -413,7 +469,7 @@ const Index = () => {
                 </div>
               ) : (
                 <div className="text-center py-12 bg-card rounded-2xl border border-dashed border-border/80">
-                  <p className="text-sm text-muted-foreground">Nenhum artigo publicado nesta modalidade.</p>
+                  <p className="text-sm text-muted-foreground">Nenhum conteúdo publicado nesta modalidade.</p>
                 </div>
               )}
             </div>
