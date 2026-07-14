@@ -118,16 +118,16 @@ export default async function handler(req, res) {
 
   // Replace titles and descriptions and images
   htmlContent = htmlContent
-    .replace(/<title>.*?<\/title>/g, `<title>\${title}</title>`)
-    .replace(/<meta property="og:title" content=".*?"\s*\/?>/g, `<meta property="og:title" content="\${title}">`)
-    .replace(/<meta name="twitter:title" content=".*?"\s*\/?>/g, `<meta name="twitter:title" content="\${title}">`)
+    .replace(/<title>.*?<\/title>/g, `<title>${title}</title>`)
+    .replace(/<meta property="og:title" content=".*?"\s*\/?>/g, `<meta property="og:title" content="${title}">`)
+    .replace(/<meta name="twitter:title" content=".*?"\s*\/?>/g, `<meta name="twitter:title" content="${title}">`)
     
-    .replace(/<meta name="description" content=".*?"\s*\/?>/g, `<meta name="description" content="\${description}">`)
-    .replace(/<meta property="og:description" content=".*?"\s*\/?>/g, `<meta property="og:description" content="\${description}">`)
-    .replace(/<meta name="twitter:description" content=".*?"\s*\/?>/g, `<meta name="twitter:description" content="\${description}">`)
+    .replace(/<meta name="description" content=".*?"\s*\/?>/g, `<meta name="description" content="${description}">`)
+    .replace(/<meta property="og:description" content=".*?"\s*\/?>/g, `<meta property="og:description" content="${description}">`)
+    .replace(/<meta name="twitter:description" content=".*?"\s*\/?>/g, `<meta name="twitter:description" content="${description}">`)
     
-    .replace(/<meta property="og:image" content=".*?"\s*\/?>/g, `<meta property="og:image" content="\${imageUrl}">`)
-    .replace(/<meta name="twitter:image" content=".*?"\s*\/?>/g, `<meta name="twitter:image" content="\${imageUrl}">`);
+    .replace(/<meta property="og:image" content=".*?"\s*\/?>/g, `<meta property="og:image" content="${imageUrl}">`)
+    .replace(/<meta name="twitter:image" content=".*?"\s*\/?>/g, `<meta name="twitter:image" content="${imageUrl}">`);
 
   res.setHeader('Content-Type', 'text/html');
   return res.send(htmlContent);
