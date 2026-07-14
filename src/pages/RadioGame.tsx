@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 
   Stethoscope, ArrowLeft, CheckCircle2, XCircle, Trophy, Share2, Activity, Play, Grid, Loader2,
-  Sparkles, BookOpen, Target, HelpCircle, Award, Flame
+  Sparkles, BookOpen, Target, HelpCircle, Award, Flame, FileImage
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCases } from '@/hooks/useCases';
@@ -78,8 +78,23 @@ export default function RadioGame() {
   const diseasesList = useMemo(() => diseasesData?.map(d => d.name) || [], [diseasesData]);
   const validCases = useMemo(() => cases?.filter((c) => c.disease && c.images && c.images.length > 0) || [], [cases]);
 
-  const images = useMemo(() => currentCase?.images ?? [], [currentCase]);
+  const [viewingLaudoImages, setViewingLaudoImages] = useState(false);
+
+  const hasLaudoImages = !!(currentCase?.laudo_images && currentCase.laudo_images.length > 0);
+  const viewingLaudo = hasWon && step === 'result' && viewingLaudoImages && hasLaudoImages;
+
+  const images = useMemo(() => {
+    if (viewingLaudo) {
+      return currentCase?.laudo_images ?? [];
+    }
+    return currentCase?.images ?? [];
+  }, [currentCase, viewingLaudo]);
+
   const currentImage = useMemo(() => images[selectedImage], [images, selectedImage]);
+
+  useEffect(() => {
+    setSelectedImage(0);
+  }, [viewingLaudoImages]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -108,6 +123,7 @@ export default function RadioGame() {
     setHasWon(false);
     setStatsRecorded(false);
     setSelectedImage(0);
+    setViewingLaudoImages(false);
     setStep('playing');
   };
 
@@ -153,6 +169,12 @@ export default function RadioGame() {
     if (removeAccents(currentInput) === removeAccents(currentCase.disease)) {
       setHasWon(true);
       setStep('result');
+      if (currentCase.laudo_images && currentCase.laudo_images.length > 0) {
+        setViewingLaudoImages(true);
+      } else {
+        setViewingLaudoImages(false);
+      }
+      setSelectedImage(0);
       recordStats(true, guesses.length + 1);
       toast.success("Diagnóstico correto! 🎉");
     } else {
@@ -668,6 +690,32 @@ export default function RadioGame() {
               <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
                 {/* Coluna da Esquerda: Imagem */}
                 <div className="space-y-3 md:col-span-7">
+                  {hasWon && hasLaudoImages && (
+                    <div className="grid grid-cols-2 gap-2 bg-background border border-border/60 p-1.5 rounded-xl">
+                      <button
+                        type="button"
+                        onClick={() => setViewingLaudoImages(false)}
+                        className={`flex items-center justify-center gap-2 text-xs py-2.5 rounded-lg font-bold transition-all ${
+                          !viewingLaudoImages
+                            ? 'bg-primary text-primary-foreground shadow-sm'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-secondary/40'
+                        }`}
+                      >
+                        <FileImage className="w-4 h-4" /> Imagem do Caso
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setViewingLaudoImages(true)}
+                        className={`flex items-center justify-center gap-2 text-xs py-2.5 rounded-lg font-bold transition-all ${
+                          viewingLaudoImages
+                            ? 'bg-blue-600 text-white shadow-sm'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-secondary/40'
+                        }`}
+                      >
+                        <Stethoscope className="w-4 h-4" /> Imagem Detalhada
+                      </button>
+                    </div>
+                  )}
                   {currentImage ? (
                     <div className="relative">
                       <ImageViewer
@@ -736,7 +784,9 @@ export default function RadioGame() {
                       <FormattedText content={currentCase.diagnosis} className="text-sm text-foreground/80 leading-relaxed pt-1" />
                       {currentCase.laudo_images && currentCase.laudo_images.length > 0 && (
                         <div className="border-t border-border/40 pt-3 mt-2">
-                          <h5 className="text-xs font-bold uppercase tracking-wider text-primary mb-2">Imagens do Laudo</h5>
+                          <h5 className="text-xs font-bold uppercase tracking-wider text-primary mb-2">
+                            {hasWon ? 'Imagens Detalhadas' : 'Imagens do Laudo'}
+                          </h5>
                           <div className="grid grid-cols-2 gap-2">
                             {currentCase.laudo_images.map((imgUrl, i) => (
                               <div key={i} className="relative aspect-video rounded-md overflow-hidden border border-border group">
@@ -760,10 +810,16 @@ export default function RadioGame() {
 
                   {/* Controles de Ação */}
                   <div className="flex flex-col sm:flex-row gap-3 pt-2 w-full">
-                    <Button variant="outline" size="lg" className="w-full sm:flex-1 h-12 text-sm" onClick={() => setStep('intro')}>
-                      Jogar Novamente
-                    </Button>
-                    <Button size="lg" className="w-full sm:flex-1 gap-2 h-12 text-sm" onClick={handleShare}>
+                    {hasWon ? (
+                      <Button size="lg" className="w-full sm:flex-1 h-12 text-sm bg-primary text-primary-foreground hover:scale-[1.02] transition-transform font-bold" onClick={startRandom}>
+                        Próximo Caso
+                      </Button>
+                    ) : (
+                      <Button variant="outline" size="lg" className="w-full sm:flex-1 h-12 text-sm font-semibold" onClick={() => setStep('intro')}>
+                        Jogar Novamente
+                      </Button>
+                    )}
+                    <Button variant={hasWon ? "outline" : "default"} size="lg" className="w-full sm:flex-1 gap-2 h-12 text-sm font-semibold" onClick={handleShare}>
                       <Share2 className="w-5 h-5" /> Compartilhar
                     </Button>
                   </div>
