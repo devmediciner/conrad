@@ -682,7 +682,7 @@ export default function TutorialCasos() {
                 <img src="/tutorial/step_img_17.png" alt="Ativação do quiz com dicas" />
               </div>
             </div>
-            <div className="tip"><span className="tip-tag">DICA</span><span>Boas dicas guiam o raciocínio sem entregar o diagnóstico — pense nelas como pistas, não como respostas.</span></div>
+            <div className="tip"><span className="tip-tag">DICA</span><span>Boas dicas guiam o raciocínio sem entregar o diagnóstico, pense nelas como pistas, não como respostas.</span></div>
           </section>
 
         </main>
