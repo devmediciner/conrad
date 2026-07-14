@@ -782,10 +782,10 @@ export default function RadioGame() {
                         <span>{currentCase.disease}</span>
                       </div>
                       <FormattedText content={currentCase.diagnosis} className="text-sm text-foreground/80 leading-relaxed pt-1" />
-                      {currentCase.laudo_images && currentCase.laudo_images.length > 0 && (
+                      {!hasWon && currentCase.laudo_images && currentCase.laudo_images.length > 0 && (
                         <div className="border-t border-border/40 pt-3 mt-2">
                           <h5 className="text-xs font-bold uppercase tracking-wider text-primary mb-2">
-                            {hasWon ? 'Imagens Detalhadas' : 'Imagens do Laudo'}
+                            Imagens do Laudo
                           </h5>
                           <div className="grid grid-cols-2 gap-2">
                             {currentCase.laudo_images.map((imgUrl, i) => (
