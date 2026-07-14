@@ -424,10 +424,9 @@ export default function TutorialCasos() {
         }
 
         /* image example grid for step 7 */
-        .tutorial-page-wrapper .example-grid-imagenscaso,
-        .tutorial-page-wrapper .example-grid-imagensdetalhadas {
+        .tutorial-page-wrapper .example-grid-2x2 {
           display: grid;
-          grid-template-columns: repeat(3, 1fr);
+          grid-template-columns: repeat(2, 1fr);
           gap: 16px;
           max-width: 760px;
           margin-top: 12px;
@@ -480,12 +479,12 @@ export default function TutorialCasos() {
         }
 
         @media (max-width:900px) {
-          .tutorial-page-wrapper .example-grid-imagenscaso,
-          .tutorial-page-wrapper .example-grid-imagensdetalhadas {
-            grid-template-columns: 1fr;
+          .tutorial-page-wrapper .example-grid-2x2 {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
           }
           .tutorial-page-wrapper .example-card img {
-            max-height: 240px;
+            max-height: 180px;
             width: auto;
             margin: 0 auto;
           }
@@ -602,24 +601,38 @@ export default function TutorialCasos() {
 
           <section className="step" id="step-7">
             <div className="step-head"><span className="step-num">PASSO 07</span><h2>Adicione as imagens do caso</h2></div>
-            <p className="desc">Exemplos imagens do caso:</p>
+            <p className="desc">Envie as imagens do exame usando os botões de upload. Prefira imagens bem enquadradas e com boa resolução, como nos exemplos comparativos (2 a 2) abaixo:</p>
 
-            <div className="example-grid-imagenscaso">
-              <div className="example-card"><img src="/tutorial/step_img_7.jpeg" alt="Exemplo de imagem radiológica bem enquadrada" /><div className="cap">EXEMPLO · FIG. 06</div></div>
-              <div className="example-card"><img src="/tutorial/step_img_12.jpeg" alt="Exemplo de imagem radiológica bem enquadrada" /><div className="cap">EXEMPLO · FIG. 10</div></div>
+            <div className="example-grid-2x2">
+              {/* Par 01 */}
+              <div className="example-card">
+                <img src="/tutorial/step_img_7.jpeg" alt="Exemplo de imagem do caso" />
+                <div className="cap">CASO · FIG. 06</div>
+              </div>
+              <div className="example-card">
+                <img src="/tutorial/step_img_8.jpeg" alt="Exemplo de imagem detalhada" />
+                <div className="cap">DETALHADA · FIG. 07</div>
+              </div>
 
-              <div className="example-card"><img src="/tutorial/step_img_9.jpeg" alt="Exemplo de imagem radiológica bem enquadrada" /><div className="cap">EXEMPLO · FIG. 08</div></div>
+              {/* Par 02 */}
+              <div className="example-card">
+                <img src="/tutorial/step_img_9.jpeg" alt="Exemplo de imagem do caso" />
+                <div className="cap">CASO · FIG. 08</div>
+              </div>
+              <div className="example-card">
+                <img src="/tutorial/step_img_11.jpeg" alt="Exemplo de imagem detalhada" />
+                <div className="cap">DETALHADA · FIG. 09</div>
+              </div>
 
-            </div>
-
-            <p className="desc">Exemplos imagens detalhadas:</p>
-            <div className="example-grid-imagensdetalhadas">
-
-
-              <div className="example-card"><img src="/tutorial/step_img_8.jpeg" alt="Exemplo de imagem radiológica bem enquadrada" /><div className="cap">EXEMPLO · FIG. 07</div></div>
-              <div className="example-card"><img src="/tutorial/step_img_13.jpeg" alt="Exemplo de imagem radiológica bem enquadrada" /><div className="cap">EXEMPLO · FIG. 11</div></div>
-
-              <div className="example-card"><img src="/tutorial/step_img_11.jpeg" alt="Exemplo de imagem radiológica bem enquadrada" /><div className="cap">EXEMPLO · FIG. 09</div></div>
+              {/* Par 03 */}
+              <div className="example-card">
+                <img src="/tutorial/step_img_12.jpeg" alt="Exemplo de imagem do caso" />
+                <div className="cap">CASO · FIG. 10</div>
+              </div>
+              <div className="example-card">
+                <img src="/tutorial/step_img_13.jpeg" alt="Exemplo de imagem detalhada" />
+                <div className="cap">DETALHADA · FIG. 11</div>
+              </div>
             </div>
           </section>
 
