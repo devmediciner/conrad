@@ -404,7 +404,7 @@ const Admin = () => {
                             <span className="font-mono text-muted-foreground mr-1">#{c.case_number}</span>
                             — {c.disease || 'Sem Diagnóstico'}
                           </p>
-                          <p className="text-xs text-muted-foreground mt-0.5">{c.age} anos • {c.sex} • Enviado por: <span className="font-semibold text-foreground/80">{getSubmitterName(c.submitted_by)}</span></p>
+                          <p className="text-xs text-muted-foreground mt-0.5">{c.age} anos • {c.sex} • Enviado por: <span className="font-semibold text-foreground/80">{c.author || getSubmitterName(c.submitted_by)}</span></p>
                         </div>
                         <div className="flex gap-2 flex-shrink-0 items-center">
                           <Button 

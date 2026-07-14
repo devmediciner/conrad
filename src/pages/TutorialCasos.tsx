@@ -532,7 +532,7 @@ export default function TutorialCasos() {
             <div>💡</div>
             <div><b>Antes de começar:</b> tenha em mãos as imagens do exame, o diagnóstico definido e um breve histórico clínico do paciente. Isso deixa o cadastro bem mais rápido.</div>
           </div>
-          <div className="tip"><span className="tip-tag">NOTA</span><span>Se sua conta for de colaborador (perfil de membro), o artigo será enviado para revisão dos administradores antes de ficar visível na plataforma principal.</span></div>
+          <div className="tip"><span className="tip-tag">NOTA</span><span>Se sua conta for de colaborador (perfil de membro), o caso será enviado para revisão dos administradores antes de ficar visível na plataforma principal.</span></div>
 
           <section className="step" id="step-1">
             <div className="step-head"><span className="step-num">PASSO 01</span><h2>Acesse o site</h2></div>
