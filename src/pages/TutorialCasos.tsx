@@ -484,6 +484,11 @@ export default function TutorialCasos() {
           .tutorial-page-wrapper .example-grid-imagensdetalhadas {
             grid-template-columns: 1fr;
           }
+          .tutorial-page-wrapper .example-card img {
+            max-height: 240px;
+            width: auto;
+            margin: 0 auto;
+          }
         }
       `}</style>
 
