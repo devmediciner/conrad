@@ -9,7 +9,7 @@ import { EXAM_TYPE_COLORS } from '@/types/case';
 import { stripHtml, slugify, removeAccents, formatDisplayDate } from '@/lib/utils';
 import { CaseModal } from '@/components/CaseModal';
 
-import { Trash2, ArrowLeft, Loader2, Pencil, Plus, Gamepad2, List, FileText, ImagePlus, Save, X, CheckCircle, Settings, Users, UserPlus, Check, XCircle, Eye, EyeOff, Edit, Search } from 'lucide-react';
+import { Trash2, ArrowLeft, Loader2, Pencil, Plus, Gamepad2, List, FileText, ImagePlus, Save, X, CheckCircle, Settings, Users, UserPlus, Check, XCircle, Eye, EyeOff, Edit, Search, HelpCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { EditCaseModal } from '@/components/EditCaseModal';
 import { SubmitCaseModal } from '@/components/SubmitCaseModal';
@@ -293,13 +293,20 @@ const Admin = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <h1 className="font-heading text-2xl font-bold text-foreground">{isAdmin ? 'Painel Admin' : 'Área do Membro'}</h1>
           </div>
+          <Button 
+            variant="outline" 
+            className="gap-2 h-9 text-xs rounded-full border-primary/30 text-primary hover:bg-primary/5 transition-all self-start sm:self-auto"
+            onClick={() => navigate('/tutorial')}
+          >
+            <HelpCircle className="w-4 h-4" /> Como Adicionar Casos
+          </Button>
         </div>
 
         {/* Abas Superiores */}
