@@ -241,6 +241,7 @@ export default function TutorialArtigos() {
 
         @media (max-width:900px) {
           .tutorial-page-wrapper nav.steps-nav {
+            display: none;
             position: static;
             max-height: none;
             padding-top: 34px;
