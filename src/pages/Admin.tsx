@@ -371,7 +371,7 @@ const Admin = () => {
                   <Button 
                     variant="outline" 
                     className="gap-2 h-9 text-xs shrink-0 border-border hover:bg-secondary" 
-                    onClick={() => navigate('/tutorial')}
+                    onClick={() => navigate('/tutorial-casos')}
                   >
                     <HelpCircle className="w-4 h-4" /> Tutorial
                   </Button>
@@ -502,6 +502,13 @@ const Admin = () => {
                       className="pl-9 h-9 text-xs bg-card border-border"
                     />
                   </div>
+                  <Button 
+                    variant="outline" 
+                    className="gap-2 h-9 text-xs shrink-0 border-border hover:bg-secondary" 
+                    onClick={() => navigate('/tutorial-artigos')}
+                  >
+                    <HelpCircle className="w-4 h-4" /> Tutorial
+                  </Button>
                   <Button variant="secondary" className="gap-2 h-9 text-xs shrink-0 bg-yellow-500 hover:bg-yellow-600 text-black border-none" onClick={() => { setEditingArticle(null); setArticleModalOpen(true); }}>
                     <FileText className="w-4 h-4" /> Novo Artigo
                   </Button>

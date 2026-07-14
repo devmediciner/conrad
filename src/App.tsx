@@ -13,7 +13,8 @@ import Admin from "./pages/Admin.tsx";
 import RadioGame from "./pages/RadioGame.tsx";
 import Privacy from "./pages/Privacy.tsx";
 import Sobre from "./pages/Sobre.tsx";
-import Tutorial from "./pages/Tutorial.tsx";
+import TutorialCasos from "./pages/TutorialCasos.tsx";
+import TutorialArtigos from "./pages/TutorialArtigos.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import { Analytics } from "@vercel/analytics/next"
 
@@ -34,7 +35,9 @@ const App = () => (
             <Route path="/caso/:idOrNum" element={<LerCaso />} />
             <Route path="/login" element={<Login />} />
             <Route path="/admin" element={<Admin />} />
-            <Route path="/tutorial" element={<Tutorial />} />
+            <Route path="/tutorial" element={<TutorialCasos />} />
+            <Route path="/tutorial-casos" element={<TutorialCasos />} />
+            <Route path="/tutorial-artigos" element={<TutorialArtigos />} />
             <Route path="/game" element={<RadioGame />} />
             <Route path="/sobre" element={<Sobre />} />
             <Route path="/privacidade" element={<Privacy />} />

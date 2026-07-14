@@ -17,7 +17,7 @@ const steps = [
   { id: 'step-11', n: '11', title: 'Ative o quiz' },
 ];
 
-export default function Tutorial() {
+export default function TutorialCasos() {
   const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState('step-1');
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -533,10 +533,11 @@ export default function Tutorial() {
             <div>💡</div>
             <div><b>Antes de começar:</b> tenha em mãos as imagens do exame, o diagnóstico definido e um breve histórico clínico do paciente. Isso deixa o cadastro bem mais rápido.</div>
           </div>
+          <div className="tip"><span className="tip-tag">NOTA</span><span>Se sua conta for de colaborador (perfil de membro), o artigo será enviado para revisão dos administradores antes de ficar visível na plataforma principal.</span></div>
 
           <section className="step" id="step-1">
             <div className="step-head"><span className="step-num">PASSO 01</span><h2>Acesse o site</h2></div>
-            <p className="desc">Abra o navegador e acesse <code>https://conradufsj.app</code>. Nenhuma instalação é necessária — todo o cadastro é feito pelo navegador.</p>
+            <p className="desc">Abra o navegador e acesse <code>https://conradufsj.app</code>. Nenhuma instalação é necessária, todo o cadastro é feito pelo navegador.</p>
           </section>
 
           <section className="step" id="step-2">
@@ -552,7 +553,7 @@ export default function Tutorial() {
 
           <section className="step" id="step-3">
             <div className="step-head"><span className="step-num">PASSO 03</span><h2>Faça o login</h2></div>
-            <p className="desc">Digite suas credenciais de professor/colaborador e confirme para entrar no painel.</p>
+            <p className="desc">Digite seu login e confirme para entrar no painel.</p>
             <div className="viewer compact">
               <div className="viewer-bar"><span className="b"></span><span className="b"></span><span className="b"></span><span className="tag">auth</span></div>
               <div className="viewer-frame">
@@ -662,6 +663,7 @@ export default function Tutorial() {
             </div>
             <div className="tip"><span className="tip-tag">DICA</span><span>Boas dicas guiam o raciocínio sem entregar o diagnóstico — pense nelas como pistas, não como respostas.</span></div>
           </section>
+
         </main>
       </div>
 
