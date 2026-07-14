@@ -300,13 +300,6 @@ const Admin = () => {
             </Button>
             <h1 className="font-heading text-2xl font-bold text-foreground">{isAdmin ? 'Painel Admin' : 'Área do Membro'}</h1>
           </div>
-          <Button 
-            variant="outline" 
-            className="gap-2 h-9 text-xs rounded-full border-primary/30 text-primary hover:bg-primary/5 transition-all self-start sm:self-auto"
-            onClick={() => navigate('/tutorial')}
-          >
-            <HelpCircle className="w-4 h-4" /> Como Adicionar Casos
-          </Button>
         </div>
 
         {/* Abas Superiores */}

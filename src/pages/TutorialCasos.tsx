@@ -280,7 +280,7 @@ export default function TutorialCasos() {
           border-left: 3px solid var(--amber);
           border-radius: 4px;
           padding: 18px 22px;
-          margin-bottom: 64px;
+          margin-bottom: 30px;
           font-size: 14.5px;
           line-height: 1.6;
           color: var(--ink-soft);
@@ -442,8 +442,7 @@ export default function TutorialCasos() {
         .tutorial-page-wrapper .example-card img {
           display: block;
           width: 100%;
-          height: 170px;
-          object-fit: cover;
+          height: auto;
         }
         .tutorial-page-wrapper .example-card .cap {
           font-family: 'IBM Plex Mono', monospace;
