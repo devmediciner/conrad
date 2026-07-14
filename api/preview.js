@@ -90,8 +90,8 @@ export default async function handler(req, res) {
         }
       }
     } else if (type === 'tutorial') {
-      title = 'Tutorial CONRAD - Como publicar Casos e Artigos';
-      description = 'Aprenda passo a passo como submeter seus casos clínicos radiológicos e artigos na plataforma CONRAD da UFSJ.';
+      title = 'Tutorial CONRAD - Como publicar Casos';
+      description = 'Aprenda passo a passo como submeter seus casos clínicos radiológicos na plataforma da CONRAD.';
       imageUrl = 'https://conradufsj.app/tutorial-og.png';
     }
   } catch (error) {
