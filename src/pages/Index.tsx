@@ -244,9 +244,256 @@ const Index = () => {
       {/* Grid */}
       <section className="px-4 pb-20">
         <div className="container mx-auto">
-          {selectedModality ? (
-            // Modality Articles Section (separated by anatomy/pathology)
-            <div id="artigos-modality" className="space-y-8 animate-in fade-in duration-500 max-w-4xl mx-auto scroll-mt-24">
+          <div className="space-y-12">
+            {/* Conditionally show Spotlights if search is empty (using CSS display hidden to preserve focus and layout DOM nodes) */}
+              <div className="space-y-16 animate-in fade-in duration-700">
+                {/* Seção 1: Destaques (Caso da Semana ao lado de Últimos Artigos) */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+                  {/* Coluna Esquerda: Caso da Semana */}
+                  <div className="lg:col-span-8 flex flex-col space-y-4">
+                    <h3 className="font-heading font-extrabold text-xl text-foreground flex items-center gap-2 mb-2">
+                      <Trophy className="w-5 h-5 text-primary" /> Caso da Semana
+                    </h3>
+                    {isLoading ? (
+                      <div className="relative overflow-hidden rounded-3xl border border-border bg-card/40 p-6 md:p-8 min-h-[460px] h-full animate-pulse flex flex-col justify-between backdrop-blur-md">
+                        <div className="space-y-6">
+                          <div className="flex gap-2">
+                            <Skeleton className="h-4 w-12 rounded-full" />
+                            <Skeleton className="h-4 w-24 rounded-full" />
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+                            <div className="md:col-span-6 space-y-4">
+                              <Skeleton className="h-8 w-1/3" />
+                              <div className="space-y-2 border-l-2 border-primary/20 pl-4 py-1.5">
+                                <Skeleton className="h-3 w-full" />
+                                <Skeleton className="h-3 w-full" />
+                                <Skeleton className="h-3 w-5/6" />
+                              </div>
+                            </div>
+                            <div className="md:col-span-6 flex justify-center md:justify-end">
+                              <Skeleton className="aspect-square w-full max-w-[260px] rounded-3xl" />
+                            </div>
+                          </div>
+                        </div>
+                        <div className="pt-6 border-t border-border/40 mt-6 flex justify-between items-center">
+                          <Skeleton className="h-3.5 w-32" />
+                          <Skeleton className="h-9 w-44 rounded-full" />
+                        </div>
+                      </div>
+                    ) : caseDaSemana ? (
+                      <div className="relative overflow-hidden rounded-3xl border border-border/80 bg-card/40 p-6 md:p-8 shadow-sm flex flex-col justify-between min-h-[460px] h-full flex-1 group/card hover:border-primary/30 transition-all duration-300 backdrop-blur-md">
+                        <div className="space-y-6">
+                          {/* Header Row */}
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className={`text-[9px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider border shadow-sm ${
+                              caseDaSemana.exam_type === 'RX' ? 'bg-blue-500/10 border-blue-500/25 text-blue-400' :
+                              caseDaSemana.exam_type === 'TC' ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400' :
+                              caseDaSemana.exam_type === 'RM' ? 'bg-purple-500/10 border-purple-500/25 text-purple-400' :
+                              'bg-amber-500/10 border-amber-500/25 text-amber-400'
+                            }`}>
+                              {caseDaSemana.exam_type}
+                            </span>
+                            {caseDaSemana.sex && (
+                              <span className="text-[9px] px-2.5 py-0.5 rounded-full bg-secondary/80 border border-border/60 text-muted-foreground font-semibold flex items-center gap-1">
+                                👤 {caseDaSemana.sex === 'M' || caseDaSemana.sex?.toLowerCase() === 'masculino' ? 'Masculino' : 'Feminino'}, {caseDaSemana.age} anos
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Split Grid */}
+                          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+                            {/* Left text column */}
+                            <div className="md:col-span-6 space-y-4">
+                              <h4 className="text-2xl md:text-3xl font-extrabold tracking-tight font-heading text-foreground" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                                Caso #{caseDaSemana.case_number}
+                              </h4>
+                              <div className="border-l-2 border-primary/40 pl-4 py-1.5 bg-primary/[0.01] rounded-r-xl">
+                                <p className="text-muted-foreground text-xs md:text-sm leading-relaxed line-clamp-6 italic font-medium">
+                                  "{stripHtml(caseDaSemana.clinical_case)}"
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Right image column */}
+                            <div className="md:col-span-6 flex justify-center md:justify-end">
+                              <div className="relative w-full flex justify-center">
+                                <div 
+                                  onClick={() => setSelectedCase(caseDaSemana)}
+                                  className="relative cursor-pointer aspect-square w-full min-w-[200px] max-w-[260px] md:max-w-[280px] rounded-3xl p-1.5 border border-border bg-zinc-950/80 shadow-md hover:shadow-lg hover:border-primary/45 transition-all duration-300 hover:-translate-y-0.5"
+                                >
+                                  <div className="w-full h-full rounded-[22px] overflow-hidden relative bg-black/60">
+                                    {caseDaSemana.images?.[0] ? (
+                                      <img
+                                        src={caseDaSemana.images[0]}
+                                        alt={`Caso ${caseDaSemana.case_number}`}
+                                        className="w-full h-full object-contain transition-transform duration-500 group-hover/card:scale-102"
+                                      />
+                                    ) : (
+                                      <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground p-4">
+                                        <BookOpen className="w-8 h-8 mb-2 text-muted-foreground/45" />
+                                        <span className="text-[10px] font-semibold">Sem imagem</span>
+                                      </div>
+                                    )}
+                                    
+                                    {/* Glass Overlay hover */}
+                                    <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px] opacity-0 group-hover/card:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-1.5">
+                                      <div className="p-2.5 rounded-full bg-white/10 border border-white/20 text-white shadow-lg">
+                                        <Eye className="w-4 h-4" />
+                                      </div>
+                                      <span className="text-[9px] font-bold text-white tracking-widest uppercase">Visualizar Exame</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Footer Button */}
+                        <div className="pt-6 border-t border-border/40 mt-6 flex items-center justify-between gap-4">
+                          {caseDaSemana.author ? (
+                            <span className="text-[10px] text-muted-foreground/60 font-medium select-none">
+                              Elaborado por: <span className="font-semibold text-muted-foreground/80">{caseDaSemana.author}</span>
+                            </span>
+                          ) : (
+                            <div />
+                          )}
+                          <Button
+                            onClick={() => setSelectedCase(caseDaSemana)}
+                            size="sm"
+                            variant="outline"
+                            className="rounded-full font-bold px-5 h-9 text-xs border-border hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-300"
+                          >
+                            Explorar Caso & Diagnóstico <ChevronRight className="w-4 h-4 ml-1" />
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center py-12 bg-card rounded-3xl border border-dashed border-border min-h-[460px] flex items-center justify-center">
+                        <p className="text-muted-foreground text-sm">Nenhum caso em destaque cadastrado.</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Coluna Direita: Artigo da Semana */}
+                  <div className="lg:col-span-4 flex flex-col space-y-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="font-heading font-extrabold text-xl text-foreground flex items-center gap-2">
+                        <FileText className="w-5 h-5 text-primary" /> Artigo da Semana
+                      </h3>
+                      <Link to="/artigos" className="text-xs font-bold text-primary hover:underline flex items-center gap-0.5">
+                        Ver todos <ChevronRight className="w-3.5 h-3.5" />
+                      </Link>
+                    </div>
+
+                    {articles.length > 0 ? (
+                      (() => {
+                        const artigoDaSemana = articles[0];
+                        const summaryMatches = [...(artigoDaSemana.conteudo || '').matchAll(/<h2[^>]*>(.*?)<\/h2>/gi)];
+                        const summaryTopics = summaryMatches.map(m => m[1].replace(/:/g, '').trim());
+                        if (summaryTopics.length > 0 && summaryTopics[summaryTopics.length - 1].toLowerCase().includes('referência')) {
+                          summaryTopics.pop();
+                        }
+                        
+                        return (
+                          <div className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-sm flex flex-col justify-between min-h-[460px] h-full flex-1 group/card hover:border-primary/30 transition-all duration-300 backdrop-blur-md">
+                            <div className="space-y-4">
+                              {/* Header Row */}
+                              <div className="flex items-center gap-2">
+                                <span className={`text-[9px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider border shadow-sm ${
+                                  artigoDaSemana.categoria === 'RX' ? 'bg-blue-500/10 border-blue-500/25 text-blue-400' :
+                                  artigoDaSemana.categoria === 'TC' ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400' :
+                                  artigoDaSemana.categoria === 'RM' ? 'bg-purple-500/10 border-purple-500/25 text-purple-400' :
+                                  'bg-amber-500/10 border-amber-500/25 text-amber-400'
+                                }`}>
+                                  {artigoDaSemana.categoria}
+                                </span>
+                              </div>
+
+                              {/* Capa Image */}
+                              <Link to={`/artigo/${slugify(artigoDaSemana.titulo)}`} className="block group/img cursor-pointer">
+                                {artigoDaSemana.imagem_capa ? (
+                                  <div className="relative w-full aspect-video rounded-2xl overflow-hidden border border-border bg-black/40">
+                                    <img
+                                      src={artigoDaSemana.imagem_capa}
+                                      alt={artigoDaSemana.titulo}
+                                      className="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-102"
+                                    />
+                                    {/* Glass Overlay hover */}
+                                    <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px] opacity-0 group-hover/card:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-1.5">
+                                      <div className="p-2.5 rounded-full bg-white/20 border border-white/30 text-white shadow-lg">
+                                        <Eye className="w-4 h-4" />
+                                      </div>
+                                      <span className="text-[9px] font-bold text-white tracking-widest uppercase">Ler Artigo</span>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className="relative w-full aspect-video rounded-2xl bg-muted/20 flex flex-col items-center justify-center text-muted-foreground border border-border border-dashed overflow-hidden">
+                                    <FileText className="w-8 h-8 mb-1.5 text-muted-foreground/45" />
+                                    <span className="text-[10px] font-semibold">Sem imagem de capa</span>
+                                    {/* Glass Overlay hover */}
+                                    <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px] opacity-0 group-hover/card:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-1.5">
+                                      <div className="p-2.5 rounded-full bg-white/20 border border-white/30 text-white shadow-lg">
+                                        <Eye className="w-4 h-4" />
+                                      </div>
+                                      <span className="text-[9px] font-bold text-white tracking-widest uppercase">Ler Artigo</span>
+                                    </div>
+                                  </div>
+                                )}
+                              </Link>
+
+                              {/* Title */}
+                              <h4 className="text-lg md:text-xl font-extrabold tracking-tight font-heading text-foreground line-clamp-2" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                                {artigoDaSemana.titulo}
+                              </h4>
+
+                              {/* Summary / Table of Contents */}
+                              <div className="border-l-2 border-primary/40 pl-3 py-2 bg-primary/[0.01] rounded-r-xl">
+                                {summaryTopics.length > 0 ? (
+                                  <p className="text-muted-foreground text-xs leading-relaxed line-clamp-3 font-medium">
+                                    <span className="font-bold text-primary/80">Tópicos abordados:</span> {summaryTopics.map(t => stripHtml(t)).join(' • ')}
+                                  </p>
+                                ) : (
+                                  <p className="text-muted-foreground text-xs leading-relaxed line-clamp-3 italic font-medium">
+                                    "{stripHtml(artigoDaSemana.conteudo).substring(0, 110)}..."
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Footer Row */}
+                            <div className="pt-4 border-t border-border/40 mt-6 flex items-center justify-between gap-4">
+                              <span className="text-[10px] text-muted-foreground/60 font-medium select-none truncate max-w-[120px]">
+                                Por: <span className="font-semibold text-muted-foreground/80">{artigoDaSemana.autor?.split(' | ')[0]}</span>
+                              </span>
+                              <Link to={`/artigo/${slugify(artigoDaSemana.titulo)}`}>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="rounded-full font-bold px-4 h-9 text-xs border-border hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-300"
+                                >
+                                  Ler Artigo <ChevronRight className="w-3.5 h-3.5 ml-1" />
+                                </Button>
+                              </Link>
+                            </div>
+                          </div>
+                        );
+                      })()
+                    ) : (
+                      <div className="text-center py-12 bg-card rounded-3xl border border-dashed border-border min-h-[460px] flex items-center justify-center">
+                        <p className="text-muted-foreground text-sm">Nenhum artigo cadastrado.</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            
+            {/* Divisor */}
+              <div className="border-t border-border/60 my-12" />
+            
+            {selectedModality ? (
+              <>
+                <div id="artigos-modality" className="space-y-8 animate-in fade-in duration-500 w-full scroll-mt-24">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-border pb-6">
                 <div>
                   <h3 className="font-heading font-extrabold text-2xl md:text-3xl text-foreground flex items-center gap-2">
@@ -332,8 +579,8 @@ const Index = () => {
 
                   {activeClassification === 'casos' ? (
                     isLoadingModalityCases ? (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 pt-4 animate-pulse">
-                        {Array.from({ length: 3 }).map((_, i) => (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 pt-4 animate-pulse">
+                        {Array.from({ length: 4 }).map((_, i) => (
                           <div key={i} className="rounded-2xl overflow-hidden bg-card/30 border border-border/50 p-4 space-y-4">
                             <Skeleton className="aspect-square w-full rounded-xl" />
                             <div className="space-y-2">
@@ -345,7 +592,7 @@ const Index = () => {
                         ))}
                       </div>
                     ) : modalityCases && modalityCases.length > 0 ? (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 pt-4 animate-in fade-in duration-300">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 pt-4 animate-in fade-in duration-300">
                         {modalityCases.map((c, i) => (
                           <CaseCard
                             key={c.id}
@@ -473,228 +720,10 @@ const Index = () => {
                 </div>
               )}
             </div>
-          ) : (
-            // Home / Search Area
-            <div className="space-y-12">
-              {/* Conditionally show Spotlights if search is empty (using CSS display hidden to preserve focus and layout DOM nodes) */}
-              <div className="space-y-16 animate-in fade-in duration-700">
-                {/* Seção 1: Destaques (Caso da Semana ao lado de Últimos Artigos) */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                  {/* Coluna Esquerda: Caso da Semana */}
-                  <div className="lg:col-span-8 space-y-4">
-                    <h3 className="font-heading font-extrabold text-xl text-foreground flex items-center gap-2 mb-2">
-                      <Trophy className="w-5 h-5 text-primary" /> Caso da Semana
-                    </h3>
-                    {isLoading ? (
-                      <div className="relative overflow-hidden rounded-3xl border border-border bg-card/40 p-6 md:p-8 min-h-[460px] h-full animate-pulse flex flex-col justify-between backdrop-blur-md">
-                        <div className="space-y-6">
-                          <div className="flex gap-2">
-                            <Skeleton className="h-4 w-12 rounded-full" />
-                            <Skeleton className="h-4 w-24 rounded-full" />
-                          </div>
-                          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-                            <div className="md:col-span-6 space-y-4">
-                              <Skeleton className="h-8 w-1/3" />
-                              <div className="space-y-2 border-l-2 border-primary/20 pl-4 py-1.5">
-                                <Skeleton className="h-3 w-full" />
-                                <Skeleton className="h-3 w-full" />
-                                <Skeleton className="h-3 w-5/6" />
-                              </div>
-                            </div>
-                            <div className="md:col-span-6 flex justify-center md:justify-end">
-                              <Skeleton className="aspect-square w-full max-w-[260px] rounded-3xl" />
-                            </div>
-                          </div>
-                        </div>
-                        <div className="pt-6 border-t border-border/40 mt-6 flex justify-between items-center">
-                          <Skeleton className="h-3.5 w-32" />
-                          <Skeleton className="h-9 w-44 rounded-full" />
-                        </div>
-                      </div>
-                    ) : caseDaSemana ? (
-                      <div className="relative overflow-hidden rounded-3xl border border-border/80 bg-card/40 p-6 md:p-8 shadow-sm flex flex-col justify-between min-h-[460px] h-full group/card hover:border-primary/30 transition-all duration-300 backdrop-blur-md">
-                        <div className="space-y-6">
-                          {/* Header Row */}
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className={`text-[9px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider border shadow-sm ${
-                              caseDaSemana.exam_type === 'RX' ? 'bg-blue-500/10 border-blue-500/25 text-blue-400' :
-                              caseDaSemana.exam_type === 'TC' ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400' :
-                              caseDaSemana.exam_type === 'RM' ? 'bg-purple-500/10 border-purple-500/25 text-purple-400' :
-                              'bg-amber-500/10 border-amber-500/25 text-amber-400'
-                            }`}>
-                              {caseDaSemana.exam_type}
-                            </span>
-                            {caseDaSemana.sex && (
-                              <span className="text-[9px] px-2.5 py-0.5 rounded-full bg-secondary/80 border border-border/60 text-muted-foreground font-semibold flex items-center gap-1">
-                                👤 {caseDaSemana.sex === 'M' || caseDaSemana.sex?.toLowerCase() === 'masculino' ? 'Masculino' : 'Feminino'}, {caseDaSemana.age} anos
-                              </span>
-                            )}
-                          </div>
-
-                          {/* Split Grid */}
-                          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-                            {/* Left text column */}
-                            <div className="md:col-span-6 space-y-4">
-                              <h4 className="text-2xl md:text-3xl font-extrabold tracking-tight font-heading text-foreground" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                                Caso #{caseDaSemana.case_number}
-                              </h4>
-                              <div className="border-l-2 border-primary/40 pl-4 py-1.5 bg-primary/[0.01] rounded-r-xl">
-                                <p className="text-muted-foreground text-xs md:text-sm leading-relaxed line-clamp-6 italic font-medium">
-                                  "{stripHtml(caseDaSemana.clinical_case)}"
-                                </p>
-                              </div>
-                            </div>
-
-                            {/* Right image column */}
-                            <div className="md:col-span-6 flex justify-center md:justify-end">
-                              <div className="relative w-full flex justify-center">
-                                <div 
-                                  onClick={() => setSelectedCase(caseDaSemana)}
-                                  className="relative cursor-pointer aspect-square w-full min-w-[200px] max-w-[260px] md:max-w-[280px] rounded-3xl p-1.5 border border-border bg-zinc-950/80 shadow-md hover:shadow-lg hover:border-primary/45 transition-all duration-300 hover:-translate-y-0.5"
-                                >
-                                  <div className="w-full h-full rounded-[22px] overflow-hidden relative bg-black/60">
-                                    {caseDaSemana.images?.[0] ? (
-                                      <img
-                                        src={caseDaSemana.images[0]}
-                                        alt={`Caso ${caseDaSemana.case_number}`}
-                                        className="w-full h-full object-contain transition-transform duration-500 group-hover/card:scale-102"
-                                      />
-                                    ) : (
-                                      <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground p-4">
-                                        <BookOpen className="w-8 h-8 mb-2 text-muted-foreground/45" />
-                                        <span className="text-[10px] font-semibold">Sem imagem</span>
-                                      </div>
-                                    )}
-                                    
-                                    {/* Glass Overlay hover */}
-                                    <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px] opacity-0 group-hover/card:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-1.5">
-                                      <div className="p-2.5 rounded-full bg-white/10 border border-white/20 text-white shadow-lg">
-                                        <Eye className="w-4 h-4" />
-                                      </div>
-                                      <span className="text-[9px] font-bold text-white tracking-widest uppercase">Visualizar Exame</span>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Footer Button */}
-                        <div className="pt-6 border-t border-border/40 mt-6 flex items-center justify-between gap-4">
-                          {caseDaSemana.author ? (
-                            <span className="text-[10px] text-muted-foreground/60 font-medium select-none">
-                              Elaborado por: <span className="font-semibold text-muted-foreground/80">{caseDaSemana.author}</span>
-                            </span>
-                          ) : (
-                            <div />
-                          )}
-                          <Button
-                            onClick={() => setSelectedCase(caseDaSemana)}
-                            size="sm"
-                            variant="outline"
-                            className="rounded-full font-bold px-5 h-9 text-xs border-border hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-300"
-                          >
-                            Explorar Caso & Diagnóstico <ChevronRight className="w-4 h-4 ml-1" />
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="text-center py-12 bg-card rounded-3xl border border-dashed border-border min-h-[460px] flex items-center justify-center">
-                        <p className="text-muted-foreground text-sm">Nenhum caso em destaque cadastrado.</p>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Coluna Direita: Artigo da Semana */}
-                  <div className="lg:col-span-4 space-y-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-heading font-extrabold text-xl text-foreground flex items-center gap-2">
-                        <FileText className="w-5 h-5 text-primary" /> Artigo da Semana
-                      </h3>
-                      <Link to="/artigos" className="text-xs font-bold text-primary hover:underline flex items-center gap-0.5">
-                        Ver todos <ChevronRight className="w-3.5 h-3.5" />
-                      </Link>
-                    </div>
-
-                    {articles.length > 0 ? (
-                      (() => {
-                        const artigoDaSemana = articles[0];
-                        return (
-                          <div className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-sm flex flex-col justify-between min-h-[460px] h-full group/card hover:border-primary/30 transition-all duration-300 backdrop-blur-md">
-                            <div className="space-y-4">
-                              {/* Header Row */}
-                              <div className="flex items-center gap-2">
-                                <span className={`text-[9px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider border shadow-sm ${
-                                  artigoDaSemana.categoria === 'RX' ? 'bg-blue-500/10 border-blue-500/25 text-blue-400' :
-                                  artigoDaSemana.categoria === 'TC' ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400' :
-                                  artigoDaSemana.categoria === 'RM' ? 'bg-purple-500/10 border-purple-500/25 text-purple-400' :
-                                  'bg-amber-500/10 border-amber-500/25 text-amber-400'
-                                }`}>
-                                  {artigoDaSemana.categoria}
-                                </span>
-                              </div>
-
-                              {/* Capa Image */}
-                              {artigoDaSemana.imagem_capa ? (
-                                <div className="relative w-full aspect-video rounded-2xl overflow-hidden border border-border bg-black/40">
-                                  <img
-                                    src={artigoDaSemana.imagem_capa}
-                                    alt={artigoDaSemana.titulo}
-                                    className="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-102"
-                                  />
-                                </div>
-                              ) : (
-                                <div className="w-full aspect-video rounded-2xl bg-muted/20 flex flex-col items-center justify-center text-muted-foreground border border-border border-dashed">
-                                  <FileText className="w-8 h-8 mb-1.5 text-muted-foreground/45" />
-                                  <span className="text-[10px] font-semibold">Sem imagem de capa</span>
-                                </div>
-                              )}
-
-                              {/* Title */}
-                              <h4 className="text-lg md:text-xl font-extrabold tracking-tight font-heading text-foreground line-clamp-2" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                                {artigoDaSemana.titulo}
-                              </h4>
-
-                              {/* Excerpt */}
-                              <div className="border-l-2 border-primary/40 pl-3 py-1 bg-primary/[0.01] rounded-r-xl">
-                                <p className="text-muted-foreground text-xs leading-relaxed line-clamp-3 italic font-medium">
-                                  "{stripHtml(artigoDaSemana.conteudo).substring(0, 110)}..."
-                                </p>
-                              </div>
-                            </div>
-
-                            {/* Footer Row */}
-                            <div className="pt-4 border-t border-border/40 mt-6 flex items-center justify-between gap-4">
-                              <span className="text-[10px] text-muted-foreground/60 font-medium select-none truncate max-w-[120px]">
-                                Por: <span className="font-semibold text-muted-foreground/80">{artigoDaSemana.autor?.split(' | ')[0]}</span>
-                              </span>
-                              <Link to={`/artigo/${slugify(artigoDaSemana.titulo)}`}>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="rounded-full font-bold px-4 h-9 text-xs border-border hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-300"
-                                >
-                                  Ler Artigo <ChevronRight className="w-3.5 h-3.5 ml-1" />
-                                </Button>
-                              </Link>
-                            </div>
-                          </div>
-                        );
-                      })()
-                    ) : (
-                      <div className="text-center py-12 bg-card rounded-3xl border border-dashed border-border min-h-[460px] flex items-center justify-center">
-                        <p className="text-muted-foreground text-sm">Nenhum artigo cadastrado.</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Divisor */}
-              <div className="border-t border-border/60 my-12" />
-
-              {/* Seção 2: Galeria Completa com Barra de Pesquisa */}
+              </>
+            ) : (
+              <>
+                {/* Seção 2: Galeria Completa com Barra de Pesquisa */}
               <div id="galeria" className="space-y-6 scroll-mt-24">
                 <div className="text-center max-w-xl mx-auto space-y-2 mb-6">
                   <h3 className="font-heading font-extrabold text-2xl md:text-3xl text-foreground">
@@ -747,8 +776,9 @@ const Index = () => {
                   </div>
                 )}
               </div>
-            </div>
-          )}
+              </>
+            )}
+          </div>
         </div>
       </section>
 

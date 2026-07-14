@@ -133,7 +133,7 @@ export default function LerArtigo() {
       h2Elements.forEach((h2, index) => {
         const id = `heading-h2-${index}`;
         h2.setAttribute('id', id);
-        items.push({ id, text: h2.textContent || '' });
+        items.push({ id, text: h2.textContent?.replace(/:/g, '').trim() || '' });
       });
       
       setToc(items);
