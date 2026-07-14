@@ -435,8 +435,8 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
             {/* Imagens Adicionais do Laudo [NOVO] */}
             <div className="space-y-2 pt-2 border-t border-border">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">Imagens do Laudo</label>
-                <span className="text-[9px] bg-primary/10 text-primary border border-primary/20 px-1.5 py-0.2 rounded font-bold">Laudo apenas</span>
+                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">Imagens Detalhadas</label>
+                <span className="text-[9px] bg-primary/10 text-primary border border-primary/20 px-1.5 py-0.2 rounded font-bold">Detalhada apenas</span>
               </div>
 
               <input
