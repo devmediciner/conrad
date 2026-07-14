@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
+import { useAuth } from '@/hooks/authContent';
 
 const steps = [
   { id: 'step-1', n: '01', title: 'Acesse o site' },
@@ -19,6 +20,7 @@ const steps = [
 
 export default function TutorialCasos() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [activeStep, setActiveStep] = useState('step-1');
   const observerRef = useRef<IntersectionObserver | null>(null);
 
@@ -497,9 +499,9 @@ export default function TutorialCasos() {
           variant="ghost"
           size="sm"
           className="text-white/80 hover:text-white mb-6 border border-white/10 hover:bg-white/5"
-          onClick={() => navigate('/admin')}
+          onClick={() => navigate(user ? '/admin' : '/')}
         >
-          <ArrowLeft className="w-4 h-4 mr-2" /> Voltar ao Painel
+          <ArrowLeft className="w-4 h-4 mr-2" /> {user ? 'Voltar ao Painel' : 'Voltar ao Início'}
         </Button>
         <div className="hero-tag"><span className="dot"></span>GUIA RÁPIDO</div>
         <h1>Como adicionar casos ao site</h1>

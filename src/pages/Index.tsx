@@ -300,7 +300,7 @@ const Index = () => {
                           : 'text-muted-foreground hover:text-foreground'
                       }`}
                     >
-                      Geral ({generalArticles.length})
+                      Artigos Gerais ({generalArticles.length})
                     </button>
                     <button
                       onClick={() => {
@@ -313,7 +313,7 @@ const Index = () => {
                           : 'text-muted-foreground hover:text-foreground'
                       }`}
                     >
-                      Anatomia ({anatomyArticles.length})
+                      Artigos Anatomia ({anatomyArticles.length})
                     </button>
                     <button
                       onClick={() => {
@@ -326,7 +326,7 @@ const Index = () => {
                           : 'text-muted-foreground hover:text-foreground'
                       }`}
                     >
-                      Patologia ({pathologyArticles.length})
+                      Artigos Patologia ({pathologyArticles.length})
                     </button>
                   </div>
 
@@ -606,11 +606,11 @@ const Index = () => {
                     )}
                   </div>
 
-                  {/* Coluna Direita: Últimos Artigos */}
+                  {/* Coluna Direita: Artigo da Semana */}
                   <div className="lg:col-span-4 space-y-4">
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="font-heading font-extrabold text-xl text-foreground flex items-center gap-2">
-                        <FileText className="w-5 h-5 text-primary" /> Últimos Artigos
+                        <FileText className="w-5 h-5 text-primary" /> Artigo da Semana
                       </h3>
                       <Link to="/artigos" className="text-xs font-bold text-primary hover:underline flex items-center gap-0.5">
                         Ver todos <ChevronRight className="w-3.5 h-3.5" />
@@ -618,44 +618,70 @@ const Index = () => {
                     </div>
 
                     {articles.length > 0 ? (
-                      <div className="relative overflow-hidden rounded-3xl border border-border bg-card p-5 shadow-sm flex flex-col justify-between min-h-[460px] h-full">
-                        <div className="space-y-3 w-full">
-                          {articles.slice(0, 3).map((artigo) => (
-                            <Link
-                              key={artigo.id}
-                              to={`/artigo/${slugify(artigo.titulo)}`}
-                              className="group flex gap-3 p-3 bg-secondary/30 hover:bg-secondary/60 rounded-2xl border border-border hover:border-primary/20 transition-all duration-300 shadow-sm"
-                            >
-                              <div className="w-12 h-12 rounded-xl overflow-hidden bg-secondary border border-border flex-shrink-0">
-                                {artigo.imagem_capa ? (
-                                  <img
-                                    src={artigo.imagem_capa}
-                                    alt=""
-                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                  />
-                                ) : (
-                                  <div className="w-full h-full flex items-center justify-center text-[9px] uppercase font-bold text-muted-foreground bg-muted">
-                                    {artigo.categoria}
-                                  </div>
-                                )}
-                              </div>
-                              <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
-                                <div>
-                                  <h5 className="text-[11px] sm:text-xs font-bold text-foreground line-clamp-2 group-hover:text-primary transition-colors leading-tight">
-                                    {artigo.titulo}
-                                  </h5>
-                                  <span className="inline-block text-[7px] font-bold text-primary bg-primary/10 border border-primary/20 px-1.5 py-0.5 rounded mt-1 uppercase tracking-wider">
-                                    {artigo.categoria}
-                                  </span>
-                                </div>
-                                <span className="text-[8px] text-muted-foreground font-semibold mt-1">
-                                  Por {artigo.author?.split(' | ')[0]} • {formatDisplayDate(artigo.data_publicacao)}
+                      (() => {
+                        const artigoDaSemana = articles[0];
+                        return (
+                          <div className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-sm flex flex-col justify-between min-h-[460px] h-full group/card hover:border-primary/30 transition-all duration-300 backdrop-blur-md">
+                            <div className="space-y-4">
+                              {/* Header Row */}
+                              <div className="flex items-center gap-2">
+                                <span className={`text-[9px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider border shadow-sm ${
+                                  artigoDaSemana.categoria === 'RX' ? 'bg-blue-500/10 border-blue-500/25 text-blue-400' :
+                                  artigoDaSemana.categoria === 'TC' ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400' :
+                                  artigoDaSemana.categoria === 'RM' ? 'bg-purple-500/10 border-purple-500/25 text-purple-400' :
+                                  'bg-amber-500/10 border-amber-500/25 text-amber-400'
+                                }`}>
+                                  {artigoDaSemana.categoria}
                                 </span>
                               </div>
-                            </Link>
-                          ))}
-                        </div>
-                      </div>
+
+                              {/* Capa Image */}
+                              {artigoDaSemana.imagem_capa ? (
+                                <div className="relative w-full aspect-video rounded-2xl overflow-hidden border border-border bg-black/40">
+                                  <img
+                                    src={artigoDaSemana.imagem_capa}
+                                    alt={artigoDaSemana.titulo}
+                                    className="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-102"
+                                  />
+                                </div>
+                              ) : (
+                                <div className="w-full aspect-video rounded-2xl bg-muted/20 flex flex-col items-center justify-center text-muted-foreground border border-border border-dashed">
+                                  <FileText className="w-8 h-8 mb-1.5 text-muted-foreground/45" />
+                                  <span className="text-[10px] font-semibold">Sem imagem de capa</span>
+                                </div>
+                              )}
+
+                              {/* Title */}
+                              <h4 className="text-lg md:text-xl font-extrabold tracking-tight font-heading text-foreground line-clamp-2" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                                {artigoDaSemana.titulo}
+                              </h4>
+
+                              {/* Excerpt */}
+                              <div className="border-l-2 border-primary/40 pl-3 py-1 bg-primary/[0.01] rounded-r-xl">
+                                <p className="text-muted-foreground text-xs leading-relaxed line-clamp-3 italic font-medium">
+                                  "{stripHtml(artigoDaSemana.conteudo).substring(0, 110)}..."
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Footer Row */}
+                            <div className="pt-4 border-t border-border/40 mt-6 flex items-center justify-between gap-4">
+                              <span className="text-[10px] text-muted-foreground/60 font-medium select-none truncate max-w-[120px]">
+                                Por: <span className="font-semibold text-muted-foreground/80">{artigoDaSemana.autor?.split(' | ')[0]}</span>
+                              </span>
+                              <Link to={`/artigo/${slugify(artigoDaSemana.titulo)}`}>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="rounded-full font-bold px-4 h-9 text-xs border-border hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-300"
+                                >
+                                  Ler Artigo <ChevronRight className="w-3.5 h-3.5 ml-1" />
+                                </Button>
+                              </Link>
+                            </div>
+                          </div>
+                        );
+                      })()
                     ) : (
                       <div className="text-center py-12 bg-card rounded-3xl border border-dashed border-border min-h-[460px] flex items-center justify-center">
                         <p className="text-muted-foreground text-sm">Nenhum artigo cadastrado.</p>

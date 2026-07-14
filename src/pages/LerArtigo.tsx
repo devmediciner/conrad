@@ -3,7 +3,7 @@ import type { Article } from '@/types/article';
 import type { Case } from '@/types/case';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Calendar, User, Loader2, FileText, ArrowRight, X, ChevronLeft, ChevronRight, Eye, EyeOff, Share2 } from 'lucide-react';
+import { ArrowLeft, Calendar, User, Loader2, FileText, ArrowRight, X, ChevronLeft, ChevronRight, Eye, EyeOff, Share2, List } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { supabase } from '@/integrations/supabase/client';
 import { slugify, stripHtml, formatDisplayDate } from '@/lib/utils';
@@ -14,6 +14,11 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import 'react-quill/dist/quill.snow.css';
 
+interface TocItem {
+  id: string;
+  text: string;
+}
+
 export default function LerArtigo() {
   const { slug } = useParams();
   const [artigo, setArtigo] = useState<Article | null>(null);
@@ -21,6 +26,8 @@ export default function LerArtigo() {
   const [activeCaseModal, setActiveCaseModal] = useState<Case | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
+  const [toc, setToc] = useState<TocItem[]>([]);
+  const [processedContent, setProcessedContent] = useState('');
 
   const handleContentClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const target = e.target as HTMLElement;
@@ -117,6 +124,27 @@ export default function LerArtigo() {
   }, [slug]);
 
   useEffect(() => {
+    if (artigo && artigo.conteudo) {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(artigo.conteudo, 'text/html');
+      const h2Elements = doc.querySelectorAll('h2');
+      const items: TocItem[] = [];
+      
+      h2Elements.forEach((h2, index) => {
+        const id = `heading-h2-${index}`;
+        h2.setAttribute('id', id);
+        items.push({ id, text: h2.textContent || '' });
+      });
+      
+      setToc(items);
+      setProcessedContent(doc.body.innerHTML);
+    } else {
+      setToc([]);
+      setProcessedContent('');
+    }
+  }, [artigo]);
+
+  useEffect(() => {
     if (artigo) {
       document.title = `${artigo.titulo} | CONRAD`;
     } else if (!loading) {
@@ -203,13 +231,43 @@ export default function LerArtigo() {
         {/* Container do Texto - Mais estreito para melhor leitura */}
         <div className="container mx-auto max-w-[750px]">
           <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.15 }}>
+            {/* Sumário Clicável */}
+            {toc.length > 0 && (
+              <div className="mb-10 p-6 bg-card/40 border border-border/80 rounded-3xl shadow-sm backdrop-blur-sm">
+                <h3 className="font-heading text-sm font-bold text-primary uppercase tracking-wider mb-4 flex items-center gap-2">
+                  <List className="w-4 h-4 text-primary" /> Sumário do Artigo
+                </h3>
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
+                  {toc.map((item) => (
+                    <li key={item.id}>
+                      <a
+                        href={`#${item.id}`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          const el = document.getElementById(item.id);
+                          if (el) {
+                            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            window.history.pushState(null, '', `#${item.id}`);
+                          }
+                        }}
+                        className="text-sm text-muted-foreground hover:text-primary transition-colors hover:underline flex items-start gap-2 leading-relaxed"
+                      >
+                        <span className="text-primary/50 font-bold font-mono">→</span>
+                        <span>{item.text}</span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             {/* Conteúdo Renderizado */}
             <div className="ql-snow">
                <div 
                 onClick={handleContentClick}
                 className="ql-editor !p-0 w-full max-w-none text-foreground/90 md:text-lg !leading-loose whitespace-pre-wrap break-words 
                   [&_h1]:!text-4xl md:[&_h1]:!text-5xl [&_h1]:!font-extrabold [&_h1]:!tracking-tight [&_h1]:!mt-14 [&_h1]:!mb-6 [&_h1]:!text-foreground [&_h1]:!leading-tight
-                  [&_h2]:!text-3xl md:[&_h2]:!text-4xl [&_h2]:!font-bold [&_h2]:!tracking-tight [&_h2]:!mt-12 [&_h2]:!mb-4 [&_h2]:!text-foreground [&_h2]:!border-b [&_h2]:!border-border/50 [&_h2]:!pb-2
+                  [&_h2]:!text-3xl md:[&_h2]:!text-4xl [&_h2]:!font-bold [&_h2]:!tracking-tight [&_h2]:!mt-12 [&_h2]:!mb-4 [&_h2]:!text-foreground [&_h2]:!border-b [&_h2]:!border-border/50 [&_h2]:!pb-2 [&_h2]:scroll-mt-24
                   [&_h3]:!text-2xl md:[&_h3]:!text-3xl [&_h3]:!font-semibold [&_h3]:!tracking-tight [&_h3]:!mt-8 [&_h3]:!mb-4 [&_h3]:!text-foreground
                   [&_p]:!mb-6 [&_p]:!text-foreground/80
                   [&_strong]:!font-bold [&_strong]:!text-foreground
@@ -218,7 +276,7 @@ export default function LerArtigo() {
                   [&_ol]:!list-decimal [&_ol_li]:!list-decimal [&_ol]:!pl-6 [&_ol]:!mb-6 [&_ol]:!space-y-2 [&_li]:!pl-1 [&_li]:marker:!text-primary/70 [&_li]:marker:!font-bold [&_li::before]:!content-none [&_li]:!list-item [&_li_p]:!m-0
                   [&_blockquote]:!border-l-4 [&_blockquote]:!border-primary [&_blockquote]:!pl-6 [&_blockquote]:!py-2 [&_blockquote]:!my-8 [&_blockquote]:!italic [&_blockquote]:!text-foreground/70 [&_blockquote]:!bg-muted/30 [&_blockquote]:!rounded-r-xl
                   [&_iframe]:!w-full [&_iframe]:!aspect-video [&_iframe]:!rounded-2xl [&_iframe]:!shadow-xl [&_iframe]:!my-12 [&_iframe]:!border-0"
-                dangerouslySetInnerHTML={{ __html: artigo.conteudo }} 
+                dangerouslySetInnerHTML={{ __html: processedContent }} 
               />
             </div>
 
