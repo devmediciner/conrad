@@ -81,7 +81,7 @@ export default function RadioGame() {
   const [viewingLaudoImages, setViewingLaudoImages] = useState(false);
 
   const hasLaudoImages = !!(currentCase?.laudo_images && currentCase.laudo_images.length > 0);
-  const viewingLaudo = hasWon && step === 'result' && viewingLaudoImages && hasLaudoImages;
+  const viewingLaudo = step === 'result' && viewingLaudoImages && hasLaudoImages;
 
   const images = useMemo(() => {
     if (viewingLaudo) {
@@ -184,6 +184,12 @@ export default function RadioGame() {
       
       if (newGuesses.length >= 4) {
         setStep('result');
+        if (currentCase.laudo_images && currentCase.laudo_images.length > 0) {
+          setViewingLaudoImages(true);
+        } else {
+          setViewingLaudoImages(false);
+        }
+        setSelectedImage(0);
         recordStats(false, newGuesses.length);
       } else {
         toast.error("Diagnóstico incorreto!");
@@ -212,6 +218,12 @@ export default function RadioGame() {
     
     if (newGuesses.length >= 4) {
       setStep('result');
+      if (currentCase.laudo_images && currentCase.laudo_images.length > 0) {
+        setViewingLaudoImages(true);
+      } else {
+        setViewingLaudoImages(false);
+      }
+      setSelectedImage(0);
       recordStats(false, newGuesses.length);
     }
   };
@@ -690,7 +702,7 @@ export default function RadioGame() {
               <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
                 {/* Coluna da Esquerda: Imagem */}
                 <div className="space-y-3 md:col-span-7">
-                  {hasWon && hasLaudoImages && (
+                  {hasLaudoImages && (
                     <div className="grid grid-cols-2 gap-2 bg-background border border-border/60 p-1.5 rounded-xl">
                       <button
                         type="button"
@@ -782,23 +794,6 @@ export default function RadioGame() {
                         <span>{currentCase.disease}</span>
                       </div>
                       <FormattedText content={currentCase.diagnosis} className="text-sm text-foreground/80 leading-relaxed pt-1" />
-                      {!hasWon && currentCase.laudo_images && currentCase.laudo_images.length > 0 && (
-                        <div className="border-t border-border/40 pt-3 mt-2">
-                          <h5 className="text-xs font-bold uppercase tracking-wider text-primary mb-2">
-                            Imagens do Laudo
-                          </h5>
-                          <div className="grid grid-cols-2 gap-2">
-                            {currentCase.laudo_images.map((imgUrl, i) => (
-                              <div key={i} className="relative aspect-video rounded-md overflow-hidden border border-border group">
-                                <img src={imgUrl} alt="" className="w-full h-full object-cover" />
-                                <a href={imgUrl} target="_blank" rel="noreferrer" className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[10px] font-bold">
-                                  Visualizar
-                                </a>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
                       {currentCase.comments && (
                         <div className="border-t border-border/40 pt-3 mt-2">
                           <h5 className="text-xs font-bold uppercase tracking-wider text-primary mb-1">Comentários Adicionais</h5>
