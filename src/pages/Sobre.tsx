@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Instagram, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { LeagueMembers } from '@/components/LeagueMembers';
 import logo from '@/assets/logo.png';
 
 const Sobre = () => {
@@ -48,13 +49,13 @@ const Sobre = () => {
               Sobre a liga
             </h2>
             <p className="text-sm text-muted-foreground">
-              A CONRAD foi fundada em <strong className="text-foreground">2018</strong> com o objetivo de complementar a 
-              formação em radiologia dos estudantes de medicina da Universidade Federal de São João del-Rei. Desde então, 
-              a liga tem sido um espaço de aprendizado ativo, promovendo o contato precoce com o diagnóstico por imagem 
+              A CONRAD foi fundada em <strong className="text-foreground">2018</strong> com o objetivo de complementar a
+              formação em radiologia dos estudantes de medicina da Universidade Federal de São João del-Rei. Desde então,
+              a liga tem sido um espaço de aprendizado ativo, promovendo o contato precoce com o diagnóstico por imagem
               de forma estruturada e dinâmica.
             </p>
             <p className="text-sm text-muted-foreground">
-              As atividades são voltadas tanto para membros internos quanto para a comunidade acadêmica em geral, 
+              As atividades são voltadas tanto para membros internos quanto para a comunidade acadêmica em geral,
               sempre com foco em aprofundamento técnico e prático.
             </p>
             <div className="flex flex-wrap gap-2 pt-1">
@@ -66,34 +67,6 @@ const Sobre = () => {
             </div>
           </section>
 
-          {/* Galeria Radiológica */}
-          <section className="space-y-3">
-            <h2 className="font-heading text-xl font-semibold text-primary flex items-center gap-2">
-              <span className="w-1 h-5 bg-primary rounded-full inline-block" />
-              Galeria Radiológica
-            </h2>
-            <div className="bg-card border border-border rounded-2xl p-6 space-y-4 shadow-sm">
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                A Galeria Radiológica é a plataforma digital interativa da CONRAD voltada para o acervo de casos clínicos, 
-                discussões de artigos científicos e um quiz radiológico dinâmico. Nossa missão é democratizar o acesso ao 
-                aprendizado em radiologia e diagnóstico por imagem de forma prática, servindo como referência para:
-              </p>
-              <ul className="text-sm text-muted-foreground grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {[
-                  'Estudantes de medicina e áreas da saúde',
-                  'Médicos residentes e recém-formados',
-                  'Profissionais de saúde em geral',
-                  'Entusiastas de radiologia',
-                  'Pesquisadores e docentes'
-                ].map(item => (
-                  <li key={item} className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </section>
 
           {/* Informações da Liga */}
           <section className="space-y-3">
@@ -124,10 +97,10 @@ const Sobre = () => {
               Acompanhe nossas discussões acadêmicas ou envie dúvidas/sugestões diretamente para a liga:
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <a 
-                href="https://www.instagram.com/conradufsj/" 
-                target="_blank" 
-                rel="noopener noreferrer" 
+              <a
+                href="https://www.instagram.com/conradufsj/"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="flex items-center gap-3 p-4 rounded-xl bg-card border border-border hover:border-primary/50 hover:shadow-md transition-all group"
               >
                 <Instagram className="w-5 h-5 text-pink-500 group-hover:scale-110 transition-transform duration-300" />
@@ -136,8 +109,8 @@ const Sobre = () => {
                   <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">@conradufsj</p>
                 </div>
               </a>
-              <a 
-                href="mailto:conradufsj@gmail.com" 
+              <a
+                href="mailto:conradufsj@gmail.com"
                 className="flex items-center gap-3 p-4 rounded-xl bg-card border border-border hover:border-primary/50 hover:shadow-md transition-all group"
               >
                 <Mail className="w-5 h-5 text-blue-500 group-hover:scale-110 transition-transform duration-300" />
@@ -148,6 +121,11 @@ const Sobre = () => {
               </a>
             </div>
           </section>
+        </div>
+
+        {/* League Members Section */}
+        <div className="mt-12 -mx-4 sm:-mx-8">
+          <LeagueMembers />
         </div>
 
         <div className="mt-12 pt-6 border-t border-border text-center text-xs text-muted-foreground">

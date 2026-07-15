@@ -9,7 +9,7 @@ import { EXAM_TYPE_COLORS } from '@/types/case';
 import { stripHtml, slugify, removeAccents, formatDisplayDate } from '@/lib/utils';
 import { CaseModal } from '@/components/CaseModal';
 
-import { Trash2, ArrowLeft, Loader2, Pencil, Plus, Gamepad2, List, FileText, ImagePlus, Save, X, CheckCircle, Settings, Users, UserPlus, Check, XCircle, Eye, EyeOff, Edit, Search, HelpCircle } from 'lucide-react';
+import { Trash2, ArrowLeft, Loader2, Pencil, Plus, Gamepad2, List, FileText, ImagePlus, Save, X, CheckCircle, Settings, Users, UserPlus, Check, XCircle, Eye, EyeOff, Edit, Search, HelpCircle, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { EditCaseModal } from '@/components/EditCaseModal';
 import { SubmitCaseModal } from '@/components/SubmitCaseModal';
@@ -46,7 +46,196 @@ const Admin = () => {
   const [loadingArticles, setLoadingArticles] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0); // Força um refetch ao postar artigo novo
   
+  
+  // Estados para Membros da Liga
+  const [leagueMembers, setLeagueMembers] = useState<any[]>([]);
+  const [loadingMembers, setLoadingMembers] = useState(false);
+  const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
+  const [memberForm, setMemberForm] = useState({ name: '', role: '', turma: '', image_url: '', order_index: 0 });
+  const [isUploadingMemberImage, setIsUploadingMemberImage] = useState(false);
+  const [isCreatingNewMember, setIsCreatingNewMember] = useState(false);
+
+  const handleUploadMemberImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingMemberImage(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+      const filePath = `members/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage.from('images').upload(filePath, file);
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage.from('images').getPublicUrl(filePath);
+      setMemberForm(prev => ({ ...prev, image_url: data.publicUrl }));
+      toast.success('Foto carregada com sucesso!');
+    } catch (error) {
+      console.error(error);
+      toast.error('Erro ao fazer upload da foto.');
+    } finally {
+      setIsUploadingMemberImage(false);
+    }
+  };
+
+  const handleSaveMember = async () => {
+    if (!memberForm.name || !memberForm.role || !memberForm.turma) {
+      toast.error('Preencha Nome, Cargo e Turma.');
+      return;
+    }
+    try {
+      if (editingMemberId) {
+        const { error } = await supabase.from('league_members').update(memberForm).eq('id', editingMemberId);
+        if (error) throw error;
+        toast.success('Membro atualizado!');
+      } else {
+        const { error } = await supabase.from('league_members').insert([memberForm]);
+        if (error) throw error;
+        toast.success('Membro adicionado!');
+      }
+      setMemberForm({ name: '', role: '', turma: '', image_url: '', order_index: 0 });
+      setEditingMemberId(null);
+      setIsCreatingNewMember(false);
+      setRefreshKey(prev => prev + 1);
+    } catch (err) {
+      console.error(err);
+      toast.error('Erro ao salvar membro.');
+    }
+  };
+
+  const handleDeleteMember = async (id: string) => {
+    if (!window.confirm('Deseja excluir este membro?')) return;
+    try {
+      const { error } = await supabase.from('league_members').delete().eq('id', id);
+      if (error) throw error;
+      toast.success('Membro excluído!');
+      setRefreshKey(prev => prev + 1);
+    } catch (err) {
+      console.error(err);
+      toast.error('Erro ao excluir membro.');
+    }
+  };
+
+
+
+  
+  const isDiretoria = (role: string) => {
+    if (!role) return false;
+    const r = role.toLowerCase();
+    if (r.includes('presidente') || r.includes('diretor') || r.includes('coordenador') || r.includes('secretári') || r.includes('tesoureir')) {
+      return true;
+    }
+    if (r.includes('membro')) {
+      return false;
+    }
+    return true;
+  };
+
+  const handleDragStartMember = (e: React.DragEvent, memberId: string) => {
+    e.dataTransfer.setData('text/plain', memberId);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOverMember = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDropMember = async (e: React.DragEvent, targetMemberId: string, category: 'diretoria' | 'membros') => {
+    e.preventDefault();
+    const draggedId = e.dataTransfer.getData('text/plain');
+    if (!draggedId || draggedId === targetMemberId) return;
+
+    const currentList = category === 'diretoria' 
+      ? leagueMembers.filter(m => isDiretoria(m.role))
+      : leagueMembers.filter(m => !isDiretoria(m.role));
+
+    const draggedIndex = currentList.findIndex(m => m.id === draggedId);
+    const targetIndex = currentList.findIndex(m => m.id === targetMemberId);
+
+    if (draggedIndex === -1 || targetIndex === -1) return;
+
+    const newList = [...currentList];
+    const [draggedItem] = newList.splice(draggedIndex, 1);
+    newList.splice(targetIndex, 0, draggedItem);
+
+    const updatedItems = newList.map((m, index) => ({
+      ...m,
+      order_index: category === 'diretoria' ? index : index + 1000
+    }));
+
+    setLeagueMembers(prev => {
+      const others = prev.filter(m => category === 'diretoria' ? !isDiretoria(m.role) : isDiretoria(m.role));
+      return [...others, ...updatedItems].sort((a, b) => a.order_index - b.order_index);
+    });
+
+    try {
+      const updates = updatedItems.map(m => supabase.from('league_members').update({ order_index: m.order_index }).eq('id', m.id));
+      await Promise.all(updates);
+      toast.success('Ordem atualizada!');
+    } catch (err) {
+      console.error(err);
+      toast.error('Erro ao atualizar ordem no banco.');
+    }
+  };
+
+  const renderMember = (m: any, category: 'diretoria' | 'membros') => {
+    const isEditing = editingMemberId === m.id;
+    if (isEditing) {
+      return (
+        <div key={m.id} className="col-span-full sm:col-span-2 lg:col-span-2 xl:col-span-2 flex flex-col items-center bg-card border border-border p-4 rounded-xl shadow-sm relative group">
+          <div className="absolute top-2 right-2 flex gap-1 z-10">
+            <Button size="icon" variant="ghost" className="h-6 w-6 text-green-500 hover:text-green-600 hover:bg-green-500/10 bg-background/80" onClick={handleSaveMember}><Check className="w-3.5 h-3.5" /></Button>
+            <Button size="icon" variant="ghost" className="h-6 w-6 text-muted-foreground hover:text-destructive hover:bg-destructive/10 bg-background/80" onClick={() => { setEditingMemberId(null); setMemberForm({ name: '', role: '', turma: '', image_url: '', order_index: 0 }); }}><X className="w-3.5 h-3.5" /></Button>
+          </div>
+          <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full mb-3 overflow-hidden border-2 border-primary/20 bg-muted flex items-center justify-center group-hover:border-primary transition-all">
+            {memberForm.image_url ? (
+              <img src={memberForm.image_url} className="w-full h-full object-cover" />
+            ) : (
+              <Upload className="w-6 h-6 text-muted-foreground" />
+            )}
+            <input type="file" accept="image/*" onChange={handleUploadMemberImage} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" disabled={isUploadingMemberImage} title="Alterar foto" />
+            {isUploadingMemberImage && <div className="absolute inset-0 bg-black/40 flex items-center justify-center"><Loader2 className="w-5 h-5 animate-spin text-white" /></div>}
+          </div>
+          <Input className="h-8 text-sm mb-2 w-full text-center px-2" placeholder="Nome" value={memberForm.name} onChange={e => setMemberForm({...memberForm, name: e.target.value})} />
+          <Input className="h-8 text-sm mb-2 w-full text-center px-2" placeholder="Cargo" value={memberForm.role} onChange={e => setMemberForm({...memberForm, role: e.target.value})} />
+          <Input className="h-8 text-sm mb-2 w-full text-center px-2" placeholder="Turma" value={memberForm.turma} onChange={e => setMemberForm({...memberForm, turma: e.target.value})} />
+        </div>
+      );
+    }
+
+    return (
+      <div 
+        key={m.id} 
+        draggable 
+        onDragStart={(e) => handleDragStartMember(e, m.id)}
+        onDragOver={handleDragOverMember}
+        onDrop={(e) => handleDropMember(e, m.id, category)}
+        className="flex flex-col items-center group relative p-2 cursor-grab active:cursor-grabbing"
+      >
+        <div className="absolute top-0 right-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+          <Button size="icon" variant="secondary" className="h-6 w-6 rounded-full shadow-md" onClick={() => { setEditingMemberId(m.id); setMemberForm({ name: m.name, role: m.role, turma: m.turma, image_url: m.image_url || '', order_index: m.order_index || 0 }); }}><Pencil className="w-3 h-3" /></Button>
+          <Button size="icon" variant="destructive" className="h-6 w-6 rounded-full shadow-md" onClick={() => handleDeleteMember(m.id)}><Trash2 className="w-3 h-3" /></Button>
+        </div>
+        <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full mb-3 overflow-hidden border-2 border-primary/20 bg-muted flex items-center justify-center transition-all duration-300 group-hover:border-primary group-hover:shadow-[0_0_15px_rgba(232,163,61,0.2)]">
+          {m.image_url ? (
+            <img src={m.image_url} alt={m.name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110 pointer-events-none" />
+          ) : (
+            <span className="text-xl font-semibold text-muted-foreground group-hover:text-primary transition-colors pointer-events-none">
+              {m.name.substring(0,2).toUpperCase()}
+            </span>
+          )}
+        </div>
+        <h3 className="font-semibold text-xs sm:text-sm text-foreground text-center mb-1 w-full pointer-events-none" title={m.name}>{m.name}</h3>
+        <p className="text-[10px] font-medium text-primary mb-1 text-center w-full pointer-events-none" title={m.role}>{m.role}</p>
+        <p className="text-[10px] text-muted-foreground text-center w-full pointer-events-none">{m.turma}</p>
+      </div>
+    );
+  };
+
   // Estados para criação de usuário
+
   const [newUserEmail, setNewUserEmail] = useState('');
   const [newUserPassword, setNewUserPassword] = useState('');
   const [newUserRole, setNewUserRole] = useState('user');
@@ -125,6 +314,12 @@ const Admin = () => {
       if (isAdmin) {
         const { data: roles } = await supabase.from('user_roles').select('*');
         if (roles) setUsers(roles);
+
+        // Fetch league members
+        setLoadingMembers(true);
+        const { data: membersData } = await supabase.from('league_members').select('*').order('order_index', { ascending: true });
+        if (membersData) setLeagueMembers(membersData);
+        setLoadingMembers(false);
       }
     };
     fetchArticles();
@@ -634,6 +829,72 @@ const Admin = () => {
               </div>
 
               <div className="border-t border-border/60 my-6 pt-4" />
+
+              
+              {/* Gerenciamento de Membros da Liga */}
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold font-heading text-foreground">Integrantes da Liga</h2>
+              </div>
+
+              
+              {loadingMembers ? (
+                <p className="text-xs text-muted-foreground py-2 text-center">Carregando...</p>
+              ) : (
+                <div className="space-y-8">
+                  <div>
+                    <h3 className="text-lg font-semibold font-heading text-primary mb-4 border-b border-border pb-2">Diretoria</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+                      {leagueMembers.filter(m => isDiretoria(m.role)).map(m => renderMember(m, 'diretoria'))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg font-semibold font-heading text-primary mb-4 border-b border-border pb-2">Membros</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+                      {leagueMembers.filter(m => !isDiretoria(m.role)).map(m => renderMember(m, 'membros'))}
+                      
+                      {isCreatingNewMember && !editingMemberId ? (
+                        <div className="col-span-full sm:col-span-2 lg:col-span-2 xl:col-span-2 flex flex-col items-center bg-card border border-border p-4 rounded-xl shadow-sm relative group">
+                          <div className="absolute top-2 right-2 flex gap-1 z-10">
+                            <Button size="icon" variant="ghost" className="h-6 w-6 text-green-500 hover:text-green-600 hover:bg-green-500/10 bg-background/80" onClick={handleSaveMember}><Check className="w-3.5 h-3.5" /></Button>
+                            <Button size="icon" variant="ghost" className="h-6 w-6 text-muted-foreground hover:text-destructive hover:bg-destructive/10 bg-background/80" onClick={() => { setIsCreatingNewMember(false); setMemberForm({ name: '', role: '', turma: '', image_url: '', order_index: 0 }); }}><X className="w-3.5 h-3.5" /></Button>
+                          </div>
+                          <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full mb-3 overflow-hidden border-2 border-primary/20 bg-muted flex items-center justify-center group-hover:border-primary transition-all">
+                            {memberForm.image_url ? (
+                              <img src={memberForm.image_url} className="w-full h-full object-cover" />
+                            ) : (
+                              <Upload className="w-6 h-6 text-muted-foreground" />
+                            )}
+                            <input type="file" accept="image/*" onChange={handleUploadMemberImage} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" disabled={isUploadingMemberImage} title="Adicionar foto" />
+                            {isUploadingMemberImage && <div className="absolute inset-0 bg-black/40 flex items-center justify-center"><Loader2 className="w-5 h-5 animate-spin text-white" /></div>}
+                          </div>
+                          <Input className="h-8 text-sm mb-2 w-full text-center px-2" placeholder="Nome *" value={memberForm.name} onChange={e => setMemberForm({...memberForm, name: e.target.value})} />
+                          <Input className="h-8 text-sm mb-2 w-full text-center px-2" placeholder="Cargo *" value={memberForm.role} onChange={e => setMemberForm({...memberForm, role: e.target.value})} />
+                          <Input className="h-8 text-sm mb-2 w-full text-center px-2" placeholder="Turma *" value={memberForm.turma} onChange={e => setMemberForm({...memberForm, turma: e.target.value})} />
+                        </div>
+                      ) : !editingMemberId && (
+                        <button 
+                          onClick={() => {
+                            setEditingMemberId(null);
+                            setMemberForm({ name: '', role: '', turma: '', image_url: '', order_index: 0 });
+                            setIsCreatingNewMember(true);
+                          }}
+                          className="flex flex-col items-center justify-center bg-card/30 hover:bg-card border-2 border-dashed border-border hover:border-primary/50 rounded-xl p-4 transition-all group h-full min-h-[180px]"
+                        >
+                          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-3 group-hover:bg-primary/20 transition-colors">
+                            <Plus className="w-6 h-6 text-primary" />
+                          </div>
+                          <span className="text-xs font-semibold text-muted-foreground group-hover:text-foreground transition-colors">Novo Membro</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="border-t border-border/60 my-6 pt-4" />
+
+
 
               <div className="flex justify-between items-center mb-2">
                 <h2 className="text-xl font-bold font-heading text-foreground">Gerenciar Usuários</h2>
