@@ -108,9 +108,7 @@ export const LeagueMembers = () => {
           <h2 className="font-heading text-2xl md:text-3xl font-bold text-foreground mb-3">
             Integrantes da Liga
           </h2>
-          <p className="text-muted-foreground text-sm md:text-base max-w-2xl mx-auto">
-            Conheça a equipe por trás da CONRAD, dedicada a aprofundar e compartilhar o conhecimento em Radiologia e Diagnóstico por Imagem na UFSJ.
-          </p>
+
         </div>
 
         {diretoria.length > 0 && (
