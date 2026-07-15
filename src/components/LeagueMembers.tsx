@@ -92,6 +92,15 @@ export const LeagueMembers = () => {
     </div>
   );
 
+  const getGridClass = (count: number) => {
+    if (count === 1) return 'grid-cols-1 max-w-xs mx-auto';
+    if (count === 2) return 'grid-cols-2 max-w-2xl mx-auto';
+    if (count === 3) return 'grid-cols-2 md:grid-cols-3 max-w-4xl mx-auto';
+    if (count === 4) return 'grid-cols-2 md:grid-cols-4 max-w-5xl mx-auto';
+    if (count === 5) return 'grid-cols-2 md:grid-cols-3 lg:grid-cols-5 max-w-5xl mx-auto';
+    return 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6';
+  };
+
   return (
     <section className="py-12">
       <div className="container mx-auto px-4 max-w-6xl">
@@ -107,7 +116,7 @@ export const LeagueMembers = () => {
         {diretoria.length > 0 && (
           <div className="mb-12">
             <h3 className="font-heading text-lg sm:text-xl font-bold text-center mb-8 text-primary/80 uppercase tracking-wider">Diretoria</h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+            <div className={`grid gap-6 ${getGridClass(diretoria.length)}`}>
               {diretoria.map(renderMember)}
             </div>
           </div>
@@ -116,7 +125,7 @@ export const LeagueMembers = () => {
         {outrosMembros.length > 0 && (
           <div>
             <h3 className="font-heading text-lg sm:text-xl font-bold text-center mb-8 text-primary/80 uppercase tracking-wider">Membros</h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+            <div className={`grid gap-6 ${getGridClass(outrosMembros.length)}`}>
               {outrosMembros.map(renderMember)}
             </div>
           </div>
