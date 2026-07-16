@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from '@/hooks/authContent';  // ← movido para o topo
+import { HelmetProvider } from 'react-helmet-async';
 import Index from "./pages/Index.tsx";
 import ListaArtigos from "./pages/ListaArtigos.tsx";
 import LerArtigo from "./pages/LerArtigo.tsx";
@@ -21,9 +22,10 @@ import { Analytics } from "@vercel/analytics/next"
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
+  <HelmetProvider>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
       <Sonner />
       <BrowserRouter>
         <AuthProvider>  {/* envolva as rotas aqui */}
@@ -48,7 +50,7 @@ const App = () => (
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
-  
+  </HelmetProvider>
 );
 
 export default App;

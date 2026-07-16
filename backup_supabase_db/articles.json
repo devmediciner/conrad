@@ -1,0 +1,91 @@
+[
+  {
+    "id": 15,
+    "titulo": "4 - Incidências e posicionamento básico",
+    "categoria": "rx",
+    "autor": " | admin@conrad.com",
+    "data_publicacao": "2026-07-02T00:00:00+00:00",
+    "imagem_capa": "",
+    "conteudo": "<ul><li><p>Nomenclatura (AP, PA, perfil, oblíquas, decúbito etc.)</p></li><li><p>Por que a incidência PA é preferida no tórax (menos ampliação cardíaca)</p></li><li><p>Como a angulação do feixe muda a interpretação</p></li></ul><p></p>\n<div id=\"article-metadata\" data-classification=\"geral\" data-system=\"outro\" style=\"display: none;\"></div>",
+    "created_at": "2026-07-02T13:03:39.969621+00:00",
+    "status": "pending",
+    "related_cases_ids": null
+  },
+  {
+    "id": 17,
+    "titulo": "  5 - Artefatos e armadilhas técnicas",
+    "categoria": "rx",
+    "autor": " | admin@conrad.com",
+    "data_publicacao": "2026-07-02T00:00:00+00:00",
+    "imagem_capa": "",
+    "conteudo": "<ul><li><p>Rotação do paciente, penetração inadequada (sub/superexposição)</p></li><li><p>Artefatos de movimento, objetos externos, sobreposição de roupas/joias</p></li><li><p>Diferenciar artefato de achado patológico real</p></li></ul><p></p>\n<div id=\"article-metadata\" data-classification=\"geral\" data-system=\"outro\" style=\"display: none;\"></div>",
+    "created_at": "2026-07-02T13:04:36.41308+00:00",
+    "status": "pending",
+    "related_cases_ids": null
+  },
+  {
+    "id": 14,
+    "titulo": "2 - As quatro densidades radiográficas básicas",
+    "categoria": "rx",
+    "autor": " | admin@conrad.com",
+    "data_publicacao": "2026-07-02T00:00:00+00:00",
+    "imagem_capa": "",
+    "conteudo": "<ul><li><p>Ar (preto)</p></li><li><p>Gordura (cinza escuro)</p></li><li><p>Água/partes moles (cinza médio) — músculo, sangue, órgãos</p></li><li><p>Osso/cálcio (cinza claro)</p></li><li><p>Metal (branco)</p></li><li><p>Como essas densidades se relacionam com o número atômico e a espessura do tecido</p></li></ul><p></p>\n<div id=\"article-metadata\" data-classification=\"geral\" data-system=\"outro\" style=\"display: none;\"></div>",
+    "created_at": "2026-07-02T13:02:53.972026+00:00",
+    "status": "pending",
+    "related_cases_ids": null
+  },
+  {
+    "id": 13,
+    "titulo": "1 - História e princípios básicos",
+    "categoria": "rx",
+    "autor": " | admin@conrad.com",
+    "data_publicacao": "2026-07-02T00:00:00+00:00",
+    "imagem_capa": "",
+    "conteudo": "<ul><li><p>Descoberta dos raios X: falar sobre o CONRAD</p></li><li><p>O que são raios X: natureza eletromagnética, produção no tubo (efeito Bremsstrahlung e radiação característica)</p></li><li><p>Como a imagem é formada (atenuação diferencial do feixe)</p></li><li><p>Interação do feixe com a matéria: efeito fotoelétrico vs. espalhamento Compton</p></li><li><p>Fatores técnicos: kVp, mAs, distância foco-filme, tempo de exposição</p></li><li><p>Contraste radiográfico e o que o influencia</p></li></ul><p></p>\n<div id=\"article-metadata\" data-classification=\"geral\" data-system=\"outro\" style=\"display: none;\"></div>",
+    "created_at": "2026-07-02T13:02:12.865486+00:00",
+    "status": "pending",
+    "related_cases_ids": null
+  },
+  {
+    "id": 16,
+    "titulo": "3 - Formação de sombras e silhuetas radiográficas",
+    "categoria": "rx",
+    "autor": " | admin@conrad.com",
+    "data_publicacao": "2026-07-02T00:00:00+00:00",
+    "imagem_capa": "",
+    "conteudo": "<ul><li><p>Conceito de \"sinal da silhueta\" (silhouette sign) — muito importante em tórax</p></li><li><p>Bordas nítidas vs. bordas apagadas: o que isso significa anatomicamente</p></li><li><p>Sobreposição de estruturas e efeito de sumação (imagem 2D de um objeto 3D)</p></li><li><p>Ilusões de projeção (paralaxe, ampliação, distorção)</p></li></ul><p></p>\n<div id=\"article-metadata\" data-classification=\"geral\" data-system=\"outro\" style=\"display: none;\"></div>",
+    "created_at": "2026-07-02T13:04:06.976984+00:00",
+    "status": "pending",
+    "related_cases_ids": null
+  },
+  {
+    "id": 7,
+    "titulo": "Cardiomegalia no RX de Tórax",
+    "categoria": "rx",
+    "autor": "Conrad | admin@conrad.com",
+    "data_publicacao": "2026-05-21T00:00:00+00:00",
+    "imagem_capa": "https://iqjtknseqodoyklavxyg.supabase.co/storage/v1/object/public/images/articles/0.6126178134662735.jpg",
+    "conteudo": "<h2><strong>Definição</strong></h2><p>Aumento da silhueta cardíaca na radiografia de tórax.</p><h2><strong>Critério radiológico:</strong></h2><p>Índice cardiotorácico &gt; 50% no RX em incidência PA.</p><img src=\"https://minio.scielo.br/documentstore/2175-8239/hRtCvWbY3vQhHS8j4zgKkRM/9bc2a5f897cf2887a4dfa8a67467143711a29262.jpg\" alt=\"Brasil - Massa ventricular esquerda e índice cardiotorácico em pacientes  com doença renal crônica em hemodiálise Massa ventricular esquerda e índice  cardiotorácico em pacientes com doença renal crônica em hemodiálise\" width=\"50%\" data-align=\"center\" style=\"width: 50%; max-width: 100%; max-height: 280px; object-fit: contain; display: block; margin: 8px auto; height: auto !important;\"><p style=\"text-align: center;\"><em>Fonte: imagem do autor.</em></p><h2><strong>Principais causas:</strong></h2><ul><li><p><strong>Insuficiência cardíaca</strong></p></li><li><p>Hipertensão arterial sistêmica</p></li><li><p>Cardiomiopatias</p></li><li><p>Valvopatias</p></li><li><p>Derrame pericárdico</p></li></ul><h2><strong>Achados radiográficos:</strong></h2><ul><li><p><strong>Aumento da área cardíaca</strong></p></li><li><p>Abaulamento dos contornos cardíacos</p></li><li><p>Pode haver congestão pulmonar associada</p></li><li><p>Redistribuição vascular pulmonar</p></li><li><p>Edema pulmonar em casos graves</p></li></ul><h2><strong>Importância clínica:</strong></h2><p>Sugere doença cardíaca subjacente e deve ser correlacionada com clínica e outros exames, como ecocardiograma.</p><h2>Referências</h2><ol><li><p>d</p></li><li><p>d</p></li><li><p>d</p></li></ol><p></p>\n<div id=\"article-metadata\" data-classification=\"patologia\" data-system=\"cardiaco\" style=\"display: none;\"></div>",
+    "created_at": "2026-05-21T13:51:57.755628+00:00",
+    "status": "approved",
+    "related_cases_ids": [
+      "b1354893-2327-4705-93ae-df06a4724e91",
+      "ec452da9-4f66-4ad3-a4eb-36cde6fbf5e2"
+    ]
+  },
+  {
+    "id": 19,
+    "titulo": "Corcova de Hampton na Embolia Pulmonar",
+    "categoria": "tc",
+    "autor": "Eduardo Thomé, Samuel Mol | edema@conradufsj.app",
+    "data_publicacao": "2026-07-16T00:00:00+00:00",
+    "imagem_capa": "https://iqjtknseqodoyklavxyg.supabase.co/storage/v1/object/public/images/articles/0.5344849986131582.png",
+    "conteudo": "<h2>Descrição</h2><p>Opacidade periférica de base pleural, em cunha ou cúpula, com ápice voltado ao hilo. Traduz <strong>infarto pulmonar distal a um êmbolo</strong>, e não a EP em si. É um dos achados clássicos, em conjunto com o Sinal de Westmark e Sinal de Fleischner/Palla.</p><h2><strong>Fisiopatologia</strong></h2><p>O parênquima tem duplo suprimento (artéria pulmonar + brônquica), o que torna o infarto incomum: ocluída a artéria pulmonar, a colateral brônquica supre a zona isquêmica. O infarto surge quando ambas as vias falham ou em oclusões distais (êmbolos &lt; 3 mm e mais próximos da pleura elevam o risco). A colateral brônquica pode poupar o ápice da cunha, gerando o aspecto arredondado; a opacidade decorre de hemorragia.</p><p><em>IMAGEM A SER ADICIONADA</em></p><p><strong>Evolução.</strong> Com infarto verdadeiro, resolve em meses e deixa cicatriz linear. Sem infarto, regride em ~1 semana mantendo o formato — <em>sinal do cubo de gelo derretendo</em>.</p><h3><strong>Etiologia</strong></h3><p>Quase sempre infarto por EP; outras causas de infarto pulmonar também a produzem (ex.: aspergilose angioinvasiva).</p><h3><strong>Desempenho diagnóstico e Relevância Clínica</strong></h3><p>Estudo PIOPED: especificidade 82%, sensibilidade 22% — específica, porém pouco sensível. Clássica na radiografia, com aspecto análogo em TC e RM.</p><p><strong>Relevância clínica (coorte, 428 pacientes).</strong> Presente em 8% das EP; associada a embolia em sela, derrame pleural e dilatação do tronco pulmonar e da artéria pulmonar esquerda — marcadores de maior gravidade. A coexistência com derrame pleural elevou de forma marcante a mortalidade intra-hospitalar. Menos frequente em oncológicos.</p><h2>Quando Solicitar Exames de Imagem</h2><p>O quadro é <strong>inespecífico</strong> (dispneia, dor pleurítica, tosse, ansiedade), sobrepondo-se etiologias clássicas no PS. Como &lt; 20% dos investigados confirmam EP, impõe-se estratificar antes da imagem — justificada pela ausência de sinal patognomônico e pela gravidade.</p><p>Fizemos um post no instagram resumindo as indicações formais para exames de imagem, com base no Consenso de 2026 de TEP.</p><img src=\"https://iqjtknseqodoyklavxyg.supabase.co/storage/v1/object/public/images/articles/content-0.5721634560163215.png\" width=\"100%\" data-align=\"center\" style=\"width: 100%; max-width: 100%; max-height: 280px; object-fit: contain; display: block; margin: 8px auto; height: auto !important;\"><p style=\"text-align: center;\"><em>Fonte: Elaborado pelos Autores.</em></p><h2>Exames de Escolha e Aplicações</h2><p><strong>Angiotomografia pulmonar (CTPA) — primeira linha / padrão-ouro.</strong> Sensibilidade 89–98%, especificidade 96–100%. Ampla disponibilidade, baixa invasividade, rapidez e diagnósticos alternativos (pneumonia, fratura costal, pneumotórax).</p><p><strong>Radiografia de tórax — triagem/complementar.</strong> Realizada na maioria dos pacientes para investigar causa alternativa dos sintomas e definir elegibilidade à cintilografia V/Q; <strong>dispensável quando a CTPA já está planejada</strong>. Alterações inespecíficas são comuns (atelectasia, derrame), mas pode ser normal em 12–22% dos casos — não confirma nem exclui EP.</p><img src=\"https://iqjtknseqodoyklavxyg.supabase.co/storage/v1/object/public/images/articles/content-0.9695098131605027.jpg\" width=\"50%\" data-align=\"center\" style=\"width: 50%; max-width: 100%; max-height: 280px; object-fit: contain; display: block; margin: 8px auto; height: auto !important;\"><img src=\"https://iqjtknseqodoyklavxyg.supabase.co/storage/v1/object/public/images/articles/content-0.4514371272103842.png\" width=\"50%\" data-align=\"center\" style=\"width: 50%; max-width: 100%; max-height: 280px; object-fit: contain; display: block; margin: 8px auto; height: auto !important;\"><p style=\"text-align: center;\"><em>Fonte: Radiopaedia.</em></p><p><strong>Cintilografia V/Q.</strong> Útil, mas raramente de primeira linha no agudo (disponibilidade e tempo). Porém, é definido como <strong>segunda linha</strong> pelo consenso.</p><p><strong>US com teste de compressão (MMII).</strong> Rápida e disponível; detecta TVP e prevê EP indiretamente. Como até 50% das EP não têm TVP à imagem, <strong>US negativo não exclui EP</strong>.</p><h1>Referências</h1><ul><li><p>Kubiak K, Bazylewicz-Zakrzewska K, Poncyljusz W. Hampton's hump—a rare radiological feature in patients with pulmonary embolism in a single-center study. <strong>J Clin Med.</strong> 2025;14(6):1900. doi:10.3390/jcm14061900.</p></li><li><p>Radiopaedia. Hampton hump [Internet]. <a target=\"_blank\" rel=\"noopener noreferrer nofollow\" class=\"text-primary underline underline-offset-4 cursor-pointer\" href=\"http://Radiopaedia.org\">Radiopaedia.org</a>; [cited 2026 Jul 16]. Available from: <a target=\"_blank\" rel=\"noopener noreferrer nofollow\" class=\"text-primary underline underline-offset-4 cursor-pointer\" href=\"https://radiopaedia.org/articles/hampton-hump-2\">https://radiopaedia.org/articles/hampton-hump-2</a></p></li><li><p>Pollack CV Jr, Tapson VF, Schünemann HJ, Kabrhel C. Clinical presentation and diagnostic evaluation of the nonpregnant adult with suspected acute pulmonary embolism. In: Post TW, editor. <strong>UpToDate</strong> [Internet]. Waltham (MA): UpToDate; [cited 2026 Jul 16]. Available from: <a target=\"_blank\" rel=\"noopener noreferrer nofollow\" class=\"text-primary underline underline-offset-4 cursor-pointer\" href=\"https://www.uptodate.com/contents/clinical-presentation-and-diagnostic-evaluation-of-the-nonpregnant-adult-with-suspected-acute-pulmonary-embolism\">https://www.uptodate.com/contents/clinical-presentation-and-diagnostic-evaluation-of-the-nonpregnant-adult-with-suspected-acute-pulmonary-embolism</a></p></li><li><p>Giri J, McCarthy CP, Bavry AA, et al. 2025 ACC/AHA/ACEP/ACCP/ASPC/SCAI/SCCM/SCCT/SCMR Guideline for the Management of Patients With Acute Pulmonary Embolism. <strong>Circulation.</strong> 2025. doi:10.1161/CIR.0000000000001415.</p></li></ul><p></p><p></p><p></p><p></p>\n<div id=\"article-metadata\" data-classification=\"patologia\" data-system=\"pulmonar\" style=\"display: none;\"></div>",
+    "created_at": "2026-07-16T12:10:30.001396+00:00",
+    "status": "pending",
+    "related_cases_ids": [
+      "1b04fd8e-63d7-4c2d-977b-e4726e666333"
+    ]
+  }
+]

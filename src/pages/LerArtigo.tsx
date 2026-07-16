@@ -4,6 +4,7 @@ import type { Case } from '@/types/case';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Calendar, User, Loader2, FileText, ArrowRight, X, ChevronLeft, ChevronRight, Eye, EyeOff, Share2, List } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 import { Navbar } from '@/components/Navbar';
 import { supabase } from '@/integrations/supabase/client';
 import { slugify, stripHtml, formatDisplayDate } from '@/lib/utils';
@@ -144,16 +145,7 @@ export default function LerArtigo() {
     }
   }, [artigo]);
 
-  useEffect(() => {
-    if (artigo) {
-      document.title = `${artigo.titulo} | CONRAD`;
-    } else if (!loading) {
-      document.title = 'Artigo não encontrado | CONRAD';
-    }
-    return () => {
-      document.title = 'GALERIA - CONRAD';
-    };
-  }, [artigo, loading]);
+  }, [artigo]);
 
   if (loading) {
     return (
@@ -166,14 +158,29 @@ export default function LerArtigo() {
   if (!artigo) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center space-y-4">
+        <Helmet>
+          <title>Artigo não encontrado | CONRAD</title>
+        </Helmet>
         <h1 className="text-3xl font-bold text-foreground">Artigo não encontrado</h1>
         <Link to="/" className="text-primary hover:underline">Voltar para a Página Inicial</Link>
       </div>
     );
   }
 
+  const artigoResumo = stripHtml(artigo.conteudo).substring(0, 160) + '...';
+
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>{artigo.titulo} | CONRAD</title>
+        <meta name="description" content={artigoResumo} />
+        <meta property="og:title" content={`${artigo.titulo} | CONRAD`} />
+        <meta property="og:description" content={artigoResumo} />
+        {artigo.imagem_capa && <meta property="og:image" content={artigo.imagem_capa} />}
+        <meta name="twitter:title" content={`${artigo.titulo} | CONRAD`} />
+        <meta name="twitter:description" content={artigoResumo} />
+        {artigo.imagem_capa && <meta name="twitter:image" content={artigo.imagem_capa} />}
+      </Helmet>
       <Navbar />
 
       <article className="pt-28 pb-20 px-4">

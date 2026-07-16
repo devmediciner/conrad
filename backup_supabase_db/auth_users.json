@@ -1,0 +1,277 @@
+[
+  {
+    "id": "1c726402-26c3-4590-9a99-b3a1e265bdad",
+    "aud": "authenticated",
+    "role": "authenticated",
+    "email": "membro@conradufsj.app",
+    "email_confirmed_at": "2026-07-09T05:32:53.18876Z",
+    "phone": "",
+    "confirmed_at": "2026-07-09T05:32:53.18876Z",
+    "last_sign_in_at": "2026-07-14T15:34:01.108235Z",
+    "app_metadata": {
+      "provider": "email",
+      "providers": [
+        "email"
+      ]
+    },
+    "user_metadata": {
+      "email": "membro@conradufsj.app",
+      "email_verified": true,
+      "phone_verified": false,
+      "sub": "1c726402-26c3-4590-9a99-b3a1e265bdad"
+    },
+    "identities": null,
+    "created_at": "2026-07-09T05:32:53.159382Z",
+    "updated_at": "2026-07-14T15:34:01.139604Z",
+    "is_anonymous": false
+  },
+  {
+    "id": "31aadd15-836e-4b0f-a08e-e2e3169914ea",
+    "aud": "authenticated",
+    "role": "authenticated",
+    "email": "cardiomegalia@conradufsj.app",
+    "email_confirmed_at": "2026-07-09T02:33:43.38383Z",
+    "phone": "",
+    "confirmed_at": "2026-07-09T02:33:43.38383Z",
+    "last_sign_in_at": "2026-07-09T02:33:43.388543Z",
+    "app_metadata": {
+      "provider": "email",
+      "providers": [
+        "email"
+      ]
+    },
+    "user_metadata": {
+      "email": "cardiomegalia@conradufsj.app",
+      "email_verified": true,
+      "phone_verified": false,
+      "sub": "31aadd15-836e-4b0f-a08e-e2e3169914ea"
+    },
+    "identities": null,
+    "created_at": "2026-07-09T02:33:43.370351Z",
+    "updated_at": "2026-07-09T05:00:37.67036Z",
+    "is_anonymous": false
+  },
+  {
+    "id": "c7ecce77-6592-40f9-8165-c8c81bb0abd9",
+    "aud": "authenticated",
+    "role": "authenticated",
+    "email": "enfisema@conradufsj.app",
+    "email_confirmed_at": "2026-07-09T02:33:34.579765Z",
+    "phone": "",
+    "confirmed_at": "2026-07-09T02:33:34.579765Z",
+    "last_sign_in_at": "2026-07-09T02:33:34.58363Z",
+    "app_metadata": {
+      "provider": "email",
+      "providers": [
+        "email"
+      ]
+    },
+    "user_metadata": {
+      "email": "enfisema@conradufsj.app",
+      "email_verified": true,
+      "phone_verified": false,
+      "sub": "c7ecce77-6592-40f9-8165-c8c81bb0abd9"
+    },
+    "identities": null,
+    "created_at": "2026-07-09T02:33:34.569579Z",
+    "updated_at": "2026-07-09T05:00:37.670305Z",
+    "is_anonymous": false
+  },
+  {
+    "id": "3e07f5a2-3283-4fb6-b50c-c814a9d6126a",
+    "aud": "authenticated",
+    "role": "authenticated",
+    "email": "pneumotorax@conradufsj.app",
+    "email_confirmed_at": "2026-07-09T02:33:25.721602Z",
+    "phone": "",
+    "confirmed_at": "2026-07-09T02:33:25.721602Z",
+    "last_sign_in_at": "2026-07-09T22:24:19.55436Z",
+    "app_metadata": {
+      "provider": "email",
+      "providers": [
+        "email"
+      ]
+    },
+    "user_metadata": {
+      "email": "pneumotorax@conradufsj.app",
+      "email_verified": true,
+      "phone_verified": false,
+      "sub": "3e07f5a2-3283-4fb6-b50c-c814a9d6126a"
+    },
+    "identities": null,
+    "created_at": "2026-07-09T02:33:25.709337Z",
+    "updated_at": "2026-07-15T13:24:54.883727Z",
+    "is_anonymous": false
+  },
+  {
+    "id": "aef79f85-5e9a-496c-8714-1d93b6e11dc1",
+    "aud": "authenticated",
+    "role": "authenticated",
+    "email": "edema@conradufsj.app",
+    "email_confirmed_at": "2026-07-09T02:33:14.108924Z",
+    "phone": "",
+    "confirmed_at": "2026-07-09T02:33:14.108924Z",
+    "last_sign_in_at": "2026-07-14T15:56:03.776233Z",
+    "app_metadata": {
+      "provider": "email",
+      "providers": [
+        "email"
+      ]
+    },
+    "user_metadata": {
+      "email": "edema@conradufsj.app",
+      "email_verified": true,
+      "phone_verified": false,
+      "sub": "aef79f85-5e9a-496c-8714-1d93b6e11dc1"
+    },
+    "identities": null,
+    "created_at": "2026-07-09T02:33:14.066253Z",
+    "updated_at": "2026-07-16T15:42:03.834366Z",
+    "is_anonymous": false
+  },
+  {
+    "id": "bdac2187-be6c-4f90-a6db-faa5182d6609",
+    "aud": "authenticated",
+    "role": "authenticated",
+    "email": "atelectasia@conradufsj.app",
+    "email_confirmed_at": "2026-07-09T02:32:39.185501Z",
+    "phone": "",
+    "confirmed_at": "2026-07-09T02:32:39.185501Z",
+    "last_sign_in_at": "2026-07-09T22:21:52.706511Z",
+    "app_metadata": {
+      "provider": "email",
+      "providers": [
+        "email"
+      ]
+    },
+    "user_metadata": {
+      "email": "atelectasia@conradufsj.app",
+      "email_verified": true,
+      "phone_verified": false,
+      "sub": "bdac2187-be6c-4f90-a6db-faa5182d6609"
+    },
+    "identities": null,
+    "created_at": "2026-07-09T02:32:39.149674Z",
+    "updated_at": "2026-07-11T01:08:05.908245Z",
+    "is_anonymous": false
+  },
+  {
+    "id": "c0d63af7-488c-4b4a-9980-a33ae7d9d5ec",
+    "aud": "authenticated",
+    "role": "authenticated",
+    "email": "testuser-1783517519098@example.com",
+    "email_confirmed_at": "2026-07-08T13:31:59.561656Z",
+    "phone": "",
+    "confirmed_at": "2026-07-08T13:31:59.561656Z",
+    "last_sign_in_at": "2026-07-08T13:32:00.12594Z",
+    "app_metadata": {
+      "provider": "email",
+      "providers": [
+        "email"
+      ]
+    },
+    "user_metadata": {
+      "email_verified": true
+    },
+    "identities": null,
+    "created_at": "2026-07-08T13:31:59.553264Z",
+    "updated_at": "2026-07-08T13:32:00.129722Z",
+    "is_anonymous": false
+  },
+  {
+    "id": "4165576b-f969-447d-b1d5-1f85f4242cfa",
+    "aud": "authenticated",
+    "role": "authenticated",
+    "email": "testuser-1783517490600@example.com",
+    "email_confirmed_at": "2026-07-08T13:31:31.940986Z",
+    "phone": "",
+    "confirmed_at": "2026-07-08T13:31:31.940986Z",
+    "last_sign_in_at": "2026-07-08T13:31:33.588024Z",
+    "app_metadata": {
+      "provider": "email",
+      "providers": [
+        "email"
+      ]
+    },
+    "user_metadata": {
+      "email_verified": true
+    },
+    "identities": null,
+    "created_at": "2026-07-08T13:31:31.89872Z",
+    "updated_at": "2026-07-08T13:31:33.610312Z",
+    "is_anonymous": false
+  },
+  {
+    "id": "7a298e43-f8e6-47d9-9980-4d72ea4f5daf",
+    "aud": "authenticated",
+    "role": "authenticated",
+    "email": "teste@conrad.com",
+    "email_confirmed_at": "2026-05-24T04:31:04.81538Z",
+    "phone": "",
+    "confirmed_at": "2026-05-24T04:31:04.81538Z",
+    "last_sign_in_at": "2026-05-24T04:31:21.603528Z",
+    "app_metadata": {
+      "provider": "email",
+      "providers": [
+        "email"
+      ]
+    },
+    "user_metadata": {
+      "email": "teste@conrad.com",
+      "email_verified": true,
+      "phone_verified": false,
+      "sub": "7a298e43-f8e6-47d9-9980-4d72ea4f5daf"
+    },
+    "identities": null,
+    "created_at": "2026-05-24T04:31:04.796706Z",
+    "updated_at": "2026-05-24T04:31:21.606206Z",
+    "is_anonymous": false
+  },
+  {
+    "id": "ac3f3489-cf13-4257-a1a9-4523bcd91d57",
+    "aud": "authenticated",
+    "role": "authenticated",
+    "email": "membro@conrad.com",
+    "email_confirmed_at": "2026-04-07T12:51:04.463456Z",
+    "phone": "",
+    "confirmed_at": "2026-04-07T12:51:04.463456Z",
+    "last_sign_in_at": "2026-07-08T15:22:36.779415Z",
+    "app_metadata": {
+      "provider": "email",
+      "providers": [
+        "email"
+      ]
+    },
+    "user_metadata": {
+      "email_verified": true
+    },
+    "identities": null,
+    "created_at": "2026-04-07T12:51:04.446799Z",
+    "updated_at": "2026-07-08T15:22:36.782098Z",
+    "is_anonymous": false
+  },
+  {
+    "id": "0736dd4a-d196-4adc-8e68-51fb8549ca83",
+    "aud": "authenticated",
+    "role": "authenticated",
+    "email": "admin@conradufsj.app",
+    "email_confirmed_at": "2026-04-07T12:48:20.200948Z",
+    "phone": "",
+    "confirmed_at": "2026-04-07T12:48:20.200948Z",
+    "last_sign_in_at": "2026-07-16T17:23:14.193768Z",
+    "app_metadata": {
+      "provider": "email",
+      "providers": [
+        "email"
+      ]
+    },
+    "user_metadata": {
+      "email": "admin@conradufsj.app",
+      "email_verified": true
+    },
+    "identities": null,
+    "created_at": "2026-04-07T12:48:20.178251Z",
+    "updated_at": "2026-07-16T17:23:14.257023Z",
+    "is_anonymous": false
+  }
+]

@@ -29,5 +29,3 @@ dist-ssr
 vite.config.ts.timestamp-*
 
 # Backup database
-backup_supabase_db/
-

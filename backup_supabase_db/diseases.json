@@ -1,0 +1,226 @@
+[
+  {
+    "id": "fa3ff3d5-b198-4bec-989a-3b8e452705da",
+    "name": "Tuberculose Pulmonar"
+  },
+  {
+    "id": "93804f17-01fd-4c77-8c32-a6735e9b9e88",
+    "name": "Pneumonia Adquirida na Comunidade"
+  },
+  {
+    "id": "4ab522ef-cb29-4ab6-ac4f-5fd979701459",
+    "name": "Câncer de Pulmão"
+  },
+  {
+    "id": "b471575d-adc8-4b64-99c2-9eb0ba7a9a77",
+    "name": "Embolia Pulmonar"
+  },
+  {
+    "id": "4ee7d673-3ef0-427c-bfeb-35040d569fa2",
+    "name": "Doença Pulmonar Obstrutiva Crônica (DPOC)"
+  },
+  {
+    "id": "84e2b0f0-7cf4-495d-8428-0d4abad16bdb",
+    "name": "Sarcoidose"
+  },
+  {
+    "id": "7abe34f5-2c5e-4080-8d5c-db8c55ec1bb2",
+    "name": "Fibrose Cística"
+  },
+  {
+    "id": "d8c6b25d-3e29-4586-b67f-54178d9bf754",
+    "name": "Edema Agudo de Pulmão"
+  },
+  {
+    "id": "e10bc14c-2ba5-4167-a4ec-d130e137a167",
+    "name": "COVID-19"
+  },
+  {
+    "id": "0c968d58-cc66-45c1-894b-3aafc656f72f",
+    "name": "Pneumotórax"
+  },
+  {
+    "id": "edfb970c-d931-49e6-947c-71e850c780a6",
+    "name": "Derrame Pleural"
+  },
+  {
+    "id": "cf75f0a6-0925-4785-9692-a662b1f25e53",
+    "name": "Atelectasia"
+  },
+  {
+    "id": "627c0f4d-665b-44ec-b5e8-30bbe424bcb1",
+    "name": "Cardiomegalia"
+  },
+  {
+    "id": "43797a17-fc11-4210-8d18-6e94bfd8bb33",
+    "name": "Fratura de Costela"
+  },
+  {
+    "id": "f281dffe-49c0-4cd6-9226-8eeb2406e213",
+    "name": "Fratura de Clavícula"
+  },
+  {
+    "id": "3846bcbe-b2f0-4fea-937a-0db0599d76bb",
+    "name": "Hérnia Diafragmática"
+  },
+  {
+    "id": "be3ebe55-796c-4931-b9dd-47bf643ce95e",
+    "name": "Massa Mediastinal"
+  },
+  {
+    "id": "797fac76-4999-43dc-b0e9-ac053b7623aa",
+    "name": "Tuberculose Miliar"
+  },
+  {
+    "id": "1eb55506-054a-4ccc-9f62-d88393af55a1",
+    "name": "Linfoma de Hodgkin"
+  },
+  {
+    "id": "edaf7b11-721a-4f35-96cc-ff36e4abf107",
+    "name": "Metástase Pulmonar"
+  },
+  {
+    "id": "10ce4cf7-ebad-4caa-8622-55e641d5b0aa",
+    "name": "Abscesso Pulmonar"
+  },
+  {
+    "id": "f8390a1a-107a-46dc-89ea-bed48bd54325",
+    "name": "Empiema Pleural"
+  },
+  {
+    "id": "05108d52-f10f-42d8-ad04-99c6445bc0d8",
+    "name": "Pneumonia Viral (Influenza)"
+  },
+  {
+    "id": "b92a33af-cc6e-47f3-85d9-0e25da6e1f74",
+    "name": "Bronquiolite Obliterante"
+  },
+  {
+    "id": "93541971-6a66-4c4a-80b5-3587bd062111",
+    "name": "Pneumonia Aspirativa"
+  },
+  {
+    "id": "7240ad4d-e748-4923-8f34-48c8e82a06cc",
+    "name": "Adenocarcinoma de Pulmão"
+  },
+  {
+    "id": "f9b7a616-1a9c-4797-9655-e5bb570a2ec0",
+    "name": "Aneurisma de Aorta Ascendente"
+  },
+  {
+    "id": "c06bf3a9-ce9b-4efd-9729-9fe18246b33d",
+    "name": "Dissecação de Aorta"
+  },
+  {
+    "id": "0a8309b8-a87e-4096-a623-001bb0dcf8d4",
+    "name": "Infarto Pulmonar"
+  },
+  {
+    "id": "f1b089f9-90c0-4466-9c86-c930e654fdb4",
+    "name": "Hipertensão Pulmonar"
+  },
+  {
+    "id": "5f84bb07-9b17-403d-b6fc-c7be15c40bdd",
+    "name": "Situs Inversus Totalis"
+  },
+  {
+    "id": "dea22b59-586f-4ec7-af58-b03b3ab7ebac",
+    "name": "Pericardite com Derrame"
+  },
+  {
+    "id": "2d764dd9-4c0c-4c9e-8cd0-41987fe5754c",
+    "name": "Aneurisma de Ventrículo Esquerdo"
+  },
+  {
+    "id": "11a29308-a1b1-4e8b-a245-ba2c50b87ca5",
+    "name": "Hemotórax"
+  },
+  {
+    "id": "9554ee26-4305-44f0-957c-a7bbeea6085a",
+    "name": "Contusão Pulmonar"
+  },
+  {
+    "id": "b1b100ed-0a1b-4b44-9bdb-d0eca609a733",
+    "name": "Tamponamento Cardíaco"
+  },
+  {
+    "id": "1d2253e4-4fa4-4030-9add-7eb3893f615b",
+    "name": "Agenesia Pulmonar"
+  },
+  {
+    "id": "fa451968-c427-4ac0-9d10-fe77da3abe58",
+    "name": "Pneumoperitônio"
+  },
+  {
+    "id": "cc1d7b38-d1ad-4d20-bd70-8b056c4db9cd",
+    "name": "Acalasia (Dilatação de Esôfago)"
+  },
+  {
+    "id": "5c31555b-7640-4c89-9546-e5073d488c23",
+    "name": "Corpo Estranho em Via Aérea"
+  },
+  {
+    "id": "92dbc891-5933-483d-9637-ae72efabc4b3",
+    "name": "Nódulo Pulmonar Solitário"
+  },
+  {
+    "id": "d5ef6f4c-8678-4373-a6a7-8aff90e931e0",
+    "name": "Calcificações em Pipoca"
+  },
+  {
+    "id": "0fa67a3a-d8f0-47af-8b84-287887e72161",
+    "name": "Linfonodomegalia de Cadeia Mamária"
+  },
+  {
+    "id": "9c31c874-fae6-410b-85eb-e545ad29d9c7",
+    "name": "Escoliose Torácica"
+  },
+  {
+    "id": "06105085-ec44-410f-b896-4b7d5451d2d4",
+    "name": "Pectus Excavatum"
+  },
+  {
+    "id": "ff4f6262-f627-4314-aaee-a2b8b26a787d",
+    "name": "Pectus Carinatum"
+  },
+  {
+    "id": "45e1fdc1-2302-4df1-b5e5-1358818fa663",
+    "name": "Calcificação da Cartilagem Costal"
+  },
+  {
+    "id": "4c199fc4-a199-4edc-a5a3-6206a3bbf040",
+    "name": "Cifose Acentuada"
+  },
+  {
+    "id": "70f71509-08c3-4c82-abf5-f61712d35b2f",
+    "name": "Consolidação em Lobo Médio"
+  },
+  {
+    "id": "59236d5c-8b7c-42d5-b6f3-11f8ca0b228b",
+    "name": "Normal"
+  },
+  {
+    "id": "fa19cf19-b9e8-4c60-9b01-1a2646835f9a",
+    "name": "Mastectomia"
+  },
+  {
+    "id": "246bde42-d76f-4b76-92e0-a15cced2c41a",
+    "name": "Enfisema Pulmonar"
+  },
+  {
+    "id": "6d2b6abd-7f54-4fdd-935e-c13b9fb15b99",
+    "name": "Colelitíase"
+  },
+  {
+    "id": "ccc86b63-2b32-42cf-bae6-75e9e318c38c",
+    "name": "Luxação"
+  },
+  {
+    "id": "8e46204e-5c1c-47e9-acec-c73fd892b015",
+    "name": "Luxação glenoumeral posterior de ombro direito"
+  },
+  {
+    "id": "8edb3159-823a-4a93-b2d1-5d5d31cc839e",
+    "name": "DPOC infectada"
+  }
+]

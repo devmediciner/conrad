@@ -1,0 +1,51 @@
+[
+  {
+    "id": "5ecb4a22-bb95-4883-b1c4-521bb9dc593c",
+    "user_id": "bdac2187-be6c-4f90-a6db-faa5182d6609",
+    "role": "user",
+    "created_at": "2026-07-09T02:32:39.434309+00:00",
+    "email": "atelectasia@conradufsj.app"
+  },
+  {
+    "id": "1ec27012-23f8-47e8-bb37-3984699743f9",
+    "user_id": "aef79f85-5e9a-496c-8714-1d93b6e11dc1",
+    "role": "user",
+    "created_at": "2026-07-09T02:33:14.437966+00:00",
+    "email": "edema@conradufsj.app"
+  },
+  {
+    "id": "cd637a40-5741-4b0a-9a61-d92cf20ae91b",
+    "user_id": "3e07f5a2-3283-4fb6-b50c-c814a9d6126a",
+    "role": "user",
+    "created_at": "2026-07-09T02:33:25.908175+00:00",
+    "email": "pneumotorax@conradufsj.app"
+  },
+  {
+    "id": "28f5c925-69f6-446a-8307-fccd43d46b72",
+    "user_id": "c7ecce77-6592-40f9-8165-c8c81bb0abd9",
+    "role": "user",
+    "created_at": "2026-07-09T02:33:34.749791+00:00",
+    "email": "enfisema@conradufsj.app"
+  },
+  {
+    "id": "ad0c8562-0c86-4cd1-8bc6-aa4cfa3f91c4",
+    "user_id": "31aadd15-836e-4b0f-a08e-e2e3169914ea",
+    "role": "user",
+    "created_at": "2026-07-09T02:33:43.564605+00:00",
+    "email": "cardiomegalia@conradufsj.app"
+  },
+  {
+    "id": "181126d8-e27f-49f1-8d03-c0e9653a9aa1",
+    "user_id": "0736dd4a-d196-4adc-8e68-51fb8549ca83",
+    "role": "admin",
+    "created_at": "2026-04-07T12:48:58.02007+00:00",
+    "email": "admin@conradufsj.app"
+  },
+  {
+    "id": "8abd2f74-b818-4283-a287-66599cbe56f9",
+    "user_id": "1c726402-26c3-4590-9a99-b3a1e265bdad",
+    "role": "user",
+    "created_at": "2026-07-09T05:32:53.433275+00:00",
+    "email": "membro@conradufsj.app"
+  }
+]
