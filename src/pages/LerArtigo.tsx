@@ -136,15 +136,12 @@ export default function LerArtigo() {
         h2.setAttribute('id', id);
         items.push({ id, text: h2.textContent?.replace(/:/g, '').trim() || '' });
       });
-      
       setToc(items);
       setProcessedContent(doc.body.innerHTML);
     } else {
       setToc([]);
       setProcessedContent('');
     }
-  }, [artigo]);
-
   }, [artigo]);
 
   if (loading) {
