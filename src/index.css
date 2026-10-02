@@ -52,6 +52,51 @@
     --sidebar-border: 0 0% 18%;
     --sidebar-ring: 48 100% 50%;
   }
+
+  [data-theme="light"] {
+    --background: 210 20% 98%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    --primary: 38 92% 44%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 215 20% 95%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 215 20% 94%;
+    --muted-foreground: 215 16% 45%;
+
+    --accent: 38 92% 44%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 215 20% 88%;
+    --input: 215 20% 88%;
+    --ring: 38 92% 44%;
+
+    --gold: 38 92% 44%;
+    --gold-muted: 38 70% 35%;
+    --gold-glow: 38 95% 55%;
+    --surface: 215 20% 96%;
+    --surface-hover: 215 20% 92%;
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 38 92% 44%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 215 20% 95%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 215 20% 88%;
+    --sidebar-ring: 38 92% 44%;
+  }
 }
 
 @layer base {
@@ -106,18 +151,16 @@
   border-radius: 1rem;
 }
 
-/* ── Image Caption and Spacing Styling ── */
-/* Ensure images in articles and editors have matching styling, smaller top margin, and small bottom margin */
+/* ── Image Styling for Articles and Reader ── */
 .prose img,
 .ql-editor img {
   border-radius: 1rem !important;
   border: 1px solid hsl(var(--border) / 0.2) !important;
-  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1) !important; /* shadow-xl */
+  box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1) !important;
   max-width: 100% !important;
+  max-height: none !important;
   height: auto !important;
   object-fit: contain !important;
-  margin-top: 6px !important;
-  margin-bottom: 4px !important;
   cursor: pointer !important;
   transition: transform 0.2s ease, box-shadow 0.2s ease !important;
 }
@@ -125,37 +168,79 @@
 .prose img:hover,
 .ql-editor img:hover {
   transform: scale(1.008) !important;
-  box-shadow: 0 25px 35px -5px rgb(0 0 0 / 0.2), 0 12px 16px -6px rgb(0 0 0 / 0.2) !important;
+  box-shadow: 0 20px 30px -5px rgb(0 0 0 / 0.15), 0 8px 10px -4px rgb(0 0 0 / 0.1) !important;
 }
 
-/* Force image alignment based on data-align attribute in both editor and viewer */
-.prose img[data-align="left"],
-.ql-editor img[data-align="left"] {
-  margin-left: 0 !important;
-  margin-right: auto !important;
+/* When a paragraph wraps an inline-block image (i.e. width < 100%),
+   the paragraph itself must also be inline-block so consecutive images sit side by side.
+   The editor stores display:inline-block in the <img> style attribute for partial-width images. */
+.ql-editor p:has(> img[style*="inline-block"]),
+.prose p:has(> img[style*="inline-block"]) {
+  display: inline-block !important;
+  vertical-align: top !important;
+  max-width: 100% !important;
+  margin-bottom: 0.75rem !important;
+}
+
+/* Block images (100%) must be centered and full width */
+.ql-editor p:has(> img[style*="display:block"]),
+.prose p:has(> img[style*="display:block"]) {
   display: block !important;
+  width: 100% !important;
+  margin-top: 1rem !important;
+  margin-bottom: 1rem !important;
 }
 
-.prose img[data-align="right"],
-.ql-editor img[data-align="right"] {
-  margin-left: auto !important;
-  margin-right: 0 !important;
-  display: block !important;
-}
-
-.prose img[data-align="center"],
-.ql-editor img[data-align="center"] {
-  margin-left: auto !important;
-  margin-right: auto !important;
-  display: block !important;
+/* TipTap NodeView wrapper in editor */
+.tiptap [data-node-view-wrapper] {
+  vertical-align: top !important;
 }
 
 
+/* ── Light Mode Article Content ── */
+[data-theme="light"] .ql-editor {
+  color: hsl(222 47% 14%);
+  background-color: transparent;
+}
 
-/* Reduce bottom margin of paragraph immediately preceding an image */
-.prose p:has(+ img),
-.ql-editor p:has(+ img) {
-  margin-bottom: 4px !important;
+[data-theme="light"] .ql-editor h1,
+[data-theme="light"] .ql-editor h2,
+[data-theme="light"] .ql-editor h3,
+[data-theme="light"] .ql-editor h4 {
+  color: hsl(222 47% 10%) !important;
+}
+
+[data-theme="light"] .ql-editor p {
+  color: hsl(222 35% 18%) !important;
+}
+
+[data-theme="light"] .ql-editor img {
+  box-shadow: 0 10px 25px -4px rgb(0 0 0 / 0.08), 0 4px 6px -2px rgb(0 0 0 / 0.04) !important;
+  border: 1px solid hsl(var(--border) / 0.8) !important;
+  background-color: #ffffff;
+}
+
+[data-theme="light"] .ql-editor img:hover {
+  box-shadow: 0 20px 30px -6px rgb(0 0 0 / 0.12), 0 8px 10px -4px rgb(0 0 0 / 0.06) !important;
+}
+
+[data-theme="light"] .ql-editor blockquote {
+  background: hsl(38 92% 50% / 0.08) !important;
+  border-left-color: hsl(var(--primary)) !important;
+  color: hsl(222 40% 20%) !important;
+}
+
+[data-theme="light"] .ql-editor table {
+  border: 1px solid hsl(var(--border)) !important;
+}
+
+[data-theme="light"] .ql-editor th {
+  background: hsl(var(--muted) / 0.6) !important;
+  border: 1px solid hsl(var(--border)) !important;
+}
+
+[data-theme="light"] .ql-editor td {
+  border: 1px solid hsl(var(--border)) !important;
 }
 
 /* Base style for image captions (italic text starting with "Fonte:" or matching the style patterns) */

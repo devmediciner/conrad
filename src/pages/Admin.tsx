@@ -9,7 +9,7 @@ import { EXAM_TYPE_COLORS } from '@/types/case';
 import { stripHtml, slugify, removeAccents, formatDisplayDate } from '@/lib/utils';
 import { CaseModal } from '@/components/CaseModal';
 
-import { Trash2, ArrowLeft, Loader2, Pencil, Plus, Gamepad2, List, FileText, ImagePlus, Save, X, CheckCircle, Settings, Users, UserPlus, Check, XCircle, Eye, EyeOff, Edit, Search, HelpCircle, Upload } from 'lucide-react';
+import { Trash2, ArrowLeft, Loader2, Pencil, Plus, Gamepad2, List, FileText, ImagePlus, Save, X, CheckCircle, Settings, Users, UserPlus, Check, XCircle, Eye, EyeOff, Edit, Search, HelpCircle, Upload, GraduationCap } from 'lucide-react';
 import { toast } from 'sonner';
 import { EditCaseModal } from '@/components/EditCaseModal';
 import { SubmitCaseModal } from '@/components/SubmitCaseModal';
@@ -23,6 +23,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { createClient } from '@supabase/supabase-js'; // ← Adicione esta importação
 import { ArticleEditor } from '@/components/ArticleEditor';
 import { classifyArticle, getMetadataFromContent, injectMetadataIntoContent, stripMetadataFromContent, SYSTEM_LABELS, SystemType } from '@/utils/articleClassifier';
+import { isProfessorCoordenador, isDiretoria } from '@/components/LeagueMembers';
 
 const Admin = () => {
   const { user, isAdmin, loading: authLoading } = useAuth(); // Certifique-se de que o useAuth retorne o 'user' logado
@@ -53,7 +54,7 @@ const Admin = () => {
   const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
   const [memberForm, setMemberForm] = useState({ name: '', role: '', turma: '', image_url: '', order_index: 0 });
   const [isUploadingMemberImage, setIsUploadingMemberImage] = useState(false);
-  const [isCreatingNewMember, setIsCreatingNewMember] = useState(false);
+  const [creatingCategory, setCreatingCategory] = useState<'coordenador' | 'diretoria' | 'membros' | null>(null);
 
   const handleUploadMemberImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -80,8 +81,8 @@ const Admin = () => {
   };
 
   const handleSaveMember = async () => {
-    if (!memberForm.name || !memberForm.role || !memberForm.turma) {
-      toast.error('Preencha Nome, Cargo e Turma.');
+    if (!memberForm.name.trim() || !memberForm.role.trim()) {
+      toast.error('Preencha Nome e Cargo.');
       return;
     }
     try {
@@ -96,7 +97,7 @@ const Admin = () => {
       }
       setMemberForm({ name: '', role: '', turma: '', image_url: '', order_index: 0 });
       setEditingMemberId(null);
-      setIsCreatingNewMember(false);
+      setCreatingCategory(null);
       setRefreshKey(prev => prev + 1);
     } catch (err) {
       console.error(err);
@@ -120,18 +121,6 @@ const Admin = () => {
 
 
   
-  const isDiretoria = (role: string) => {
-    if (!role) return false;
-    const r = role.toLowerCase();
-    if (r.includes('presidente') || r.includes('diretor') || r.includes('coordenador') || r.includes('secretári') || r.includes('tesoureir')) {
-      return true;
-    }
-    if (r.includes('membro')) {
-      return false;
-    }
-    return true;
-  };
-
   const handleDragStartMember = (e: React.DragEvent, memberId: string) => {
     e.dataTransfer.setData('text/plain', memberId);
     e.dataTransfer.effectAllowed = 'move';
@@ -142,14 +131,16 @@ const Admin = () => {
     e.dataTransfer.dropEffect = 'move';
   };
 
-  const handleDropMember = async (e: React.DragEvent, targetMemberId: string, category: 'diretoria' | 'membros') => {
+  const handleDropMember = async (e: React.DragEvent, targetMemberId: string, category: 'coordenador' | 'diretoria' | 'membros') => {
     e.preventDefault();
     const draggedId = e.dataTransfer.getData('text/plain');
     if (!draggedId || draggedId === targetMemberId) return;
 
-    const currentList = category === 'diretoria' 
-      ? leagueMembers.filter(m => isDiretoria(m.role))
-      : leagueMembers.filter(m => !isDiretoria(m.role));
+    const currentList = category === 'coordenador'
+      ? leagueMembers.filter(m => isProfessorCoordenador(m.role))
+      : category === 'diretoria' 
+        ? leagueMembers.filter(m => isDiretoria(m.role))
+        : leagueMembers.filter(m => !isProfessorCoordenador(m.role) && !isDiretoria(m.role));
 
     const draggedIndex = currentList.findIndex(m => m.id === draggedId);
     const targetIndex = currentList.findIndex(m => m.id === targetMemberId);
@@ -160,13 +151,18 @@ const Admin = () => {
     const [draggedItem] = newList.splice(draggedIndex, 1);
     newList.splice(targetIndex, 0, draggedItem);
 
+    const baseOffset = category === 'coordenador' ? 0 : category === 'diretoria' ? 1000 : 2000;
     const updatedItems = newList.map((m, index) => ({
       ...m,
-      order_index: category === 'diretoria' ? index : index + 1000
+      order_index: baseOffset + index
     }));
 
     setLeagueMembers(prev => {
-      const others = prev.filter(m => category === 'diretoria' ? !isDiretoria(m.role) : isDiretoria(m.role));
+      const others = prev.filter(m => {
+        if (category === 'coordenador') return !isProfessorCoordenador(m.role);
+        if (category === 'diretoria') return !isDiretoria(m.role);
+        return isProfessorCoordenador(m.role) || isDiretoria(m.role);
+      });
       return [...others, ...updatedItems].sort((a, b) => a.order_index - b.order_index);
     });
 
@@ -180,7 +176,7 @@ const Admin = () => {
     }
   };
 
-  const renderMember = (m: any, category: 'diretoria' | 'membros') => {
+  const renderMember = (m: any, category: 'coordenador' | 'diretoria' | 'membros') => {
     const isEditing = editingMemberId === m.id;
     if (isEditing) {
       return (
@@ -840,24 +836,69 @@ const Admin = () => {
               {loadingMembers ? (
                 <p className="text-xs text-muted-foreground py-2 text-center">Carregando...</p>
               ) : (
-                <div className="space-y-8">
+                <div className="space-y-10">
+                  {/* 1. Professor Coordenador */}
                   <div>
-                    <h3 className="text-lg font-semibold font-heading text-primary mb-4 border-b border-border pb-2">Diretoria</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
-                      {leagueMembers.filter(m => isDiretoria(m.role)).map(m => renderMember(m, 'diretoria'))}
+                    <div className="flex items-center justify-between border-b border-border pb-2 mb-4">
+                      <h3 className="text-lg font-semibold font-heading text-primary flex items-center gap-2">
+                        <GraduationCap className="w-5 h-5 text-primary" /> Professor Coordenador
+                      </h3>
+                      <span className="text-xs text-muted-foreground">Arraste para reordenar</span>
                     </div>
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg font-semibold font-heading text-primary mb-4 border-b border-border pb-2">Membros</h3>
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
-                      {leagueMembers.filter(m => !isDiretoria(m.role)).map(m => renderMember(m, 'membros'))}
+                      {leagueMembers.filter(m => isProfessorCoordenador(m.role)).map(m => renderMember(m, 'coordenador'))}
                       
-                      {isCreatingNewMember && !editingMemberId ? (
+                      {creatingCategory === 'coordenador' && !editingMemberId ? (
                         <div className="col-span-full sm:col-span-2 lg:col-span-2 xl:col-span-2 flex flex-col items-center bg-card border border-border p-4 rounded-xl shadow-sm relative group">
                           <div className="absolute top-2 right-2 flex gap-1 z-10">
                             <Button size="icon" variant="ghost" className="h-6 w-6 text-green-500 hover:text-green-600 hover:bg-green-500/10 bg-background/80" onClick={handleSaveMember}><Check className="w-3.5 h-3.5" /></Button>
-                            <Button size="icon" variant="ghost" className="h-6 w-6 text-muted-foreground hover:text-destructive hover:bg-destructive/10 bg-background/80" onClick={() => { setIsCreatingNewMember(false); setMemberForm({ name: '', role: '', turma: '', image_url: '', order_index: 0 }); }}><X className="w-3.5 h-3.5" /></Button>
+                            <Button size="icon" variant="ghost" className="h-6 w-6 text-muted-foreground hover:text-destructive hover:bg-destructive/10 bg-background/80" onClick={() => { setCreatingCategory(null); setMemberForm({ name: '', role: '', turma: '', image_url: '', order_index: 0 }); }}><X className="w-3.5 h-3.5" /></Button>
+                          </div>
+                          <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full mb-3 overflow-hidden border-2 border-primary/20 bg-muted flex items-center justify-center group-hover:border-primary transition-all">
+                            {memberForm.image_url ? (
+                              <img src={memberForm.image_url} className="w-full h-full object-cover" />
+                            ) : (
+                              <Upload className="w-6 h-6 text-muted-foreground" />
+                            )}
+                            <input type="file" accept="image/*" onChange={handleUploadMemberImage} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" disabled={isUploadingMemberImage} title="Adicionar foto" />
+                            {isUploadingMemberImage && <div className="absolute inset-0 bg-black/40 flex items-center justify-center"><Loader2 className="w-5 h-5 animate-spin text-white" /></div>}
+                          </div>
+                          <Input className="h-8 text-sm mb-2 w-full text-center px-2" placeholder="Nome *" value={memberForm.name} onChange={e => setMemberForm({...memberForm, name: e.target.value})} />
+                          <Input className="h-8 text-sm mb-2 w-full text-center px-2" placeholder="Cargo *" value={memberForm.role} onChange={e => setMemberForm({...memberForm, role: e.target.value})} />
+                          <Input className="h-8 text-sm mb-2 w-full text-center px-2" placeholder="Titulação / Turma" value={memberForm.turma} onChange={e => setMemberForm({...memberForm, turma: e.target.value})} />
+                        </div>
+                      ) : !editingMemberId && (
+                        <button 
+                          onClick={() => {
+                            setEditingMemberId(null);
+                            setMemberForm({ name: '', role: 'Professor Coordenador', turma: 'Docente', image_url: '', order_index: 0 });
+                            setCreatingCategory('coordenador');
+                          }}
+                          className="flex flex-col items-center justify-center bg-card/30 hover:bg-card border-2 border-dashed border-border hover:border-primary/50 rounded-xl p-4 transition-all group h-full min-h-[180px]"
+                        >
+                          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-3 group-hover:bg-primary/20 transition-colors">
+                            <Plus className="w-6 h-6 text-primary" />
+                          </div>
+                          <span className="text-xs font-semibold text-muted-foreground group-hover:text-foreground transition-colors">Novo Coordenador</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 2. Diretoria */}
+                  <div>
+                    <div className="flex items-center justify-between border-b border-border pb-2 mb-4">
+                      <h3 className="text-lg font-semibold font-heading text-primary">Diretoria</h3>
+                      <span className="text-xs text-muted-foreground">Arraste para reordenar</span>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+                      {leagueMembers.filter(m => isDiretoria(m.role)).map(m => renderMember(m, 'diretoria'))}
+
+                      {creatingCategory === 'diretoria' && !editingMemberId ? (
+                        <div className="col-span-full sm:col-span-2 lg:col-span-2 xl:col-span-2 flex flex-col items-center bg-card border border-border p-4 rounded-xl shadow-sm relative group">
+                          <div className="absolute top-2 right-2 flex gap-1 z-10">
+                            <Button size="icon" variant="ghost" className="h-6 w-6 text-green-500 hover:text-green-600 hover:bg-green-500/10 bg-background/80" onClick={handleSaveMember}><Check className="w-3.5 h-3.5" /></Button>
+                            <Button size="icon" variant="ghost" className="h-6 w-6 text-muted-foreground hover:text-destructive hover:bg-destructive/10 bg-background/80" onClick={() => { setCreatingCategory(null); setMemberForm({ name: '', role: '', turma: '', image_url: '', order_index: 0 }); }}><X className="w-3.5 h-3.5" /></Button>
                           </div>
                           <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full mb-3 overflow-hidden border-2 border-primary/20 bg-muted flex items-center justify-center group-hover:border-primary transition-all">
                             {memberForm.image_url ? (
@@ -876,8 +917,54 @@ const Admin = () => {
                         <button 
                           onClick={() => {
                             setEditingMemberId(null);
-                            setMemberForm({ name: '', role: '', turma: '', image_url: '', order_index: 0 });
-                            setIsCreatingNewMember(true);
+                            setMemberForm({ name: '', role: 'Diretor(a)', turma: '', image_url: '', order_index: 1000 });
+                            setCreatingCategory('diretoria');
+                          }}
+                          className="flex flex-col items-center justify-center bg-card/30 hover:bg-card border-2 border-dashed border-border hover:border-primary/50 rounded-xl p-4 transition-all group h-full min-h-[180px]"
+                        >
+                          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-3 group-hover:bg-primary/20 transition-colors">
+                            <Plus className="w-6 h-6 text-primary" />
+                          </div>
+                          <span className="text-xs font-semibold text-muted-foreground group-hover:text-foreground transition-colors">Novo Diretor</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 3. Membros */}
+                  <div>
+                    <div className="flex items-center justify-between border-b border-border pb-2 mb-4">
+                      <h3 className="text-lg font-semibold font-heading text-primary">Membros</h3>
+                      <span className="text-xs text-muted-foreground">Arraste para reordenar</span>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+                      {leagueMembers.filter(m => !isProfessorCoordenador(m.role) && !isDiretoria(m.role)).map(m => renderMember(m, 'membros'))}
+                      
+                      {creatingCategory === 'membros' && !editingMemberId ? (
+                        <div className="col-span-full sm:col-span-2 lg:col-span-2 xl:col-span-2 flex flex-col items-center bg-card border border-border p-4 rounded-xl shadow-sm relative group">
+                          <div className="absolute top-2 right-2 flex gap-1 z-10">
+                            <Button size="icon" variant="ghost" className="h-6 w-6 text-green-500 hover:text-green-600 hover:bg-green-500/10 bg-background/80" onClick={handleSaveMember}><Check className="w-3.5 h-3.5" /></Button>
+                            <Button size="icon" variant="ghost" className="h-6 w-6 text-muted-foreground hover:text-destructive hover:bg-destructive/10 bg-background/80" onClick={() => { setCreatingCategory(null); setMemberForm({ name: '', role: '', turma: '', image_url: '', order_index: 0 }); }}><X className="w-3.5 h-3.5" /></Button>
+                          </div>
+                          <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full mb-3 overflow-hidden border-2 border-primary/20 bg-muted flex items-center justify-center group-hover:border-primary transition-all">
+                            {memberForm.image_url ? (
+                              <img src={memberForm.image_url} className="w-full h-full object-cover" />
+                            ) : (
+                              <Upload className="w-6 h-6 text-muted-foreground" />
+                            )}
+                            <input type="file" accept="image/*" onChange={handleUploadMemberImage} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" disabled={isUploadingMemberImage} title="Adicionar foto" />
+                            {isUploadingMemberImage && <div className="absolute inset-0 bg-black/40 flex items-center justify-center"><Loader2 className="w-5 h-5 animate-spin text-white" /></div>}
+                          </div>
+                          <Input className="h-8 text-sm mb-2 w-full text-center px-2" placeholder="Nome *" value={memberForm.name} onChange={e => setMemberForm({...memberForm, name: e.target.value})} />
+                          <Input className="h-8 text-sm mb-2 w-full text-center px-2" placeholder="Cargo *" value={memberForm.role} onChange={e => setMemberForm({...memberForm, role: e.target.value})} />
+                          <Input className="h-8 text-sm mb-2 w-full text-center px-2" placeholder="Turma *" value={memberForm.turma} onChange={e => setMemberForm({...memberForm, turma: e.target.value})} />
+                        </div>
+                      ) : !editingMemberId && (
+                        <button 
+                          onClick={() => {
+                            setEditingMemberId(null);
+                            setMemberForm({ name: '', role: 'Membro', turma: '', image_url: '', order_index: 2000 });
+                            setCreatingCategory('membros');
                           }}
                           className="flex flex-col items-center justify-center bg-card/30 hover:bg-card border-2 border-dashed border-border hover:border-primary/50 rounded-xl p-4 transition-all group h-full min-h-[180px]"
                         >

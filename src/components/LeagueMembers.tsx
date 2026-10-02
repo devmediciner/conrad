@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { GraduationCap } from 'lucide-react';
 
 const getInitials = (name: string) => {
   if (!name) return '';
@@ -10,6 +11,25 @@ const getInitials = (name: string) => {
     .join('')
     .substring(0, 2)
     .toUpperCase();
+};
+
+export const isProfessorCoordenador = (role: string) => {
+  if (!role) return false;
+  const r = role.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  return r.includes('professor') || r.includes('docente') || r.includes('orientador') || r.includes('coordenador docente') || r.includes('prof.');
+};
+
+export const isDiretoria = (role: string) => {
+  if (!role) return false;
+  if (isProfessorCoordenador(role)) return false;
+  const r = role.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  if (r.includes('presidente') || r.includes('vice-presidente') || r.includes('diretor') || r.includes('secretari') || r.includes('tesoureir') || r.includes('coordenador')) {
+    return true;
+  }
+  if (r.includes('membro') || r.includes('ligante')) {
+    return false;
+  }
+  return true;
 };
 
 export const LeagueMembers = () => {
@@ -45,25 +65,14 @@ export const LeagueMembers = () => {
     );
   }
 
-  // Se não houver membros no banco, exibe nada ou um aviso
+  // Se não houver membros no banco, não exibe nada
   if (members.length === 0) {
     return null;
   }
 
-  const isDiretoria = (role: string) => {
-    if (!role) return false;
-    const r = role.toLowerCase();
-    if (r.includes('presidente') || r.includes('diretor') || r.includes('coordenador') || r.includes('secretári') || r.includes('tesoureir')) {
-      return true;
-    }
-    if (r.includes('membro')) {
-      return false;
-    }
-    return true;
-  };
-
+  const coordenadores = members.filter(m => isProfessorCoordenador(m.role));
   const diretoria = members.filter(m => isDiretoria(m.role));
-  const outrosMembros = members.filter(m => !isDiretoria(m.role));
+  const outrosMembros = members.filter(m => !isProfessorCoordenador(m.role) && !isDiretoria(m.role));
 
   const renderMember = (member: any) => (
     <div key={member.id} className="flex flex-col items-center group">
@@ -86,9 +95,11 @@ export const LeagueMembers = () => {
       <p className="text-xs font-medium text-primary mb-1 text-center">
         {member.role}
       </p>
-      <p className="text-xs text-muted-foreground text-center">
-        {member.turma}
-      </p>
+      {member.turma && (
+        <p className="text-xs text-muted-foreground text-center">
+          {member.turma}
+        </p>
+      )}
     </div>
   );
 
@@ -108,21 +119,39 @@ export const LeagueMembers = () => {
           <h2 className="font-heading text-2xl md:text-3xl font-bold text-foreground mb-3">
             Integrantes da Liga
           </h2>
-
         </div>
 
+        {/* 1. Professor Coordenador */}
+        {coordenadores.length > 0 && (
+          <div className="mb-14">
+            <h3 className="font-heading text-lg sm:text-xl font-bold text-center mb-8 text-primary uppercase tracking-wider flex items-center justify-center gap-2">
+              <GraduationCap className="w-5 h-5 text-primary" />
+              {coordenadores.length > 1 ? 'Professores Coordenadores' : 'Professor Coordenador'}
+            </h3>
+            <div className={`grid gap-6 ${getGridClass(coordenadores.length)}`}>
+              {coordenadores.map(renderMember)}
+            </div>
+          </div>
+        )}
+
+        {/* 2. Diretoria */}
         {diretoria.length > 0 && (
           <div className="mb-12">
-            <h3 className="font-heading text-lg sm:text-xl font-bold text-center mb-8 text-primary/80 uppercase tracking-wider">Diretoria</h3>
+            <h3 className="font-heading text-lg sm:text-xl font-bold text-center mb-8 text-primary/80 uppercase tracking-wider">
+              Diretoria
+            </h3>
             <div className={`grid gap-6 ${getGridClass(diretoria.length)}`}>
               {diretoria.map(renderMember)}
             </div>
           </div>
         )}
 
+        {/* 3. Membros */}
         {outrosMembros.length > 0 && (
           <div>
-            <h3 className="font-heading text-lg sm:text-xl font-bold text-center mb-8 text-primary/80 uppercase tracking-wider">Membros</h3>
+            <h3 className="font-heading text-lg sm:text-xl font-bold text-center mb-8 text-primary/80 uppercase tracking-wider">
+              Membros
+            </h3>
             <div className={`grid gap-6 ${getGridClass(outrosMembros.length)}`}>
               {outrosMembros.map(renderMember)}
             </div>
