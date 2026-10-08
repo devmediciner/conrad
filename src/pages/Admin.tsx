@@ -245,6 +245,10 @@ const Admin = () => {
   const [selectedCaseOfWeekId, setSelectedCaseOfWeekId] = useState<string>('');
   const [isSavingCaseOfWeek, setIsSavingCaseOfWeek] = useState(false);
 
+  // Estados para escolha do artigo da semana
+  const [selectedArticleOfWeekId, setSelectedArticleOfWeekId] = useState<string>('');
+  const [isSavingArticleOfWeek, setIsSavingArticleOfWeek] = useState(false);
+
   useEffect(() => {
     if (cases) {
       const active = cases.find(c => c.is_case_of_the_week);
@@ -253,6 +257,18 @@ const Admin = () => {
       }
     }
   }, [cases]);
+
+  useEffect(() => {
+    if (articles && articles.length > 0) {
+      const active = articles.find(a => 
+        a.is_article_of_the_week || 
+        (a.conteudo && /id="article-spotlight"/i.test(a.conteudo))
+      );
+      if (active) {
+        setSelectedArticleOfWeekId(active.id);
+      }
+    }
+  }, [articles]);
 
   const handleSaveCaseOfWeek = async () => {
     if (!selectedCaseOfWeekId) {
@@ -284,6 +300,52 @@ const Admin = () => {
       toast.error("Erro ao salvar Caso da Semana. Verifique se a coluna is_case_of_the_week já existe no banco de dados.");
     } finally {
       setIsSavingCaseOfWeek(false);
+    }
+  };
+
+  const handleSaveArticleOfWeek = async () => {
+    if (!selectedArticleOfWeekId) {
+      toast.error("Por favor, selecione um artigo.");
+      return;
+    }
+    setIsSavingArticleOfWeek(true);
+    try {
+      const selectedIdStr = String(selectedArticleOfWeekId);
+      const targetArticle = articles.find(a => String(a.id) === selectedIdStr);
+
+      if (!targetArticle) {
+        toast.error("Artigo selecionado não encontrado.");
+        setIsSavingArticleOfWeek(false);
+        return;
+      }
+
+      // 1. Remove a marcação de destaque de qualquer outro artigo que possua
+      const otherArticlesWithSpotlight = articles.filter(a => 
+        String(a.id) !== selectedIdStr && a.conteudo && /id="article-spotlight"/i.test(a.conteudo)
+      );
+      for (const other of otherArticlesWithSpotlight) {
+        const cleaned = other.conteudo.replace(/<div\s+id="article-spotlight"[^>]*><\/div>/gi, '').trim();
+        await supabase.from('articles').update({ conteudo: cleaned }).eq('id', other.id);
+      }
+
+      // 2. Adiciona a tag oculta de destaque no artigo selecionado
+      const baseContent = (targetArticle.conteudo || '').replace(/<div\s+id="article-spotlight"[^>]*><\/div>/gi, '').trim();
+      const updatedContent = `${baseContent}\n<div id="article-spotlight" data-featured="true" style="display: none;"></div>`;
+      
+      const { error: updErr } = await supabase
+        .from('articles')
+        .update({ conteudo: updatedContent })
+        .eq('id', targetArticle.id);
+
+      if (updErr) throw updErr;
+
+      toast.success("Artigo da Semana atualizado com sucesso!");
+      setRefreshKey(prev => prev + 1);
+    } catch (e: any) {
+      console.error("Erro ao salvar Artigo da Semana:", e);
+      toast.error(e?.message || "Erro ao salvar Artigo da Semana.");
+    } finally {
+      setIsSavingArticleOfWeek(false);
     }
   };
 
@@ -788,39 +850,89 @@ const Admin = () => {
 
           {/* CONTEÚDO: ABA CONFIGURAÇÕES */}
           {activeTab === 'config' && (
-            <div className="space-y-6 max-w-2xl">
-              {/* Configurar Caso da Semana */}
-              <div className="bg-card border border-border p-5 rounded-xl shadow-sm space-y-4">
-                <h3 className="text-sm font-semibold flex items-center gap-2">
-                  <Settings className="w-4 h-4 text-primary" /> Configurações da Página Inicial
-                </h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  Selecione qual caso clínico aprovado será destacado no topo da página inicial como "Caso da Semana". Caso nenhum caso seja selecionado, o sistema exibirá automaticamente o caso aprovado mais recente.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-3 items-end sm:items-center">
-                  <div className="flex-1 w-full space-y-1.5">
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Selecionar Caso Clínico</label>
-                    <select
-                      className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1.5 text-xs ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
-                      value={selectedCaseOfWeekId}
-                      onChange={e => setSelectedCaseOfWeekId(e.target.value)}
+            <div className="space-y-6 max-w-4xl">
+              <div className="bg-card border border-border p-6 rounded-2xl shadow-sm space-y-6">
+                <div>
+                  <h3 className="text-base font-bold font-heading flex items-center gap-2 text-foreground">
+                    <Settings className="w-4 h-4 text-primary" /> Configurações da Página Inicial
+                  </h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed mt-1">
+                    Selecione quais conteúdos serão destacados no topo da página inicial como "Caso da Semana" e "Artigo da Semana". Caso nenhum item seja selecionado, o sistema exibirá automaticamente o mais recente.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                  {/* Configurar Caso da Semana */}
+                  <div className="bg-muted/30 border border-border/80 p-5 rounded-xl flex flex-col justify-between space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-primary shrink-0"></span>
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">Caso da Semana</h4>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground leading-relaxed">
+                        Caso clínico em destaque no card principal da esquerda na Home.
+                      </p>
+                      <div className="pt-1">
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">Selecionar Caso Clínico</label>
+                        <select
+                          className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1.5 text-xs ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
+                          value={selectedCaseOfWeekId}
+                          onChange={e => setSelectedCaseOfWeekId(e.target.value)}
+                        >
+                          <option value="">-- Escolha um Caso Aprovado --</option>
+                          {approvedCases.map(c => (
+                            <option key={c.id} value={c.id}>
+                              Caso #{c.case_number} - {c.exam_type} - {c.disease || 'Sem Diagnóstico'}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    <Button
+                      onClick={handleSaveCaseOfWeek}
+                      disabled={isSavingCaseOfWeek || !selectedCaseOfWeekId}
+                      className="w-full h-9 text-xs font-semibold"
                     >
-                      <option value="">-- Escolha um Caso Aprovado --</option>
-                      {approvedCases.map(c => (
-                        <option key={c.id} value={c.id}>
-                          Caso #{c.case_number} - {c.exam_type} - {c.disease || 'Sem Diagnóstico'}
-                        </option>
-                      ))}
-                    </select>
+                      {isSavingCaseOfWeek ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" /> : null}
+                      Definir Caso da Semana
+                    </Button>
                   </div>
-                  <Button
-                    onClick={handleSaveCaseOfWeek}
-                    disabled={isSavingCaseOfWeek || !selectedCaseOfWeekId}
-                    className="w-full sm:w-auto h-9 text-xs font-semibold shrink-0"
-                  >
-                    {isSavingCaseOfWeek ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" /> : null}
-                    Definir Caso da Semana
-                  </Button>
+
+                  {/* Configurar Artigo da Semana */}
+                  <div className="bg-muted/30 border border-border/80 p-5 rounded-xl flex flex-col justify-between space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-primary shrink-0"></span>
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">Artigo da Semana</h4>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground leading-relaxed">
+                        Artigo publicado em destaque no card lateral da direita na Home.
+                      </p>
+                      <div className="pt-1">
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">Selecionar Artigo</label>
+                        <select
+                          className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1.5 text-xs ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
+                          value={selectedArticleOfWeekId}
+                          onChange={e => setSelectedArticleOfWeekId(e.target.value)}
+                        >
+                          <option value="">-- Escolha um Artigo Aprovado --</option>
+                          {approvedArticles.map(a => (
+                            <option key={a.id} value={String(a.id)}>
+                              {a.titulo} ({a.categoria?.toUpperCase() || 'GERAL'})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    <Button
+                      onClick={handleSaveArticleOfWeek}
+                      disabled={isSavingArticleOfWeek || !selectedArticleOfWeekId}
+                      className="w-full h-9 text-xs font-semibold"
+                    >
+                      {isSavingArticleOfWeek ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" /> : null}
+                      Definir Artigo da Semana
+                    </Button>
+                  </div>
                 </div>
               </div>
 

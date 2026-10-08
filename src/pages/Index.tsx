@@ -388,7 +388,10 @@ const Index = () => {
 
                   {articles.length > 0 ? (
                     (() => {
-                      const artigoDaSemana = articles[0];
+                      const artigoDaSemana = articles.find(a => 
+                        a.is_article_of_the_week || 
+                        (a.conteudo && /id="article-spotlight"/i.test(a.conteudo))
+                      ) || articles[0];
                       const summaryMatches = [...(artigoDaSemana.conteudo || '').matchAll(/<h2[^>]*>(.*?)<\/h2>/gi)];
                       const summaryTopics = summaryMatches.map(m => m[1].replace(/:/g, '').trim());
                       if (summaryTopics.length > 0 && summaryTopics[summaryTopics.length - 1].toLowerCase().includes('referência')) {

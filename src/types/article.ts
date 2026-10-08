@@ -9,4 +9,5 @@ export interface Article {
   status: 'pending' | 'approved' | 'rejected';
   related_cases_ids: string[] | null;
   created_at: string;
+  is_article_of_the_week?: boolean | null;
 }

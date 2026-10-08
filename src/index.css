@@ -152,48 +152,58 @@
 }
 
 /* ── Image Styling for Articles and Reader ── */
-.prose img,
+/* Only add visual polish — do NOT override display/width/margin/vertical-align
+   because TipTap saves those inline on each <img> and they must be preserved */
+.article-content-render img,
 .ql-editor img {
   border-radius: 1rem !important;
   border: 1px solid hsl(var(--border) / 0.2) !important;
   box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1) !important;
   max-width: 100% !important;
   max-height: none !important;
-  height: auto !important;
-  object-fit: contain !important;
   cursor: pointer !important;
   transition: transform 0.2s ease, box-shadow 0.2s ease !important;
 }
 
-.prose img:hover,
+.article-content-render img:hover,
 .ql-editor img:hover {
   transform: scale(1.008) !important;
   box-shadow: 0 20px 30px -5px rgb(0 0 0 / 0.15), 0 8px 10px -4px rgb(0 0 0 / 0.1) !important;
 }
 
-/* When a paragraph wraps an inline-block image (i.e. width < 100%),
-   the paragraph itself must also be inline-block so consecutive images sit side by side.
-   The editor stores display:inline-block in the <img> style attribute for partial-width images. */
-.ql-editor p:has(> img[style*="inline-block"]),
-.prose p:has(> img[style*="inline-block"]) {
-  display: inline-block !important;
-  vertical-align: top !important;
-  max-width: 100% !important;
-  margin-bottom: 0.75rem !important;
-}
-
-/* Block images (100%) must be centered and full width */
-.ql-editor p:has(> img[style*="display:block"]),
-.prose p:has(> img[style*="display:block"]) {
-  display: block !important;
-  width: 100% !important;
-  margin-top: 1rem !important;
-  margin-bottom: 1rem !important;
+/* Paragraphs that only/mainly contain inline images: collapse font-size so
+   there is no whitespace gap between consecutive inline-block <img> elements.
+   The images themselves have explicit width/display set via inline style. */
+.article-content-render .ql-editor p:has(> img) {
+  font-size: 0 !important;
+  line-height: 0 !important;
 }
 
 /* TipTap NodeView wrapper in editor */
 .tiptap [data-node-view-wrapper] {
   vertical-align: top !important;
+}
+
+/* Image alignment rules for reader and editor */
+.article-content-render p:has(> img[data-align="center"]),
+.article-content-render p:has(> img.align-center),
+.tiptap p:has([data-node-view-wrapper][data-align="center"]),
+.tiptap p:has(img[data-align="center"]) {
+  text-align: center !important;
+}
+
+.article-content-render p:has(> img[data-align="right"]),
+.article-content-render p:has(> img.align-right),
+.tiptap p:has([data-node-view-wrapper][data-align="right"]),
+.tiptap p:has(img[data-align="right"]) {
+  text-align: right !important;
+}
+
+.article-content-render p:has(> img[data-align="left"]),
+.article-content-render p:has(> img.align-left),
+.tiptap p:has([data-node-view-wrapper][data-align="left"]),
+.tiptap p:has(img[data-align="left"]) {
+  text-align: left !important;
 }
 
 

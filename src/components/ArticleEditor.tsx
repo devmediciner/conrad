@@ -1,4 +1,4 @@
-﻿import { useEditor, EditorContent, ReactNodeViewRenderer, NodeViewWrapper, type NodeViewProps } from "@tiptap/react";
+import { useEditor, EditorContent, ReactNodeViewRenderer, NodeViewWrapper, type NodeViewProps } from "@tiptap/react";
 import { BubbleMenu } from "@tiptap/react/menus";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
@@ -72,16 +72,41 @@ function ResizableImageNodeView({ node, updateAttributes, selected, deleteNode }
   const widthNum = parseInt(liveWidth, 10) || 100;
   const isFull = widthNum >= 95;
   const align = node.attrs.align || "center";
-  const blockMargin = align === "left" ? "1rem 0 1rem 0" : align === "right" ? "1rem 0 1rem auto" : "1rem auto";
+
+  let wrapperMargin: string;
+  if (isFull) {
+    wrapperMargin = align === "left" ? "1rem auto 1rem 0" : align === "right" ? "1rem 0 1rem auto" : "1rem auto";
+  } else {
+    wrapperMargin = align === "left" ? "0.5rem 0.75rem 0.5rem 0" : align === "right" ? "0.5rem 0 0.5rem 0.75rem" : "0.5rem";
+  }
+
   const wrapperStyle: React.CSSProperties = isFull
-    ? { display: "block", width: liveWidth, maxWidth: "100%", margin: blockMargin }
-    : { display: "inline-block", width: liveWidth, maxWidth: "100%", verticalAlign: "top", margin: "0.5rem 0.75rem 0.75rem 0" };
+    ? { display: "block", width: liveWidth, maxWidth: "100%", margin: wrapperMargin }
+    : { display: "inline-block", width: liveWidth, maxWidth: "100%", verticalAlign: "top", margin: wrapperMargin };
+
+  const handleAlign = (newAlign: "left" | "center" | "right") => {
+    updateAttributes({ align: newAlign });
+    try {
+      if (editor) {
+        editor.commands.setTextAlign(newAlign);
+      }
+    } catch {
+      // ignore
+    }
+  };
 
   /* KEY FIX: only show controls when THIS image is ProseMirror-selected (clicked) */
   const showControls = selected || isResizing;
 
   return (
-    <NodeViewWrapper ref={containerRef} style={wrapperStyle} className="relative select-none">
+    <NodeViewWrapper
+      ref={containerRef}
+      data-align={align}
+      style={wrapperStyle}
+      className={`conrad-node-img-wrapper relative select-none ${
+        align === "center" ? "mx-auto" : align === "right" ? "ml-auto" : "mr-auto"
+      }`}
+    >
       <div className={`relative rounded-xl overflow-visible ${showControls ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""}`}>
         <img ref={imgRef} src={node.attrs.src} alt={node.attrs.alt || ""} className="w-full h-auto object-contain rounded-xl block border border-border/20 shadow-md" />
         {isResizing && (
@@ -95,9 +120,36 @@ function ResizableImageNodeView({ node, updateAttributes, selected, deleteNode }
         )}
         {showControls && (
           <div className="absolute -top-11 left-1/2 -translate-x-1/2 z-40 flex items-center gap-0.5 bg-card/98 border border-border px-2 py-1.5 rounded-xl shadow-2xl backdrop-blur-md whitespace-nowrap">
-            <button type="button" onClick={() => updateAttributes({ align: "left" })} className={`p-1 rounded transition-colors ${align === "left" && isFull ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted"}`} title="Alinhar à esquerda"><AlignLeft className="w-3.5 h-3.5" /></button>
-            <button type="button" onClick={() => updateAttributes({ align: "center" })} className={`p-1 rounded transition-colors ${(align === "center" || !align) && isFull ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted"}`} title="Centralizar"><AlignCenter className="w-3.5 h-3.5" /></button>
-            <button type="button" onClick={() => updateAttributes({ align: "right" })} className={`p-1 rounded transition-colors ${align === "right" && isFull ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted"}`} title="Alinhar à direita"><AlignRight className="w-3.5 h-3.5" /></button>
+            <button
+              type="button"
+              onClick={() => handleAlign("left")}
+              className={`p-1 rounded transition-colors ${
+                align === "left" ? "bg-primary/20 text-primary font-bold" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+              }`}
+              title="Alinhar à esquerda"
+            >
+              <AlignLeft className="w-3.5 h-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => handleAlign("center")}
+              className={`p-1 rounded transition-colors ${
+                align === "center" || !align ? "bg-primary/20 text-primary font-bold" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+              }`}
+              title="Centralizar"
+            >
+              <AlignCenter className="w-3.5 h-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => handleAlign("right")}
+              className={`p-1 rounded transition-colors ${
+                align === "right" ? "bg-primary/20 text-primary font-bold" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+              }`}
+              title="Alinhar à direita"
+            >
+              <AlignRight className="w-3.5 h-3.5" />
+            </button>
             <div className="w-px h-3.5 bg-border mx-0.5" />
             <button type="button" onClick={() => updateAttributes({ width: "100%" })} className={`text-[10px] px-1.5 py-0.5 rounded transition-colors ${isFull ? "bg-primary text-primary-foreground font-bold" : "text-muted-foreground hover:text-foreground hover:bg-muted"}`} title="Largura total">100%</button>
             <button type="button" onClick={() => updateAttributes({ width: "75%" })} className={`text-[10px] px-1.5 py-0.5 rounded transition-colors ${widthNum >= 73 && widthNum <= 77 ? "bg-primary/20 text-primary font-bold" : "text-muted-foreground hover:text-foreground hover:bg-muted"}`} title="75%">75%</button>
@@ -115,6 +167,8 @@ function ResizableImageNodeView({ node, updateAttributes, selected, deleteNode }
 /* ResizableImage TipTap Extension */
 const ResizableImage = Image.extend({
   name: "image",
+  inline() { return true; },
+  group() { return "inline"; },
   addAttributes() {
     return {
       ...this.parent?.(),
@@ -125,26 +179,32 @@ const ResizableImage = Image.extend({
       },
       align: {
         default: "center",
-        parseHTML: element => element.getAttribute("data-align") || "center",
+        parseHTML: element => element.getAttribute("data-align") || element.getAttribute("align") || "center",
         renderHTML: attributes => ({ "data-align": attributes.align || "center" }),
       },
     };
   },
   renderHTML({ HTMLAttributes }) {
     const width = HTMLAttributes.width || "100%";
-    const align = HTMLAttributes["data-align"] || "center";
+    const align = HTMLAttributes["data-align"] || HTMLAttributes.align || "center";
     const widthNum = parseInt(width, 10) || 100;
     const isFull = widthNum >= 95;
     const display = isFull ? "block" : "inline-block";
-    const margin = isFull
-      ? (align === "left" ? "1rem 0" : align === "right" ? "1rem 0 1rem auto" : "1rem auto")
-      : "0.5rem 0.75rem 0.75rem 0";
+
+    let margin: string;
+    if (isFull) {
+      margin = align === "left" ? "1rem auto 1rem 0" : align === "right" ? "1rem 0 1rem auto" : "1rem auto";
+    } else {
+      margin = align === "left" ? "0.5rem 0.75rem 0.5rem 0" : align === "right" ? "0.5rem 0 0.5rem 0.75rem" : "0.5rem";
+    }
+
     return [
       "img",
       {
         ...HTMLAttributes,
         width,
-        class: "conrad-article-img",
+        "data-align": align,
+        class: `conrad-article-img align-${align}`,
         style: `width:${width}; max-width:100%; height:auto; object-fit:contain; display:${display}; vertical-align:top; margin:${margin};`,
       },
     ];
