@@ -151,13 +151,71 @@ export default function LerArtigo() {
         items.push({ id, text: h2.textContent?.replace(/:/g, '').trim() || '' });
       });
 
-      // Garantir alinhamento de imagens e seus parágrafos
+      // Combinar parágrafos consecutivos que contenham apenas imagens de meia-largura (50% ou 33%)
+      const allP = Array.from(doc.querySelectorAll('p'));
+      for (let i = 0; i < allP.length; i++) {
+        const currentP = allP[i];
+        if (!currentP.parentNode) continue;
+        const currentImgs = currentP.querySelectorAll('img');
+        const currentText = currentP.textContent?.trim() || '';
+
+        if (currentText === '' && currentImgs.length > 0) {
+          const isCurrentPartial = Array.from(currentImgs).every((img) => {
+            const w = img.style.width || img.getAttribute('width') || '';
+            const wNum = parseInt(w, 10);
+            return (wNum > 0 && wNum <= 55) || w.includes('50%') || w.includes('48%') || img.classList.contains('img-half-width');
+          });
+
+          if (isCurrentPartial) {
+            let nextEl = currentP.nextElementSibling;
+            while (nextEl && nextEl.tagName.toLowerCase() === 'p') {
+              const nextImgs = nextEl.querySelectorAll('img');
+              const nextText = nextEl.textContent?.trim() || '';
+              if (nextText === '' && nextImgs.length > 0) {
+                const isNextPartial = Array.from(nextImgs).every((img) => {
+                  const w = img.style.width || img.getAttribute('width') || '';
+                  const wNum = parseInt(w, 10);
+                  return (wNum > 0 && wNum <= 55) || w.includes('50%') || w.includes('48%') || img.classList.contains('img-half-width');
+                });
+
+                if (isNextPartial) {
+                  nextImgs.forEach((img) => currentP.appendChild(img));
+                  const toRemove = nextEl;
+                  nextEl = nextEl.nextElementSibling;
+                  toRemove.remove();
+                  continue;
+                }
+              }
+              break;
+            }
+          }
+        }
+      }
+
+      // Garantir alinhamento de imagens e seus parágrafos, e normalizar larguras de 50%
       const imgElements = doc.querySelectorAll('img');
       imgElements.forEach((img) => {
         const align = img.getAttribute('data-align') || img.getAttribute('align') || 'center';
         const parentP = img.closest('p');
         if (parentP && (!parentP.style.textAlign || parentP.style.textAlign === 'start')) {
           parentP.style.textAlign = align;
+        }
+
+        const rawWidth = img.getAttribute('width') || img.style.width || '';
+        const widthNum = parseInt(rawWidth, 10) || 100;
+        const isHalf = (widthNum >= 45 && widthNum <= 55) || rawWidth.includes('50%') || rawWidth.includes('48%');
+        const isThird = (widthNum >= 28 && widthNum <= 36) || rawWidth.includes('33%') || rawWidth.includes('31%');
+
+        if (isHalf) {
+          img.classList.add('img-half-width');
+          img.style.width = 'calc(50% - 8px)';
+          img.style.boxSizing = 'border-box';
+          img.style.margin = '0.5rem 4px';
+        } else if (isThird) {
+          img.classList.add('img-third-width');
+          img.style.width = 'calc(33.333% - 8px)';
+          img.style.boxSizing = 'border-box';
+          img.style.margin = '0.5rem 4px';
         }
       });
 

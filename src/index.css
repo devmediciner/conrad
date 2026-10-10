@@ -152,8 +152,13 @@
 }
 
 /* ── Image Styling for Articles and Reader ── */
-/* Only add visual polish — do NOT override display/width/margin/vertical-align
-   because TipTap saves those inline on each <img> and they must be preserved */
+.article-content-render img,
+.ql-editor img,
+.tiptap img,
+.conrad-node-img-wrapper {
+  box-sizing: border-box !important;
+}
+
 .article-content-render img,
 .ql-editor img {
   border-radius: 1rem !important;
@@ -171,39 +176,117 @@
   box-shadow: 0 20px 30px -5px rgb(0 0 0 / 0.15), 0 8px 10px -4px rgb(0 0 0 / 0.1) !important;
 }
 
-/* Paragraphs that only/mainly contain inline images: collapse font-size so
-   there is no whitespace gap between consecutive inline-block <img> elements.
-   The images themselves have explicit width/display set via inline style. */
-.article-content-render .ql-editor p:has(> img) {
-  font-size: 0 !important;
-  line-height: 0 !important;
-}
-
 /* TipTap NodeView wrapper in editor */
 .tiptap [data-node-view-wrapper] {
   vertical-align: top !important;
 }
 
-/* Image alignment rules for reader and editor */
-.article-content-render p:has(> img[data-align="center"]),
-.article-content-render p:has(> img.align-center),
-.tiptap p:has([data-node-view-wrapper][data-align="center"]),
-.tiptap p:has(img[data-align="center"]) {
+/* ── Side-by-side Layout for 50% and multiple images ── */
+/* When a paragraph in editor or reader contains 2 or more images, align them side by side */
+.tiptap p:has(> .conrad-node-img-wrapper:nth-child(2)),
+.article-content-render p:has(> img:nth-child(2)),
+.ql-editor p:has(> img:nth-child(2)) {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 12px !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+  line-height: normal !important;
+}
+
+.tiptap p:has(> .conrad-node-img-wrapper[data-align="left"]:nth-child(2)),
+.article-content-render p:has(> img.align-left:nth-child(2)),
+.article-content-render p:has(> img[data-align="left"]:nth-child(2)),
+.ql-editor p:has(> img.align-left:nth-child(2)),
+.ql-editor p:has(> img[data-align="left"]:nth-child(2)) {
+  justify-content: flex-start !important;
+}
+
+.tiptap p:has(> .conrad-node-img-wrapper[data-align="right"]:nth-child(2)),
+.article-content-render p:has(> img.align-right:nth-child(2)),
+.article-content-render p:has(> img[data-align="right"]:nth-child(2)),
+.ql-editor p:has(> img.align-right:nth-child(2)),
+.ql-editor p:has(> img[data-align="right"]:nth-child(2)) {
+  justify-content: flex-end !important;
+}
+
+.tiptap p:has(> .conrad-node-img-wrapper:nth-child(2)) > .conrad-node-img-wrapper,
+.article-content-render p:has(> img:nth-child(2)) > img,
+.ql-editor p:has(> img:nth-child(2)) > img {
+  margin: 0 !important;
+  flex: 0 1 calc(50% - 6px) !important;
+  max-width: calc(50% - 6px) !important;
+  width: calc(50% - 6px) !important;
+  display: inline-block !important;
+  vertical-align: top !important;
+}
+
+/* Sibling paragraphs with single 50% images also flow side-by-side gracefully */
+.tiptap p:has(> .conrad-node-img-wrapper[data-half="true"]:only-child),
+.article-content-render p:has(> img.img-half-width:only-child),
+.article-content-render p:has(> img[width="50%"]:only-child),
+.article-content-render p:has(> img[width="48%"]:only-child),
+.ql-editor p:has(> img.img-half-width:only-child),
+.ql-editor p:has(> img[width="50%"]:only-child),
+.ql-editor p:has(> img[width="48%"]:only-child) {
+  display: inline-block !important;
+  width: calc(50% - 6px) !important;
+  vertical-align: top !important;
+  margin-left: 3px !important;
+  margin-right: 3px !important;
+  margin-top: 0.5rem !important;
+  margin-bottom: 0.5rem !important;
+}
+
+/* Inside a single-image half-width paragraph, the wrapper expands to fill the 50% paragraph */
+.tiptap p:has(> .conrad-node-img-wrapper[data-half="true"]:only-child) > .conrad-node-img-wrapper,
+.article-content-render p:has(> img.img-half-width:only-child) > img,
+.article-content-render p:has(> img[width="50%"]:only-child) > img,
+.article-content-render p:has(> img[width="48%"]:only-child) > img,
+.ql-editor p:has(> img.img-half-width:only-child) > img,
+.ql-editor p:has(> img[width="50%"]:only-child) > img,
+.ql-editor p:has(> img[width="48%"]:only-child) > img {
+  width: 100% !important;
+  max-width: 100% !important;
+  display: block !important;
+  margin: 0 !important;
+}
+
+/* Image alignment rules for reader and editor (single images) */
+.article-content-render p:has(> img[data-align="center"]:only-child),
+.article-content-render p:has(> img.align-center:only-child),
+.tiptap p:has([data-node-view-wrapper][data-align="center"]:only-child),
+.tiptap p:has(img[data-align="center"]:only-child) {
   text-align: center !important;
 }
 
-.article-content-render p:has(> img[data-align="right"]),
-.article-content-render p:has(> img.align-right),
-.tiptap p:has([data-node-view-wrapper][data-align="right"]),
-.tiptap p:has(img[data-align="right"]) {
+.article-content-render p:has(> img[data-align="right"]:only-child),
+.article-content-render p:has(> img.align-right:only-child),
+.tiptap p:has([data-node-view-wrapper][data-align="right"]:only-child),
+.tiptap p:has(img[data-align="right"]:only-child) {
   text-align: right !important;
 }
 
-.article-content-render p:has(> img[data-align="left"]),
-.article-content-render p:has(> img.align-left),
-.tiptap p:has([data-node-view-wrapper][data-align="left"]),
-.tiptap p:has(img[data-align="left"]) {
+.article-content-render p:has(> img[data-align="left"]:only-child),
+.article-content-render p:has(> img.align-left:only-child),
+.tiptap p:has([data-node-view-wrapper][data-align="left"]:only-child),
+.tiptap p:has(img[data-align="left"]:only-child) {
   text-align: left !important;
+}
+
+@media (max-width: 540px) {
+  .tiptap p:has(> .conrad-node-img-wrapper[data-half="true"]:only-child),
+  .article-content-render p:has(> img.img-half-width:only-child),
+  .article-content-render p:has(> img[width="50%"]:only-child),
+  .article-content-render p:has(> img[width="48%"]:only-child),
+  .ql-editor p:has(> img.img-half-width:only-child),
+  .ql-editor p:has(> img[width="50%"]:only-child),
+  .ql-editor p:has(> img[width="48%"]:only-child) {
+    width: 100% !important;
+    display: block !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
 }
 
 
@@ -284,9 +367,27 @@
 .prose img[width="50%"] + p:has(> em),
 .prose img[width="50%"] + p:has(> i),
 .prose img[width="50%"] + p[style*="italic"],
+.prose img[width="48%"] + p:has(> em),
+.prose img[width="48%"] + p:has(> i),
+.prose img[width="48%"] + p[style*="italic"],
+.prose img[width*="50%"] + p:has(> em),
+.prose img[width*="50%"] + p:has(> i),
+.prose img[width*="50%"] + p[style*="italic"],
+.prose img.img-half-width + p:has(> em),
+.prose img.img-half-width + p:has(> i),
+.prose img.img-half-width + p[style*="italic"],
 .ql-editor img[width="50%"] + p:has(> em),
 .ql-editor img[width="50%"] + p:has(> i),
-.ql-editor img[width="50%"] + p[style*="italic"] {
+.ql-editor img[width="50%"] + p[style*="italic"],
+.ql-editor img[width="48%"] + p:has(> em),
+.ql-editor img[width="48%"] + p:has(> i),
+.ql-editor img[width="48%"] + p[style*="italic"],
+.ql-editor img[width*="50%"] + p:has(> em),
+.ql-editor img[width*="50%"] + p:has(> i),
+.ql-editor img[width*="50%"] + p[style*="italic"],
+.ql-editor img.img-half-width + p:has(> em),
+.ql-editor img.img-half-width + p:has(> i),
+.ql-editor img.img-half-width + p[style*="italic"] {
   width: 50% !important;
 }
 

@@ -1301,36 +1301,24 @@ const ArticleModal = ({ open, onOpenChange, isAdmin, onSuccess, articleToEdit, c
   };
 
   // Upload de imagem do PC diretamente para o corpo do texto (Rich Text)
-  const handleContentImageUpload = useCallback(() => {
-    const input = document.createElement('input');
-    input.setAttribute('type', 'file');
-    input.setAttribute('accept', 'image/*');
-    input.click();
+  const handleUploadContentImage = useCallback(async (file: File): Promise<string> => {
+    setIsUploadingContentImg(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `content-${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+      const filePath = `articles/${fileName}`;
 
-    input.onchange = async () => {
-      if (input.files && input.files[0]) {
-        const file = input.files[0];
-        setIsUploadingContentImg(true);
-        try {
-          const fileExt = file.name.split('.').pop();
-          const fileName = `content-${Math.random()}.${fileExt}`;
-          const filePath = `articles/${fileName}`;
+      const { error: uploadError } = await supabase.storage.from('images').upload(filePath, file);
+      if (uploadError) throw uploadError;
 
-          const { error: uploadError } = await supabase.storage.from('images').upload(filePath, file);
-          if (uploadError) throw uploadError;
-
-          const { data } = supabase.storage.from('images').getPublicUrl(filePath);
-          // Insert the uploaded image URL into the editor content
-          setConteudo(prev => prev + `<img src="${data.publicUrl}" />`);
-          toast.success('Imagem inserida no artigo!');
-        } catch (error) {
-          console.error(error);
-          toast.error('Erro ao enviar imagem para o texto.');
-        } finally {
-          setIsUploadingContentImg(false);
-        }
-      }
-    };
+      const { data } = supabase.storage.from('images').getPublicUrl(filePath);
+      return data.publicUrl;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    } finally {
+      setIsUploadingContentImg(false);
+    }
   }, []);
 
   // Lida com o Upload de imagem para o Supabase Storage
@@ -1589,7 +1577,7 @@ const ArticleModal = ({ open, onOpenChange, isAdmin, onSuccess, articleToEdit, c
             <ArticleEditor
               value={conteudo}
               onChange={setConteudo}
-              onImageUpload={handleContentImageUpload}
+              onUploadImage={handleUploadContentImage}
               isUploadingImage={isUploadingContentImg}
               placeholder="Comece a escrever seu artigo aqui..."
               className="flex-1 flex flex-col overflow-hidden border-none rounded-none bg-muted/15"
