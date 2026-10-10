@@ -31,7 +31,15 @@ export default function LerArtigo() {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
+    if (theme === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
+
+    return () => {
+      document.documentElement.removeAttribute('data-theme');
+    };
   }, [theme]);
 
   const toggleTheme = () => {
@@ -329,112 +337,209 @@ export default function LerArtigo() {
           </motion.div>
         </div>
 
-        {/* Container do Texto - Mais largo no PC e largura total no Celular */}
-        <div className="w-full max-w-5xl mx-auto">
-          <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.15 }}>
-            <div className="w-full bg-card/60 [data-theme=light]:bg-white [data-theme=light]:shadow-[0_10px_40px_rgba(0,0,0,0.05)] [data-theme=light]:border-slate-200/90 border border-border/50 rounded-2xl sm:rounded-3xl p-3.5 sm:p-8 md:p-12 lg:p-14 transition-colors duration-300">
-            {toc.length > 0 && (
-              <div className="mb-10 p-5 sm:p-6 bg-muted/40 [data-theme=light]:bg-slate-50 [data-theme=light]:border-slate-200 border border-border/80 rounded-2xl sm:rounded-3xl shadow-sm backdrop-blur-sm">
-                <h3 className="font-heading text-xs sm:text-sm font-bold text-primary uppercase tracking-wider mb-4 flex items-center gap-2">
-                  <List className="w-4 h-4 text-primary" /> Sumário do Artigo
-                </h3>
-                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2.5">
-                  {toc.map((item) => (
-                    <li key={item.id}>
-                      <a
-                        href={`#${item.id}`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          const el = document.getElementById(item.id);
-                          if (el) {
-                            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                            window.history.pushState(null, '', `#${item.id}`);
-                          }
-                        }}
-                        className="text-xs sm:text-sm text-muted-foreground [data-theme=light]:text-slate-700 hover:text-primary transition-colors hover:underline flex items-start gap-2 leading-relaxed"
-                      >
-                        <span className="text-primary font-bold font-mono">→</span>
-                        <span>{item.text}</span>
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+        {/* Container do Texto e Sidebar */}
+        <div className={`w-full ${casosRelacionados.length > 0 ? 'max-w-7xl' : 'max-w-5xl'} mx-auto`}>
+          {/* ON MOBILE: Casos Relacionados no Topo (em cima no celular) */}
+          {casosRelacionados.length > 0 && (
+            <div className="block lg:hidden mb-8">
+              <div className="p-4 sm:p-5 bg-card/70 [data-theme=light]:bg-white [data-theme=light]:border-slate-200 border border-border/70 rounded-2xl sm:rounded-3xl shadow-sm backdrop-blur-sm">
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-primary/20 flex items-center justify-center text-primary font-bold shadow-sm">
+                      <FileText className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h3 className="font-heading text-xs sm:text-sm font-bold text-foreground">
+                        Casos Práticos Relacionados
+                      </h3>
+                      <p className="text-[11px] text-muted-foreground">
+                        Toque em um caso para analisar as imagens
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-bold font-mono px-2 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/25">
+                    {casosRelacionados.length} {casosRelacionados.length === 1 ? 'caso' : 'casos'}
+                  </span>
+                </div>
 
-            {/* Conteúdo Renderizado - Fluido, intuitivo e com imagens sem corte de altura */}
-            <div className="ql-snow article-content-render">
-               <div 
-                onClick={handleContentClick}
-                className="ql-editor !p-0 w-full max-w-none text-foreground/90 [data-theme=light]:text-slate-800 text-base md:text-[18px] lg:text-[19px] !leading-[1.85] tracking-[-0.01em] break-words 
-                  [&_h1]:!text-3xl md:[&_h1]:!text-4xl lg:[&_h1]:!text-5xl [&_h1]:!font-extrabold [&_h1]:!tracking-tight [&_h1]:!mt-14 [&_h1]:!mb-6 [&_h1]:!text-foreground [data-theme=light]:[&_h1]:!text-slate-900 [&_h1]:!leading-tight
-                  [&_h2]:!text-2xl md:[&_h2]:!text-3xl lg:[&_h2]:!text-4xl [&_h2]:!font-bold [&_h2]:!tracking-tight [&_h2]:!mt-12 [&_h2]:!mb-4 [&_h2]:!text-foreground [data-theme=light]:[&_h2]:!text-slate-900 [&_h2]:!border-b [&_h2]:!border-border/50 [data-theme=light]:[&_h2]:!border-slate-200 [&_h2]:!pb-2.5 [&_h2]:scroll-mt-24
-                  [&_h3]:!text-xl md:[&_h3]:!text-2xl lg:[&_h3]:!text-3xl [&_h3]:!font-semibold [&_h3]:!tracking-tight [&_h3]:!mt-8 [&_h3]:!mb-3.5 [&_h3]:!text-foreground [data-theme=light]:[&_h3]:!text-slate-900
-                  [&_p]:!mb-6 [&_p]:text-foreground/85 [data-theme=light]:[&_p]:text-slate-700
-                  [&_strong]:!font-bold [&_strong]:!text-foreground [data-theme=light]:[&_strong]:!text-slate-900
-                  [&_a]:!text-primary [&_a]:!font-semibold [&_a]:!underline [&_a]:!underline-offset-4 [&_a]:!decoration-primary/30 hover:[&_a]:!decoration-primary [&_a]:transition-colors
-                  [&_ul]:!list-disc [&_ul_li]:!list-disc [&_ul]:!pl-6 [&_ul]:!mb-6 [&_ul]:!space-y-2 [&_li]:!pl-1 [&_li]:marker:!text-primary [&_li::before]:!content-none [&_li]:!list-item [&_li_p]:!m-0
-                  [&_ol]:!list-decimal [&_ol_li]:!list-decimal [&_ol]:!pl-6 [&_ol]:!mb-6 [&_ol]:!space-y-2 [&_li]:!pl-1 [&_li]:marker:!text-primary [&_li]:marker:!font-bold [&_li::before]:!content-none [&_li]:!list-item [&_li_p]:!m-0
-                  [&_blockquote]:!border-l-4 [&_blockquote]:!border-primary [&_blockquote]:!pl-6 [&_blockquote]:!py-3 [&_blockquote]:!my-8 [&_blockquote]:!italic [&_blockquote]:!text-foreground/80 [data-theme=light]:[&_blockquote]:!text-slate-800 [&_blockquote]:!bg-muted/40 [data-theme=light]:[&_blockquote]:!bg-amber-500/[0.07] [&_blockquote]:!rounded-r-2xl
-                  [&_iframe]:!w-full [&_iframe]:!aspect-video [&_iframe]:!rounded-2xl [&_iframe]:!shadow-xl [&_iframe]:!my-10 [&_iframe]:!border-0"
-                dangerouslySetInnerHTML={{ __html: processedContent }} 
-              />
-            </div>
-
-            {/* Listagem Dinâmica de Casos Relacionados */}
-            {casosRelacionados.length > 0 && (
-              <div className="mt-16 space-y-6">
-                <h3 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2 border-b border-border/50 [data-theme=light]:border-slate-200 pb-4">
-                  <FileText className="w-5 h-5 text-primary" /> Estude {casosRelacionados.length > 1 ? 'estes Casos Práticos' : 'este Caso Prático'}
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                {/* Carrossel Horizontal de Casos no Celular */}
+                <div className="flex gap-3 overflow-x-auto pb-2 pt-1 -mx-2 px-2 scrollbar-none snap-x snap-mandatory">
                   {casosRelacionados.map((caso) => (
-                    <div 
-                      key={caso.id} 
-                      onClick={() => setActiveCaseModal(caso)} 
-                      className="group flex flex-col p-4 bg-muted/20 [data-theme=light]:bg-slate-50 hover:bg-muted/45 [data-theme=light]:hover:bg-slate-100 rounded-3xl border border-border [data-theme=light]:border-slate-200 hover:border-primary/45 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer text-left"
+                    <div
+                      key={caso.id}
+                      onClick={() => setActiveCaseModal(caso)}
+                      className="snap-start shrink-0 w-[260px] sm:w-[290px] group flex flex-col p-3 bg-background/80 [data-theme=light]:bg-slate-50 hover:bg-muted/50 [data-theme=light]:hover:bg-amber-50/50 rounded-2xl border border-border/70 [data-theme=light]:border-slate-200 hover:border-primary/50 shadow-sm cursor-pointer transition-all"
                     >
-                      {/* Imagem do Caso */}
-                      <div className="w-full h-40 rounded-2xl overflow-hidden bg-background border border-border/50 shadow-inner shrink-0 relative mb-4">
+                      <div className="w-full h-28 rounded-xl overflow-hidden bg-background border border-border/40 shrink-0 relative mb-2.5">
                         {caso.images?.[0] ? (
-                          <img src={caso.images[0]} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Imagem do Caso" />
+                          <img src={caso.images[0]} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Caso" />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-muted-foreground bg-muted/30 uppercase font-bold text-lg">{caso.exam_type}</div>
+                          <div className="w-full h-full flex items-center justify-center text-muted-foreground bg-muted/30 uppercase font-bold text-xs">{caso.exam_type}</div>
                         )}
-                        <span className="absolute top-2.5 right-2.5 text-[9px] px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-white border border-white/10 uppercase font-bold tracking-wider">
+                        <span className="absolute top-2 left-2 text-[9px] px-2 py-0.5 rounded-full bg-primary text-primary-foreground font-black uppercase tracking-wider shadow">
                           {caso.exam_type}
                         </span>
+                        <span className="absolute top-2 right-2 text-[9px] px-1.5 py-0.5 rounded-full bg-black/70 text-white font-mono font-bold border border-white/10 shadow">
+                          #{caso.case_number}
+                        </span>
                       </div>
-
-                      {/* Conteúdo e Informações */}
                       <div className="flex-1 flex flex-col justify-between">
                         <div>
-                          {/* Idade e Sexo */}
-                          <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                          <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
                             <span>{caso.age} anos</span>
                             <span className="text-border/80">•</span>
                             <span>{caso.sex}</span>
                           </div>
-                          
-                          {/* Caso Clínico */}
-                          <p className="text-sm text-foreground/85 font-medium leading-relaxed line-clamp-3 mt-2 group-hover:text-foreground transition-colors duration-200">
+                          <p className="text-xs text-foreground/85 font-medium leading-relaxed line-clamp-2 mt-1.5 group-hover:text-foreground">
                             {stripHtml(caso.clinical_case)}
                           </p>
                         </div>
-
-                        {/* Botão de Rodapé */}
-                        <div className="mt-4 pt-3 border-t border-border/40 [data-theme=light]:border-slate-200 flex items-center justify-between text-xs text-primary font-semibold group-hover:underline decoration-primary/40 underline-offset-2">
+                        <div className="mt-2.5 pt-2 border-t border-border/40 [data-theme=light]:border-slate-200 flex items-center justify-between text-[11px] text-primary font-bold group-hover:underline">
                           <span>Estudar Caso</span>
-                          <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                          <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
                         </div>
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
-            )}
             </div>
-          </motion.div>
+          )}
+
+          {/* Layout Principal: Artigo à esquerda + Sidebar à direita no PC */}
+          <div className="flex flex-col lg:flex-row gap-8 items-start">
+            {/* Coluna Principal: Artigo */}
+            <div className="flex-1 w-full min-w-0">
+              <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.15 }}>
+                <div className="w-full bg-card/60 [data-theme=light]:bg-white [data-theme=light]:shadow-[0_10px_40px_rgba(0,0,0,0.05)] [data-theme=light]:border-slate-200/90 border border-border/50 rounded-2xl sm:rounded-3xl p-3.5 sm:p-8 md:p-12 lg:p-14 transition-colors duration-300">
+                  {toc.length > 0 && (
+                    <div className="mb-10 p-5 sm:p-6 bg-muted/40 [data-theme=light]:bg-slate-50 [data-theme=light]:border-slate-200 border border-border/80 rounded-2xl sm:rounded-3xl shadow-sm backdrop-blur-sm">
+                      <h3 className="font-heading text-xs sm:text-sm font-bold text-primary uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <List className="w-4 h-4 text-primary" /> Sumário do Artigo
+                      </h3>
+                      <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2.5">
+                        {toc.map((item) => (
+                          <li key={item.id}>
+                            <a
+                              href={`#${item.id}`}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                const el = document.getElementById(item.id);
+                                if (el) {
+                                  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                  window.history.pushState(null, '', `#${item.id}`);
+                                }
+                              }}
+                              className="text-xs sm:text-sm text-muted-foreground [data-theme=light]:text-slate-700 hover:text-primary transition-colors hover:underline flex items-start gap-2 leading-relaxed"
+                            >
+                              <span className="text-primary font-bold font-mono">→</span>
+                              <span>{item.text}</span>
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Conteúdo Renderizado */}
+                  <div className="ql-snow article-content-render">
+                    <div 
+                      onClick={handleContentClick}
+                      className="ql-editor !p-0 w-full max-w-none text-foreground/90 [data-theme=light]:text-slate-800 text-base md:text-[18px] lg:text-[19px] !leading-[1.85] tracking-[-0.01em] break-words 
+                        [&_h1]:!text-3xl md:[&_h1]:!text-4xl lg:[&_h1]:!text-5xl [&_h1]:!font-extrabold [&_h1]:!tracking-tight [&_h1]:!mt-14 [&_h1]:!mb-6 [&_h1]:!text-foreground [data-theme=light]:[&_h1]:!text-slate-900 [&_h1]:!leading-tight
+                        [&_h2]:!text-2xl md:[&_h2]:!text-3xl lg:[&_h2]:!text-4xl [&_h2]:!font-bold [&_h2]:!tracking-tight [&_h2]:!mt-12 [&_h2]:!mb-4 [&_h2]:!text-foreground [data-theme=light]:[&_h2]:!text-slate-900 [&_h2]:!border-b [&_h2]:!border-border/50 [data-theme=light]:[&_h2]:!border-slate-200 [&_h2]:!pb-2.5 [&_h2]:scroll-mt-24
+                        [&_h3]:!text-xl md:[&_h3]:!text-2xl lg:[&_h3]:!text-3xl [&_h3]:!font-semibold [&_h3]:!tracking-tight [&_h3]:!mt-8 [&_h3]:!mb-3.5 [&_h3]:!text-foreground [data-theme=light]:[&_h3]:!text-slate-900
+                        [&_p]:!mb-6 [&_p]:text-foreground/85 [data-theme=light]:[&_p]:text-slate-700
+                        [&_strong]:!font-bold [&_strong]:!text-foreground [data-theme=light]:[&_strong]:!text-slate-900
+                        [&_a]:!text-primary [&_a]:!font-semibold [&_a]:!underline [&_a]:!underline-offset-4 [&_a]:!decoration-primary/30 hover:[&_a]:!decoration-primary [&_a]:transition-colors
+                        [&_ul]:!list-disc [&_ul_li]:!list-disc [&_ul]:!pl-6 [&_ul]:!mb-6 [&_ul]:!space-y-2 [&_li]:!pl-1 [&_li]:marker:!text-primary [&_li::before]:!content-none [&_li]:!list-item [&_li_p]:!m-0
+                        [&_ol]:!list-decimal [&_ol_li]:!list-decimal [&_ol]:!pl-6 [&_ol]:!mb-6 [&_ol]:!space-y-2 [&_li]:!pl-1 [&_li]:marker:!text-primary [&_li]:marker:!font-bold [&_li::before]:!content-none [&_li]:!list-item [&_li_p]:!m-0
+                        [&_blockquote]:!border-l-4 [&_blockquote]:!border-primary [&_blockquote]:!pl-6 [&_blockquote]:!py-3 [&_blockquote]:!my-8 [&_blockquote]:!italic [&_blockquote]:!text-foreground/80 [data-theme=light]:[&_blockquote]:!text-slate-800 [&_blockquote]:!bg-muted/40 [data-theme=light]:[&_blockquote]:!bg-amber-500/[0.07] [&_blockquote]:!rounded-r-2xl
+                        [&_iframe]:!w-full [&_iframe]:!aspect-video [&_iframe]:!rounded-2xl [&_iframe]:!shadow-xl [&_iframe]:!my-10 [&_iframe]:!border-0"
+                      dangerouslySetInnerHTML={{ __html: processedContent }} 
+                    />
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+
+            {/* ON PC: Sidebar Lateral Fixa (do lado no PC) */}
+            {casosRelacionados.length > 0 && (
+              <aside className="hidden lg:block w-[330px] xl:w-[370px] shrink-0 sticky top-24 self-start">
+                <div className="bg-card/70 [data-theme=light]:bg-white [data-theme=light]:border-slate-200 border border-border/70 rounded-3xl p-5 shadow-lg backdrop-blur-md space-y-4">
+                  <div className="flex items-center justify-between border-b border-border/50 [data-theme=light]:border-slate-200 pb-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-primary/20 flex items-center justify-center text-primary font-bold shadow-sm">
+                        <FileText className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h3 className="font-heading text-sm font-bold text-foreground">
+                          Estude na Prática
+                        </h3>
+                        <p className="text-[11px] text-muted-foreground">
+                          Casos Clínicos Relacionados
+                        </p>
+                      </div>
+                    </div>
+                    <span className="text-[11px] font-bold font-mono px-2 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/25">
+                      {casosRelacionados.length}
+                    </span>
+                  </div>
+
+                  <div className="space-y-3 max-h-[calc(100vh-160px)] overflow-y-auto pr-1">
+                    {casosRelacionados.map((caso) => (
+                      <div 
+                        key={caso.id} 
+                        onClick={() => setActiveCaseModal(caso)} 
+                        className="group relative flex flex-col p-3.5 bg-background/70 [data-theme=light]:bg-slate-50 hover:bg-muted/50 [data-theme=light]:hover:bg-amber-50/50 rounded-2xl border border-border/70 [data-theme=light]:border-slate-200 hover:border-primary/50 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 cursor-pointer text-left"
+                      >
+                        {/* Imagem do Caso */}
+                        <div className="w-full h-32 rounded-xl overflow-hidden bg-background border border-border/40 shrink-0 relative mb-3">
+                          {caso.images?.[0] ? (
+                            <img src={caso.images[0]} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Imagem do Caso" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-muted-foreground bg-muted/30 uppercase font-bold text-xs">{caso.exam_type}</div>
+                          )}
+                          <span className="absolute top-2 left-2 text-[9px] px-2 py-0.5 rounded-full bg-primary text-primary-foreground font-black uppercase tracking-wider shadow">
+                            {caso.exam_type}
+                          </span>
+                          <span className="absolute top-2 right-2 text-[9px] px-1.5 py-0.5 rounded-full bg-black/70 text-white font-mono font-bold border border-white/10 shadow">
+                            #{caso.case_number}
+                          </span>
+                        </div>
+
+                        {/* Conteúdo e Informações */}
+                        <div className="flex-1 flex flex-col justify-between">
+                          <div>
+                            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                              <span>{caso.age} anos</span>
+                              <span className="text-border/80">•</span>
+                              <span>{caso.sex}</span>
+                              {caso.disease && (
+                                <>
+                                  <span className="text-border/80">•</span>
+                                  <span className="text-primary font-semibold truncate max-w-[120px]">{caso.disease}</span>
+                                </>
+                              )}
+                            </div>
+                            
+                            <p className="text-xs text-foreground/85 font-medium leading-relaxed line-clamp-2 mt-1.5 group-hover:text-foreground transition-colors duration-200">
+                              {stripHtml(caso.clinical_case)}
+                            </p>
+                          </div>
+
+                          <div className="mt-3 pt-2.5 border-t border-border/40 [data-theme=light]:border-slate-200 flex items-center justify-between text-xs text-primary font-bold group-hover:underline">
+                            <span>Estudar Caso</span>
+                            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </aside>
+            )}
+          </div>
         </div>
       </article>
 
