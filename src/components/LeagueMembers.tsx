@@ -107,7 +107,7 @@ export const LeagueMembers = () => {
     );
   };
 
-  const renderMember = (member: any) => (
+  const renderDirector = (member: any) => (
     <div key={member.id} className="flex flex-col items-center group">
       <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full mb-4 overflow-hidden border-2 border-primary/20 bg-muted flex items-center justify-center transition-all duration-300 group-hover:border-primary group-hover:shadow-[0_0_15px_rgba(232,163,61,0.2)]">
         {member.image_url ? (
@@ -128,6 +128,33 @@ export const LeagueMembers = () => {
       <p className="text-xs font-medium text-primary mb-1 text-center">
         {member.role}
       </p>
+      {member.turma && (
+        <p className="text-xs text-muted-foreground text-center">
+          {member.turma}
+        </p>
+      )}
+    </div>
+  );
+
+  // Renderizador para os Membros gerais: apenas Nome e Turma
+  const renderGeneralMember = (member: any) => (
+    <div key={member.id} className="flex flex-col items-center group">
+      <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full mb-4 overflow-hidden border-2 border-primary/20 bg-muted flex items-center justify-center transition-all duration-300 group-hover:border-primary group-hover:shadow-[0_0_15px_rgba(232,163,61,0.2)]">
+        {member.image_url ? (
+          <img
+            src={member.image_url}
+            alt={member.name}
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+          />
+        ) : (
+          <span className="text-2xl font-semibold text-muted-foreground group-hover:text-primary transition-colors">
+            {getInitials(member.name)}
+          </span>
+        )}
+      </div>
+      <h3 className="font-semibold text-sm sm:text-base text-foreground text-center mb-1">
+        {member.name}
+      </h3>
       {member.turma && (
         <p className="text-xs text-muted-foreground text-center">
           {member.turma}
@@ -174,7 +201,7 @@ export const LeagueMembers = () => {
               Diretoria
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
-              {diretoria.map(renderMember)}
+              {diretoria.map(renderDirector)}
             </div>
           </div>
         )}
@@ -186,7 +213,7 @@ export const LeagueMembers = () => {
               Membros
             </h3>
             <div className={`grid gap-6 ${getGridClass(outrosMembros.length)}`}>
-              {outrosMembros.map(renderMember)}
+              {outrosMembros.map(renderGeneralMember)}
             </div>
           </div>
         )}

@@ -195,7 +195,9 @@ const Admin = () => {
             {isUploadingMemberImage && <div className="absolute inset-0 bg-black/40 flex items-center justify-center"><Loader2 className="w-5 h-5 animate-spin text-white" /></div>}
           </div>
           <Input className="h-8 text-sm mb-2 w-full text-center px-2" placeholder="Nome *" value={memberForm.name} onChange={e => setMemberForm({...memberForm, name: e.target.value})} />
-          <Input className="h-8 text-sm mb-2 w-full text-center px-2" placeholder={category === 'coordenador' ? "Cargo (ex: Médico Radiologista)" : "Cargo *"} value={memberForm.role} onChange={e => setMemberForm({...memberForm, role: e.target.value})} />
+          {category !== 'membros' && (
+            <Input className="h-8 text-sm mb-2 w-full text-center px-2" placeholder={category === 'coordenador' ? "Cargo (ex: Médico Radiologista)" : "Cargo *"} value={memberForm.role} onChange={e => setMemberForm({...memberForm, role: e.target.value})} />
+          )}
           {category !== 'coordenador' && (
             <Input className="h-8 text-sm mb-2 w-full text-center px-2" placeholder="Turma *" value={memberForm.turma} onChange={e => setMemberForm({...memberForm, turma: e.target.value})} />
           )}
@@ -217,7 +219,7 @@ const Admin = () => {
         className="flex flex-col items-center group relative p-2 cursor-grab active:cursor-grabbing"
       >
         <div className="absolute top-0 right-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-          <Button size="icon" variant="secondary" className="h-6 w-6 rounded-full shadow-md" onClick={() => { setEditingMemberId(m.id); setMemberForm({ name: m.name, role: m.role || 'Médico Radiologista', turma: m.turma || (category === 'coordenador' ? 'Docente' : ''), image_url: m.image_url || '', order_index: m.order_index || 0 }); }}><Pencil className="w-3 h-3" /></Button>
+          <Button size="icon" variant="secondary" className="h-6 w-6 rounded-full shadow-md" onClick={() => { setEditingMemberId(m.id); setMemberForm({ name: m.name, role: m.role || (category === 'membros' ? 'Membro' : 'Médico Radiologista'), turma: m.turma || (category === 'coordenador' ? 'Docente' : ''), image_url: m.image_url || '', order_index: m.order_index || 0 }); }}><Pencil className="w-3 h-3" /></Button>
           <Button size="icon" variant="destructive" className="h-6 w-6 rounded-full shadow-md" onClick={() => handleDeleteMember(m.id)}><Trash2 className="w-3 h-3" /></Button>
         </div>
         <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full mb-3 overflow-hidden border-2 border-primary/20 bg-muted flex items-center justify-center transition-all duration-300 group-hover:border-primary group-hover:shadow-[0_0_15px_rgba(232,163,61,0.2)]">
@@ -230,7 +232,9 @@ const Admin = () => {
           )}
         </div>
         <h3 className="font-semibold text-xs sm:text-sm text-foreground text-center mb-1 w-full pointer-events-none" title={m.name}>{m.name}</h3>
-        <p className="text-[10px] font-medium text-primary mb-1 text-center w-full pointer-events-none" title={displayRole}>{displayRole}</p>
+        {category !== 'membros' && (
+          <p className="text-[10px] font-medium text-primary mb-1 text-center w-full pointer-events-none" title={displayRole}>{displayRole}</p>
+        )}
         {category !== 'coordenador' && m.turma && (
           <p className="text-[10px] text-muted-foreground text-center w-full pointer-events-none">{m.turma}</p>
         )}
@@ -1074,9 +1078,8 @@ const Admin = () => {
                             <input type="file" accept="image/*" onChange={handleUploadMemberImage} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" disabled={isUploadingMemberImage} title="Adicionar foto" />
                             {isUploadingMemberImage && <div className="absolute inset-0 bg-black/40 flex items-center justify-center"><Loader2 className="w-5 h-5 animate-spin text-white" /></div>}
                           </div>
-                          <Input className="h-8 text-sm mb-2 w-full text-center px-2" placeholder="Nome *" value={memberForm.name} onChange={e => setMemberForm({...memberForm, name: e.target.value})} />
-                          <Input className="h-8 text-sm mb-2 w-full text-center px-2" placeholder="Cargo *" value={memberForm.role} onChange={e => setMemberForm({...memberForm, role: e.target.value})} />
-                          <Input className="h-8 text-sm mb-2 w-full text-center px-2" placeholder="Turma *" value={memberForm.turma} onChange={e => setMemberForm({...memberForm, turma: e.target.value})} />
+                          <Input className="h-8 text-sm mb-2 w-full text-center px-2" placeholder="Nome *" value={memberForm.name} onChange={e => setMemberForm({...memberForm, name: e.target.value, role: 'Membro'})} />
+                          <Input className="h-8 text-sm mb-2 w-full text-center px-2" placeholder="Turma *" value={memberForm.turma} onChange={e => setMemberForm({...memberForm, turma: e.target.value, role: 'Membro'})} />
                         </div>
                       ) : !editingMemberId && (
                         <button 
