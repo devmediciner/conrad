@@ -24,8 +24,25 @@ dist-ssr
 *.sw?
 .env
 .env*
+!.env.example
+
+# Supabase database & storage backups (Dados sensíveis)
+backup_supabase_db/
+backup_supabase_storage/
+backup/
+backups/
+dumps/
+*.dump
+*.backup
+*.dump.sql
+
+# Credentials & keys
+*.pem
+*.key
+*.pfx
+*.cert
+credentials.json
+service-account*.json
 
 # Vite timestamps
 vite.config.ts.timestamp-*
-
-# Backup database

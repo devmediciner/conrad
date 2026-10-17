@@ -21,11 +21,10 @@ npm run sitemap
 
 Write-Host ""
 Write-Host "[3/3] Enviando os arquivos para o GitHub..." -ForegroundColor Yellow
-git add backup_supabase_db/
 git add public/sitemap.xml
 
 # Tenta comitar. Se não houver mudança, o git retorna erro, mas ignoramos
-git commit -m "chore: atualizacao local do backup e sitemap"
+git commit -m "chore: atualizacao local do sitemap"
 git push
 
 Write-Host ""

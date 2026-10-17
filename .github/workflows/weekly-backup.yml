@@ -32,21 +32,27 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: node backup-db.js
 
+      - name: Upload Backup as Private Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: supabase-database-backup
+          path: backup_supabase_db/
+          retention-days: 30
+
       - name: Generate Sitemap
         run: npm run sitemap
 
-      - name: Commit and Push changes
+      - name: Commit and Push Sitemap only
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add backup_supabase_db/
           git add public/sitemap.xml
           
           # Verifica se há alterações para commitar
           if git diff --staged --quiet; then
-            echo "Nenhuma mudança nova nos backups ou no sitemap."
+            echo "Nenhuma mudança nova no sitemap."
           else
-            git commit -m "chore: backup automático e atualização do sitemap"
+            git commit -m "chore: atualização automática do sitemap [skip ci]"
             git push
-            echo "✅ Backup e Sitemap atualizados e comitados com sucesso!"
+            echo "✅ Sitemap atualizado e comitado com sucesso!"
           fi
