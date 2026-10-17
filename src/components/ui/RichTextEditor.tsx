@@ -16,18 +16,20 @@ interface RichTextEditorProps {
 }
 
 export function RichTextEditor({ 
-  value, 
+  value = '', 
   onChange, 
   placeholder = 'Comece a escrever...', 
   minHeight = '120px' 
 }: RichTextEditorProps) {
+  const safeValue = value ?? '';
+
   const editor = useEditor({
     extensions: [
       StarterKit,
       Underline,
       Placeholder.configure({ placeholder }),
     ],
-    content: value,
+    content: safeValue,
     onUpdate: ({ editor }) => {
       const html = editor.getHTML();
       // If the editor is empty, return empty string
@@ -44,10 +46,10 @@ export function RichTextEditor({
 
   // Sync external value
   useEffect(() => {
-    if (editor && value !== editor.getHTML()) {
-      editor.commands.setContent(value, false);
+    if (editor && safeValue !== editor.getHTML()) {
+      editor.commands.setContent(safeValue, false);
     }
-  }, [value, editor]);
+  }, [safeValue, editor]);
 
   if (!editor) return null;
 

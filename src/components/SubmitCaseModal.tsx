@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { RichTextEditor } from './ui/RichTextEditor';
@@ -17,6 +17,7 @@ import { toast } from 'sonner';
 import type { ExamType } from '@/types/case';
 import { convertDicomToJpeg, getDicomSortMetadata, sortFilesByDicomMetadata } from '@/utils/dicom';
 import { DiseaseModal } from './DiseaseModal';
+import { ImageAnnotationEditor } from './ImageAnnotationEditor';
 
 interface SubmitCaseModalProps {
   open: boolean;
@@ -42,6 +43,9 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
   const [laudoImages, setLaudoImages] = useState<File[]>([]);
   const [laudoPreviews, setLaudoPreviews] = useState<string[]>([]);
   const [draggedLaudoIndex, setDraggedLaudoIndex] = useState<number | null>(null);
+
+  // Image editor state
+  const [editingImage, setEditingImage] = useState<{ type: 'main' | 'laudo'; index: number } | null>(null);
 
   const [examType, setExamType] = useState<ExamType | ''>('');
   const [age, setAge] = useState('');
@@ -202,6 +206,56 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
     setLaudoImages(prev => prev.filter((_, i) => i !== index));
     setLaudoPreviews(prev => prev.filter((_, i) => i !== index));
   };
+
+  // Image editor save handler
+  const handleEditorSave = useCallback((editedBlob: Blob) => {
+    if (editingImage === null) return;
+    const { type, index } = editingImage;
+
+    if (type === 'main') {
+      const originalFile = images[index];
+      const editedFile = new File([editedBlob], originalFile?.name || `edited-${index}.jpg`, { type: 'image/jpeg' });
+      setImages(prev => {
+        const copy = [...prev];
+        copy[index] = editedFile;
+        return copy;
+      });
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const newPreview = e.target?.result as string;
+        setPreviews(prev => {
+          const copy = [...prev];
+          copy[index] = newPreview;
+          return copy;
+        });
+      };
+      reader.readAsDataURL(editedBlob);
+    } else {
+      const originalFile = laudoImages[index];
+      const editedFile = new File([editedBlob], originalFile?.name || `edited-laudo-${index}.jpg`, { type: 'image/jpeg' });
+      setLaudoImages(prev => {
+        const copy = [...prev];
+        copy[index] = editedFile;
+        return copy;
+      });
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const newPreview = e.target?.result as string;
+        setLaudoPreviews(prev => {
+          const copy = [...prev];
+          copy[index] = newPreview;
+          return copy;
+        });
+      };
+      reader.readAsDataURL(editedBlob);
+    }
+
+    setEditingImage(null);
+  }, [editingImage, images, laudoImages]);
+
+  const handleEditorCancel = useCallback(() => {
+    setEditingImage(null);
+  }, []);
 
   const resetForm = () => {
     setImages([]);
@@ -397,25 +451,34 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
 
               <div className="flex flex-wrap gap-2">
                 {previews.map((src, i) => (
-                  <div
-                    key={i}
-                    draggable={!uploading}
-                    onDragStart={(e) => handleDragStart(e, i)}
-                    onDragOver={(e) => handleDragOver(e, i)}
-                    onDragEnd={handleDragEnd}
-                    className={`relative w-16 h-16 rounded-md overflow-hidden border transition-all cursor-grab active:cursor-grabbing ${draggedIndex === i ? 'opacity-40 border-primary scale-90' : 'border-border'
-                      }`}
-                  >
-                    <img src={src} alt="" className="w-full h-full object-cover" draggable="false" />
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeImage(i);
-                      }}
-                      className="absolute top-0.5 right-0.5 bg-background/80 hover:bg-destructive hover:text-destructive-foreground rounded-full p-0.5 transition-colors"
-                      disabled={uploading}
+                  <div key={i} className="flex flex-col items-center gap-1">
+                    <div
+                      draggable={!uploading}
+                      onDragStart={(e) => handleDragStart(e, i)}
+                      onDragOver={(e) => handleDragOver(e, i)}
+                      onDragEnd={handleDragEnd}
+                      className={`relative w-16 h-16 rounded-md overflow-hidden border transition-all cursor-grab active:cursor-grabbing ${draggedIndex === i ? 'opacity-40 border-primary scale-90' : 'border-border'
+                        }`}
                     >
-                      <X className="w-3 h-3" />
+                      <img src={src} alt="" className="w-full h-full object-cover" draggable="false" />
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeImage(i);
+                        }}
+                        className="absolute top-0.5 right-0.5 bg-background/80 hover:bg-destructive hover:text-destructive-foreground rounded-full p-0.5 transition-colors"
+                        disabled={uploading}
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                    <button
+                      onClick={() => setEditingImage({ type: 'main', index: i })}
+                      disabled={uploading}
+                      className="text-[9px] font-bold text-primary hover:text-primary/80 transition-colors disabled:opacity-50"
+                      type="button"
+                    >
+                      Editar imagem
                     </button>
                   </div>
                 ))}
@@ -423,7 +486,7 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
                 <button
                   onClick={() => !uploading && fileInputRef.current?.click()}
                   disabled={uploading}
-                  className="w-16 h-16 rounded-md border border-dashed border-border flex flex-col items-center justify-center text-muted-foreground hover:border-primary hover:text-primary transition-colors disabled:opacity-50"
+                  className="w-16 h-16 rounded-md border border-dashed border-border flex flex-col items-center justify-center text-muted-foreground hover:border-primary hover:text-primary transition-colors disabled:opacity-50 self-start"
                   type="button"
                 >
                   <Upload className="w-4 h-4" />
@@ -448,25 +511,34 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
 
               <div className="flex flex-wrap gap-2">
                 {laudoPreviews.map((src, i) => (
-                  <div
-                    key={i}
-                    draggable={!uploading}
-                    onDragStart={(e) => handleLaudoDragStart(e, i)}
-                    onDragOver={(e) => handleLaudoDragOver(e, i)}
-                    onDragEnd={handleLaudoDragEnd}
-                    className={`relative w-16 h-16 rounded-md overflow-hidden border transition-all cursor-grab active:cursor-grabbing ${draggedLaudoIndex === i ? 'opacity-40 border-primary scale-90' : 'border-border'
-                      }`}
-                  >
-                    <img src={src} alt="" className="w-full h-full object-cover" draggable="false" />
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeLaudoImage(i);
-                      }}
-                      className="absolute top-0.5 right-0.5 bg-background/80 hover:bg-destructive hover:text-destructive-foreground rounded-full p-0.5 transition-colors"
-                      disabled={uploading}
+                  <div key={i} className="flex flex-col items-center gap-1">
+                    <div
+                      draggable={!uploading}
+                      onDragStart={(e) => handleLaudoDragStart(e, i)}
+                      onDragOver={(e) => handleLaudoDragOver(e, i)}
+                      onDragEnd={handleLaudoDragEnd}
+                      className={`relative w-16 h-16 rounded-md overflow-hidden border transition-all cursor-grab active:cursor-grabbing ${draggedLaudoIndex === i ? 'opacity-40 border-primary scale-90' : 'border-border'
+                        }`}
                     >
-                      <X className="w-3 h-3" />
+                      <img src={src} alt="" className="w-full h-full object-cover" draggable="false" />
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeLaudoImage(i);
+                        }}
+                        className="absolute top-0.5 right-0.5 bg-background/80 hover:bg-destructive hover:text-destructive-foreground rounded-full p-0.5 transition-colors"
+                        disabled={uploading}
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                    <button
+                      onClick={() => setEditingImage({ type: 'laudo', index: i })}
+                      disabled={uploading}
+                      className="text-[9px] font-bold text-primary hover:text-primary/80 transition-colors disabled:opacity-50"
+                      type="button"
+                    >
+                      Editar imagem
                     </button>
                   </div>
                 ))}
@@ -474,7 +546,7 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
                 <button
                   onClick={() => !uploading && laudoFileInputRef.current?.click()}
                   disabled={uploading}
-                  className="w-16 h-16 rounded-md border border-dashed border-border flex flex-col items-center justify-center text-muted-foreground hover:border-primary hover:text-primary transition-colors disabled:opacity-50"
+                  className="w-16 h-16 rounded-md border border-dashed border-border flex flex-col items-center justify-center text-muted-foreground hover:border-primary hover:text-primary transition-colors disabled:opacity-50 self-start"
                   type="button"
                 >
                   <ImagePlus className="w-4 h-4" />
@@ -592,6 +664,19 @@ export function SubmitCaseModal({ open, onOpenChange }: SubmitCaseModalProps) {
 
       </div>
       <DiseaseModal open={diseaseModalOpen} onOpenChange={setDiseaseModalOpen} />
+
+      {/* Image Annotation Editor */}
+      {editingImage !== null && (
+        <ImageAnnotationEditor
+          imageSrc={
+            editingImage.type === 'main'
+              ? previews[editingImage.index]
+              : laudoPreviews[editingImage.index]
+          }
+          onSave={handleEditorSave}
+          onCancel={handleEditorCancel}
+        />
+      )}
     </div>
   );
 }
