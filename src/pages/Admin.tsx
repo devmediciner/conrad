@@ -194,12 +194,18 @@ const Admin = () => {
             <input type="file" accept="image/*" onChange={handleUploadMemberImage} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" disabled={isUploadingMemberImage} title="Alterar foto" />
             {isUploadingMemberImage && <div className="absolute inset-0 bg-black/40 flex items-center justify-center"><Loader2 className="w-5 h-5 animate-spin text-white" /></div>}
           </div>
-          <Input className="h-8 text-sm mb-2 w-full text-center px-2" placeholder="Nome" value={memberForm.name} onChange={e => setMemberForm({...memberForm, name: e.target.value})} />
-          <Input className="h-8 text-sm mb-2 w-full text-center px-2" placeholder="Cargo" value={memberForm.role} onChange={e => setMemberForm({...memberForm, role: e.target.value})} />
-          <Input className="h-8 text-sm mb-2 w-full text-center px-2" placeholder="Turma" value={memberForm.turma} onChange={e => setMemberForm({...memberForm, turma: e.target.value})} />
+          <Input className="h-8 text-sm mb-2 w-full text-center px-2" placeholder="Nome *" value={memberForm.name} onChange={e => setMemberForm({...memberForm, name: e.target.value})} />
+          <Input className="h-8 text-sm mb-2 w-full text-center px-2" placeholder={category === 'coordenador' ? "Cargo (ex: Médico Radiologista)" : "Cargo *"} value={memberForm.role} onChange={e => setMemberForm({...memberForm, role: e.target.value})} />
+          {category !== 'coordenador' && (
+            <Input className="h-8 text-sm mb-2 w-full text-center px-2" placeholder="Turma *" value={memberForm.turma} onChange={e => setMemberForm({...memberForm, turma: e.target.value})} />
+          )}
         </div>
       );
     }
+
+    const displayRole = category === 'coordenador' && (!m.role || (isProfessorCoordenador(m.role, m.turma) && !m.role.toLowerCase().includes('radiologista')))
+      ? 'Médico Radiologista'
+      : m.role;
 
     return (
       <div 
@@ -211,7 +217,7 @@ const Admin = () => {
         className="flex flex-col items-center group relative p-2 cursor-grab active:cursor-grabbing"
       >
         <div className="absolute top-0 right-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-          <Button size="icon" variant="secondary" className="h-6 w-6 rounded-full shadow-md" onClick={() => { setEditingMemberId(m.id); setMemberForm({ name: m.name, role: m.role, turma: m.turma, image_url: m.image_url || '', order_index: m.order_index || 0 }); }}><Pencil className="w-3 h-3" /></Button>
+          <Button size="icon" variant="secondary" className="h-6 w-6 rounded-full shadow-md" onClick={() => { setEditingMemberId(m.id); setMemberForm({ name: m.name, role: m.role || 'Médico Radiologista', turma: m.turma || (category === 'coordenador' ? 'Docente' : ''), image_url: m.image_url || '', order_index: m.order_index || 0 }); }}><Pencil className="w-3 h-3" /></Button>
           <Button size="icon" variant="destructive" className="h-6 w-6 rounded-full shadow-md" onClick={() => handleDeleteMember(m.id)}><Trash2 className="w-3 h-3" /></Button>
         </div>
         <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full mb-3 overflow-hidden border-2 border-primary/20 bg-muted flex items-center justify-center transition-all duration-300 group-hover:border-primary group-hover:shadow-[0_0_15px_rgba(232,163,61,0.2)]">
@@ -224,8 +230,10 @@ const Admin = () => {
           )}
         </div>
         <h3 className="font-semibold text-xs sm:text-sm text-foreground text-center mb-1 w-full pointer-events-none" title={m.name}>{m.name}</h3>
-        <p className="text-[10px] font-medium text-primary mb-1 text-center w-full pointer-events-none" title={m.role}>{m.role}</p>
-        <p className="text-[10px] text-muted-foreground text-center w-full pointer-events-none">{m.turma}</p>
+        <p className="text-[10px] font-medium text-primary mb-1 text-center w-full pointer-events-none" title={displayRole}>{displayRole}</p>
+        {category !== 'coordenador' && m.turma && (
+          <p className="text-[10px] text-muted-foreground text-center w-full pointer-events-none">{m.turma}</p>
+        )}
       </div>
     );
   };
@@ -958,7 +966,7 @@ const Admin = () => {
                       <span className="text-xs text-muted-foreground">Arraste para reordenar</span>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
-                      {leagueMembers.filter(m => isProfessorCoordenador(m.role)).map(m => renderMember(m, 'coordenador'))}
+                      {leagueMembers.filter(m => isProfessorCoordenador(m.role, m.turma)).map(m => renderMember(m, 'coordenador'))}
                       
                       {creatingCategory === 'coordenador' && !editingMemberId ? (
                         <div className="col-span-full sm:col-span-2 lg:col-span-2 xl:col-span-2 flex flex-col items-center bg-card border border-border p-4 rounded-xl shadow-sm relative group">
@@ -976,14 +984,13 @@ const Admin = () => {
                             {isUploadingMemberImage && <div className="absolute inset-0 bg-black/40 flex items-center justify-center"><Loader2 className="w-5 h-5 animate-spin text-white" /></div>}
                           </div>
                           <Input className="h-8 text-sm mb-2 w-full text-center px-2" placeholder="Nome *" value={memberForm.name} onChange={e => setMemberForm({...memberForm, name: e.target.value})} />
-                          <Input className="h-8 text-sm mb-2 w-full text-center px-2" placeholder="Cargo *" value={memberForm.role} onChange={e => setMemberForm({...memberForm, role: e.target.value})} />
-                          <Input className="h-8 text-sm mb-2 w-full text-center px-2" placeholder="Titulação / Turma" value={memberForm.turma} onChange={e => setMemberForm({...memberForm, turma: e.target.value})} />
+                          <Input className="h-8 text-sm mb-2 w-full text-center px-2" placeholder="Cargo (ex: Médico Radiologista)" value={memberForm.role} onChange={e => setMemberForm({...memberForm, role: e.target.value})} />
                         </div>
                       ) : !editingMemberId && (
                         <button 
                           onClick={() => {
                             setEditingMemberId(null);
-                            setMemberForm({ name: '', role: 'Professor Coordenador', turma: 'Docente', image_url: '', order_index: 0 });
+                            setMemberForm({ name: '', role: 'Médico Radiologista', turma: 'Docente', image_url: '', order_index: 0 });
                             setCreatingCategory('coordenador');
                           }}
                           className="flex flex-col items-center justify-center bg-card/30 hover:bg-card border-2 border-dashed border-border hover:border-primary/50 rounded-xl p-4 transition-all group h-full min-h-[180px]"
@@ -1004,7 +1011,7 @@ const Admin = () => {
                       <span className="text-xs text-muted-foreground">Arraste para reordenar</span>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
-                      {leagueMembers.filter(m => isDiretoria(m.role)).map(m => renderMember(m, 'diretoria'))}
+                      {leagueMembers.filter(m => isDiretoria(m.role, m.turma)).map(m => renderMember(m, 'diretoria'))}
 
                       {creatingCategory === 'diretoria' && !editingMemberId ? (
                         <div className="col-span-full sm:col-span-2 lg:col-span-2 xl:col-span-2 flex flex-col items-center bg-card border border-border p-4 rounded-xl shadow-sm relative group">
@@ -1050,7 +1057,7 @@ const Admin = () => {
                       <span className="text-xs text-muted-foreground">Arraste para reordenar</span>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
-                      {leagueMembers.filter(m => !isProfessorCoordenador(m.role) && !isDiretoria(m.role)).map(m => renderMember(m, 'membros'))}
+                      {leagueMembers.filter(m => !isProfessorCoordenador(m.role, m.turma) && !isDiretoria(m.role, m.turma)).map(m => renderMember(m, 'membros'))}
                       
                       {creatingCategory === 'membros' && !editingMemberId ? (
                         <div className="col-span-full sm:col-span-2 lg:col-span-2 xl:col-span-2 flex flex-col items-center bg-card border border-border p-4 rounded-xl shadow-sm relative group">
