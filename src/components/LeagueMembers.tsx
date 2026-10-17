@@ -140,7 +140,7 @@ export const LeagueMembers = () => {
             <h3 className="font-heading text-lg sm:text-xl font-bold text-center mb-8 text-primary/80 uppercase tracking-wider">
               Diretoria
             </h3>
-            <div className={`grid gap-6 ${getGridClass(diretoria.length)}`}>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
               {diretoria.map(renderMember)}
             </div>
           </div>

@@ -781,7 +781,7 @@ const Index = () => {
 
       {/* Footer */}
       <footer id="contato" className="border-t border-border px-4 py-12 bg-gradient-to-t from-primary/5 to-transparent">
-        <div className="container mx-auto max-w-4xl space-y-8">
+        <div className="container mx-auto max-w-5xl space-y-8">
           {/* League Members Section */}
           <div className="mb-12">
             <LeagueMembers />
