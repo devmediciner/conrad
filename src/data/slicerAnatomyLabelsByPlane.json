@@ -1840,7 +1840,7 @@
       "id": "adrenal_gland_right",
       "name": "Right Adrenal Gland",
       "namePt": "Glândula Suprarrenal Direita",
-      "color": "#eab308",
+      "color": "#f59e0b",
       "sliceRange": [
         26,
         30
@@ -1876,7 +1876,7 @@
       "id": "adrenal_gland_left",
       "name": "Left Adrenal Gland",
       "namePt": "Glândula Suprarrenal Esquerda",
-      "color": "#eab308",
+      "color": "#f59e0b",
       "sliceRange": [
         23,
         30
@@ -4928,7 +4928,7 @@
       "id": "pancreas",
       "name": "Pancreas",
       "namePt": "Pâncreas",
-      "color": "#f43f5e",
+      "color": "#eab308",
       "sliceRange": [
         27,
         42
@@ -5008,7 +5008,7 @@
       "id": "kidney_right",
       "name": "Right Kidney",
       "namePt": "Rim Direito",
-      "color": "#d97706",
+      "color": "#0284c7",
       "sliceRange": [
         30,
         45
@@ -5088,7 +5088,7 @@
       "id": "kidney_left",
       "name": "Left Kidney",
       "namePt": "Rim Esquerdo",
-      "color": "#0d9488",
+      "color": "#0284c7",
       "sliceRange": [
         25,
         42
@@ -8818,7 +8818,7 @@
       "id": "adrenal_gland_right",
       "name": "Right Adrenal Gland",
       "namePt": "Glândula Suprarrenal Direita",
-      "color": "#eab308",
+      "color": "#f59e0b",
       "sliceRange": [
         58,
         70
@@ -8886,7 +8886,7 @@
       "id": "adrenal_gland_left",
       "name": "Left Adrenal Gland",
       "namePt": "Glândula Suprarrenal Esquerda",
-      "color": "#eab308",
+      "color": "#f59e0b",
       "sliceRange": [
         53,
         64
@@ -12402,7 +12402,7 @@
       "id": "pancreas",
       "name": "Pancreas",
       "namePt": "Pâncreas",
-      "color": "#f43f5e",
+      "color": "#eab308",
       "sliceRange": [
         33,
         59
@@ -12526,7 +12526,7 @@
       "id": "kidney_right",
       "name": "Right Kidney",
       "namePt": "Rim Direito",
-      "color": "#d97706",
+      "color": "#0284c7",
       "sliceRange": [
         52,
         77
@@ -12646,7 +12646,7 @@
       "id": "kidney_left",
       "name": "Left Kidney",
       "namePt": "Rim Esquerdo",
-      "color": "#0d9488",
+      "color": "#0284c7",
       "sliceRange": [
         53,
         79
@@ -17460,7 +17460,7 @@
       "id": "adrenal_gland_right",
       "name": "Right Adrenal Gland",
       "namePt": "Glândula Suprarrenal Direita",
-      "color": "#eab308",
+      "color": "#f59e0b",
       "sliceRange": [
         44,
         51
@@ -17508,7 +17508,7 @@
       "id": "adrenal_gland_left",
       "name": "Left Adrenal Gland",
       "namePt": "Glândula Suprarrenal Esquerda",
-      "color": "#eab308",
+      "color": "#f59e0b",
       "sliceRange": [
         69,
         75
@@ -20784,7 +20784,7 @@
       "id": "pancreas",
       "name": "Pancreas",
       "namePt": "Pâncreas",
-      "color": "#f43f5e",
+      "color": "#eab308",
       "sliceRange": [
         47,
         83
@@ -20948,7 +20948,7 @@
       "id": "kidney_right",
       "name": "Right Kidney",
       "namePt": "Rim Direito",
-      "color": "#d97706",
+      "color": "#0284c7",
       "sliceRange": [
         27,
         48
@@ -21052,7 +21052,7 @@
       "id": "kidney_left",
       "name": "Left Kidney",
       "namePt": "Rim Esquerdo",
-      "color": "#0d9488",
+      "color": "#0284c7",
       "sliceRange": [
         70,
         91

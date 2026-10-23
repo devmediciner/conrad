@@ -1879,7 +1879,7 @@ export const SLICER_LABELS_AXIAL: AnatomyLabel[] = [
     "id": "adrenal_gland_right",
     "name": "Right Adrenal Gland",
     "namePt": "Glândula Suprarrenal Direita",
-    "color": "#eab308",
+    "color": "#f59e0b",
     "sliceRange": [
       26,
       30
@@ -1915,7 +1915,7 @@ export const SLICER_LABELS_AXIAL: AnatomyLabel[] = [
     "id": "adrenal_gland_left",
     "name": "Left Adrenal Gland",
     "namePt": "Glândula Suprarrenal Esquerda",
-    "color": "#eab308",
+    "color": "#f59e0b",
     "sliceRange": [
       23,
       30
@@ -4967,7 +4967,7 @@ export const SLICER_LABELS_AXIAL: AnatomyLabel[] = [
     "id": "pancreas",
     "name": "Pancreas",
     "namePt": "Pâncreas",
-    "color": "#f43f5e",
+    "color": "#eab308",
     "sliceRange": [
       27,
       42
@@ -5047,7 +5047,7 @@ export const SLICER_LABELS_AXIAL: AnatomyLabel[] = [
     "id": "kidney_right",
     "name": "Right Kidney",
     "namePt": "Rim Direito",
-    "color": "#d97706",
+    "color": "#0284c7",
     "sliceRange": [
       30,
       45
@@ -5127,7 +5127,7 @@ export const SLICER_LABELS_AXIAL: AnatomyLabel[] = [
     "id": "kidney_left",
     "name": "Left Kidney",
     "namePt": "Rim Esquerdo",
-    "color": "#0d9488",
+    "color": "#0284c7",
     "sliceRange": [
       25,
       42
@@ -8858,7 +8858,7 @@ export const SLICER_LABELS_CORONAL: AnatomyLabel[] = [
     "id": "adrenal_gland_right",
     "name": "Right Adrenal Gland",
     "namePt": "Glândula Suprarrenal Direita",
-    "color": "#eab308",
+    "color": "#f59e0b",
     "sliceRange": [
       58,
       70
@@ -8926,7 +8926,7 @@ export const SLICER_LABELS_CORONAL: AnatomyLabel[] = [
     "id": "adrenal_gland_left",
     "name": "Left Adrenal Gland",
     "namePt": "Glândula Suprarrenal Esquerda",
-    "color": "#eab308",
+    "color": "#f59e0b",
     "sliceRange": [
       53,
       64
@@ -12442,7 +12442,7 @@ export const SLICER_LABELS_CORONAL: AnatomyLabel[] = [
     "id": "pancreas",
     "name": "Pancreas",
     "namePt": "Pâncreas",
-    "color": "#f43f5e",
+    "color": "#eab308",
     "sliceRange": [
       33,
       59
@@ -12566,7 +12566,7 @@ export const SLICER_LABELS_CORONAL: AnatomyLabel[] = [
     "id": "kidney_right",
     "name": "Right Kidney",
     "namePt": "Rim Direito",
-    "color": "#d97706",
+    "color": "#0284c7",
     "sliceRange": [
       52,
       77
@@ -12686,7 +12686,7 @@ export const SLICER_LABELS_CORONAL: AnatomyLabel[] = [
     "id": "kidney_left",
     "name": "Left Kidney",
     "namePt": "Rim Esquerdo",
-    "color": "#0d9488",
+    "color": "#0284c7",
     "sliceRange": [
       53,
       79
@@ -17501,7 +17501,7 @@ export const SLICER_LABELS_SAGITTAL: AnatomyLabel[] = [
     "id": "adrenal_gland_right",
     "name": "Right Adrenal Gland",
     "namePt": "Glândula Suprarrenal Direita",
-    "color": "#eab308",
+    "color": "#f59e0b",
     "sliceRange": [
       44,
       51
@@ -17549,7 +17549,7 @@ export const SLICER_LABELS_SAGITTAL: AnatomyLabel[] = [
     "id": "adrenal_gland_left",
     "name": "Left Adrenal Gland",
     "namePt": "Glândula Suprarrenal Esquerda",
-    "color": "#eab308",
+    "color": "#f59e0b",
     "sliceRange": [
       69,
       75
@@ -20825,7 +20825,7 @@ export const SLICER_LABELS_SAGITTAL: AnatomyLabel[] = [
     "id": "pancreas",
     "name": "Pancreas",
     "namePt": "Pâncreas",
-    "color": "#f43f5e",
+    "color": "#eab308",
     "sliceRange": [
       47,
       83
@@ -20989,7 +20989,7 @@ export const SLICER_LABELS_SAGITTAL: AnatomyLabel[] = [
     "id": "kidney_right",
     "name": "Right Kidney",
     "namePt": "Rim Direito",
-    "color": "#d97706",
+    "color": "#0284c7",
     "sliceRange": [
       27,
       48
@@ -21093,7 +21093,7 @@ export const SLICER_LABELS_SAGITTAL: AnatomyLabel[] = [
     "id": "kidney_left",
     "name": "Left Kidney",
     "namePt": "Rim Esquerdo",
-    "color": "#0d9488",
+    "color": "#0284c7",
     "sliceRange": [
       70,
       91

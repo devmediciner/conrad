@@ -169,7 +169,7 @@ function ConrademiaViewer() {
   const [windowCenter, setWindowCenter] = useState(40);
   const [windowWidth, setWindowWidth] = useState(400);
   const [zoom, setZoom] = useState(1.15);
-  const [colorOpacity, setColorOpacity] = useState(0.85);
+  const [colorOpacity, setColorOpacity] = useState(0.65);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [invert, setInvert] = useState(false);
   const [activeTool, setActiveTool] = useState<ViewerTool>('scroll');
@@ -181,7 +181,7 @@ function ConrademiaViewer() {
   const [showAllLines, setShowAllLines] = useState(true);
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
   const [hoveredLabel, setHoveredLabel] = useState<string | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(() => typeof window !== 'undefined' ? window.innerWidth >= 1024 : true);
   const [searchTerm, setSearchTerm] = useState('');
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -386,8 +386,8 @@ function ConrademiaViewer() {
       <Navbar />
 
       <div className="pt-16 h-screen flex flex-col">
-        {/* ─── Top Toolbar ─────────────────────────────────────────── */}
-        <div className="bg-[hsl(0,0%,8%)] border-b border-border px-4 py-2 flex items-center gap-2 flex-wrap z-30">
+        {/* ─── Top Toolbar (Single horizontal scroll row) ──────────── */}
+        <div className="bg-[hsl(0,0%,8%)] border-b border-border px-3 py-1.5 flex items-center gap-2 overflow-x-auto scrollbar-none flex-nowrap z-30 shrink-0">
           {/* Back Button to Catalog */}
           <Button
             variant="ghost"
@@ -412,7 +412,8 @@ function ConrademiaViewer() {
           <div className="h-6 w-px bg-border" />
 
           {/* Plane Selector Tabs (Axial, Coronal, Sagital) */}
-          <div className="flex items-center bg-black/40 border border-white/10 rounded-lg p-0.5 gap-1">
+          {/* Plane Selector Tabs (Axial, Coronal, Sagital) */}
+          <div className="flex items-center bg-black/40 border border-white/10 rounded-lg p-0.5 gap-1 shrink-0">
             {(['axial', 'coronal', 'sagittal'] as ViewingPlane[]).map(plane => {
               const info = PLANE_CONFIG[plane];
               const isActive = currentPlane === plane;
@@ -420,14 +421,15 @@ function ConrademiaViewer() {
                 <button
                   key={plane}
                   onClick={() => handlePlaneChange(plane)}
-                  className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 ${
+                  className={`px-2 sm:px-2.5 py-1 text-xs font-semibold rounded-md transition-all flex items-center gap-1 sm:gap-1.5 ${
                     isActive
                       ? 'bg-primary text-primary-foreground shadow-sm'
                       : 'text-white/60 hover:text-white hover:bg-white/5'
                   }`}
                   title={info.description}
                 >
-                  <span>{info.name}</span>
+                  <span className="sm:hidden">{info.shortName}</span>
+                  <span className="hidden sm:inline">{info.name}</span>
                   <span className={`text-[10px] px-1 py-0.2 rounded font-mono ${isActive ? 'bg-black/25 text-white' : 'text-white/40'}`}>
                     {info.totalSlices}
                   </span>
@@ -436,13 +438,13 @@ function ConrademiaViewer() {
             })}
           </div>
 
-          <div className="h-6 w-px bg-border" />
+          <div className="h-6 w-px bg-border shrink-0" />
 
-          {/* Tool Buttons */}
-          <div className="flex items-center gap-1">
+          {/* Tool Buttons in Portuguese */}
+          <div className="flex items-center gap-1 shrink-0">
             <ToolButton
               icon={<MousePointer className="w-4 h-4" />}
-              label="Scroll"
+              label="Navegar"
               active={activeTool === 'scroll'}
               onClick={() => setActiveTool('scroll')}
               shortcut="S"
@@ -463,7 +465,7 @@ function ConrademiaViewer() {
             />
             <ToolButton
               icon={<Hand className="w-4 h-4" />}
-              label="Pan"
+              label="Arrastar"
               active={activeTool === 'pan'}
               onClick={() => setActiveTool('pan')}
               shortcut="P"
@@ -491,10 +493,10 @@ function ConrademiaViewer() {
             </div>
           </div>
 
-          <div className="h-6 w-px bg-border" />
+          <div className="h-6 w-px bg-border shrink-0" />
 
-          {/* Window Presets */}
-          <div className="flex items-center gap-1 overflow-x-auto">
+          {/* Window Presets (no WC / WW text) */}
+          <div className="flex items-center gap-1 overflow-x-auto scrollbar-none shrink-0">
             {WINDOW_PRESETS.map(p => (
               <button
                 key={p.name}
@@ -504,7 +506,7 @@ function ConrademiaViewer() {
                     ? 'bg-primary/20 text-primary border border-primary/30'
                     : 'text-muted-foreground hover:text-foreground hover:bg-surface-hover'
                   }`}
-                title={`WC: ${p.wc} / WW: ${p.ww}`}
+                title={p.description}
               >
                 <span className="mr-1">{p.icon}</span>{p.name}
               </button>
@@ -514,7 +516,7 @@ function ConrademiaViewer() {
           <div className="flex-1" />
 
           {/* Right Side Actions */}
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 shrink-0">
             {/* Botão para Admin Editar */}
             {isAdmin && (
               <Button
@@ -529,14 +531,14 @@ function ConrademiaViewer() {
               </Button>
             )}
 
-            {/* Alternar Cores do TotalSegmentator e Controle de Opacidade */}
+            {/* Alternar Cores Anatômicas e Controle de Opacidade */}
             <div className="flex items-center gap-1.5">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowColors(prev => !prev)}
                 className={`h-8 px-2.5 text-xs flex items-center gap-1.5 border border-border/60 ${showColors ? 'text-primary bg-primary/10 border-primary/30' : 'text-muted-foreground'}`}
-                title="Alternar: Cores dos Órgãos (TotalSegmentator) vs Tomografia Pura"
+                title="Alternar: Cores dos Órgãos vs Tomografia Pura"
               >
                 <Palette className="w-3.5 h-3.5" />
                 <span className="hidden xl:inline">{showColors ? 'Cores Ativas' : 'TC Pura'}</span>
@@ -544,7 +546,7 @@ function ConrademiaViewer() {
 
               {/* Slider de Opacidade de Cor */}
               {showColors && (
-                <div className="hidden lg:flex items-center gap-1.5 px-2 py-1 rounded-md bg-surface/80 border border-border/50 text-[11px] text-muted-foreground" title="Ajustar opacidade da cor sobre a tomografia">
+                <div className="hidden lg:flex items-center gap-1.5 px-2 py-1 rounded-md bg-surface/80 border border-border/50 text-[11px] text-muted-foreground" title="Ajustar opacidade das cores">
                   <span className="text-[10px]">Opacidade</span>
                   <input
                     type="range"
@@ -559,44 +561,34 @@ function ConrademiaViewer() {
               )}
             </div>
 
-            {/* Alternar Linhas e Rótulos */}
+            {/* Botão Único para Ocultar / Mostrar Linhas Anatômicas */}
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setShowAllLines(prev => !prev)}
-              className={`h-8 px-2.5 text-xs flex items-center gap-1.5 border border-border/60 ${showAllLines ? 'text-primary bg-primary/10 border-primary/30' : 'text-muted-foreground'}`}
-              title="Alternar: Linhas fixas visíveis vs Linhas apenas ao passar mouse/clique"
+              onClick={() => setShowLabels(prev => !prev)}
+              className={`h-8 px-2.5 text-xs flex items-center gap-1.5 border border-border/60 ${showLabels ? 'text-primary bg-primary/10 border-primary/30' : 'text-muted-foreground'}`}
+              title="Ocultar ou exibir as linhas anatômicas de referência (L)"
             >
-              <Tag className="w-3.5 h-3.5" />
-              <span className="hidden xl:inline">{showAllLines ? 'Linhas Fixas' : 'Linhas no Foco'}</span>
+              {showLabels ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+              <span className="hidden sm:inline">{showLabels ? 'Ocultar Linhas' : 'Mostrar Linhas'}</span>
             </Button>
+
             <Button
               variant="ghost" size="icon"
               onClick={() => setInvert(prev => !prev)}
               className={`w-8 h-8 ${invert ? 'text-primary' : 'text-muted-foreground'}`}
-              title="Inverter (I)"
+              title="Inverter Tons (I)"
             >
               <Contrast className="w-4 h-4" />
             </Button>
-            <Button
-              variant="ghost" size="icon"
-              onClick={() => setShowLabels(prev => !prev)}
-              className={`w-8 h-8 ${showLabels ? 'text-primary' : 'text-muted-foreground'}`}
-              title="Labels (L)"
-            >
-              {showLabels ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-            </Button>
-            <Button variant="ghost" size="icon" onClick={resetView} className="w-8 h-8 text-muted-foreground" title="Resetar (R)">
-              <RotateCcw className="w-4 h-4" />
-            </Button>
-            <Button variant="ghost" size="icon" onClick={toggleFullscreen} className="w-8 h-8 text-muted-foreground" title="Fullscreen (F)">
+            <Button variant="ghost" size="icon" onClick={toggleFullscreen} className="w-8 h-8 text-muted-foreground" title="Tela Cheia (F)">
               {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
             </Button>
             <Button
               variant="ghost" size="icon"
               onClick={() => setSidebarOpen(prev => !prev)}
               className="w-8 h-8 text-muted-foreground"
-              title="Painel de Anatomia"
+              title="Painel de Estruturas Anatômicas"
             >
               <Layers className="w-4 h-4" />
             </Button>
@@ -658,65 +650,74 @@ function ConrademiaViewer() {
               )}
             </div>
 
-            {/* ─── Bottom Overlay Info ─────────────────────────────── */}
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 pointer-events-none">
-              <div className="flex items-end justify-between">
-                {/* Left info */}
-                <div className="text-xs text-white/70 space-y-0.5">
+            {/* ─── Bottom Horizontal Slice Control Bar ──────────────── */}
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/75 to-transparent px-3 py-2 sm:px-6 sm:py-3.5 z-20 pointer-events-none">
+              <div className="flex items-center justify-between gap-3 max-w-5xl mx-auto pointer-events-auto">
+                {/* Left info - hidden on mobile to avoid covering anatomy */}
+                <div className="hidden lg:block text-xs text-white/70 space-y-0.5 min-w-[200px]">
                   <p className="font-medium text-white/95">TC Abdome e Pelve • Plano {planeInfo.name}</p>
-                  <p className="text-white/50">{planeInfo.description} • {showColors ? 'Cores dos Órgãos' : 'Tomografia Pura'}</p>
+                  <p className="text-white/50 text-[11px] truncate">{showColors ? 'Cores Anatômicas' : 'TC Pura'}</p>
                 </div>
 
-                {/* Slice Slider */}
-                <div className="flex-1 max-w-md mx-8 pointer-events-auto">
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={() => setCurrentSlice(prev => Math.max(0, prev - 1))}
-                      className="text-white/60 hover:text-white transition-colors"
-                    >
-                      <ChevronLeft className="w-5 h-5" />
-                    </button>
-                    <div className="flex-1">
-                      <Slider
-                        value={[currentSlice]}
-                        onValueChange={([v]) => setCurrentSlice(v)}
-                        min={0}
-                        max={totalSlices - 1}
-                        step={1}
-                        className="w-full"
-                      />
-                    </div>
-                    <button
-                      onClick={() => setCurrentSlice(prev => Math.min(totalSlices - 1, prev + 1))}
-                      className="text-white/60 hover:text-white transition-colors"
-                    >
-                      <ChevronRight className="w-5 h-5" />
-                    </button>
-                    <span className="text-sm text-white/80 font-mono min-w-[70px] text-right">
-                      {currentSlice + 1} / {totalSlices}
-                    </span>
+                {/* Dedicated Horizontal Slice Slider */}
+                <div className="flex-1 flex items-center gap-2 sm:gap-3 bg-black/50 border border-white/10 rounded-full px-3 py-1.5 backdrop-blur-md shadow-lg">
+                  <button
+                    onClick={() => setCurrentSlice(prev => Math.max(0, prev - 1))}
+                    className="w-7 h-7 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-colors shrink-0"
+                    title="Corte anterior (← ou ↓)"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <div className="flex-1 py-1">
+                    <Slider
+                      value={[currentSlice]}
+                      onValueChange={([v]) => setCurrentSlice(v)}
+                      min={0}
+                      max={totalSlices - 1}
+                      step={1}
+                      className="w-full"
+                    />
                   </div>
+                  <button
+                    onClick={() => setCurrentSlice(prev => Math.min(totalSlices - 1, prev + 1))}
+                    className="w-7 h-7 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-colors shrink-0"
+                    title="Próximo corte (→ ou ↑)"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                  <span className="text-xs sm:text-sm text-white/90 font-mono font-semibold min-w-[65px] text-center shrink-0">
+                    {currentSlice + 1} / {totalSlices}
+                  </span>
                 </div>
 
-                {/* Right info */}
-                <div className="text-xs text-white/70 text-right space-y-0.5">
-                  <p>WC: {Math.round(windowCenter)} / WW: {Math.round(windowWidth)}</p>
-                  <p className="text-white/40">Zoom: {(zoom * 100).toFixed(0)}%</p>
+                {/* Right info - clean zoom indicator, zero WC/WW */}
+                <div className="hidden sm:block text-xs text-white/50 text-right min-w-[70px]">
+                  <span>Zoom: {(zoom * 100).toFixed(0)}%</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* ─── Anatomy Sidebar ───────────────────────────────────── */}
+          {/* ─── Anatomy Sidebar (Drawer on mobile, Split-pane on desktop) ─── */}
           <AnimatePresence>
             {sidebarOpen && (
-              <motion.div
-                initial={{ width: 0, opacity: 0 }}
-                animate={{ width: 320, opacity: 1 }}
-                exit={{ width: 0, opacity: 0 }}
-                transition={{ duration: 0.3, ease: 'easeInOut' }}
-                className="bg-[hsl(0,0%,7%)] border-l border-border flex flex-col overflow-hidden"
-              >
+              <>
+                {/* Mobile Backdrop */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setSidebarOpen(false)}
+                  className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
+                />
+
+                <motion.div
+                  initial={{ x: '100%', opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  exit={{ x: '100%', opacity: 0 }}
+                  transition={{ duration: 0.25, ease: 'easeOut' }}
+                  className="fixed md:static inset-y-0 right-0 top-16 md:top-0 z-50 md:z-auto w-[290px] sm:w-[320px] bg-[hsl(0,0%,7%)] border-l border-border flex flex-col overflow-hidden shadow-2xl md:shadow-none"
+                >
                 {/* Sidebar Header */}
                 <div className="p-4 border-b border-border">
                   <div className="flex items-center justify-between mb-3">
@@ -805,32 +806,21 @@ function ConrademiaViewer() {
 
                 {/* Sidebar Footer */}
                 <div className="p-3 border-t border-border">
-                  <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-                    <span>{visibleLabels.length} estruturas visíveis</span>
-                    <span>Corte {currentSlice + 1}/{totalSlices}</span>
-                  </div>
-                  <div className="mt-2 grid grid-cols-2 gap-1.5">
-                    <div className="bg-surface rounded-md px-2 py-1.5 text-center">
-                      <div className="text-[10px] text-muted-foreground">WC</div>
-                      <div className="text-xs font-mono text-foreground">{Math.round(windowCenter)}</div>
-                    </div>
-                    <div className="bg-surface rounded-md px-2 py-1.5 text-center">
-                      <div className="text-[10px] text-muted-foreground">WW</div>
-                      <div className="text-xs font-mono text-foreground">{Math.round(windowWidth)}</div>
-                    </div>
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span className="font-medium text-foreground">{visibleLabels.length} estruturas visíveis</span>
+                    <span className="font-mono">Corte {currentSlice + 1} de {totalSlices}</span>
                   </div>
                 </div>
 
-                {/* Keyboard Shortcuts */}
+                {/* Keyboard Shortcuts in Portuguese */}
                 <div className="p-3 border-t border-border">
-                  <p className="text-[10px] text-muted-foreground font-medium mb-1.5">Atalhos</p>
+                  <p className="text-[10px] text-muted-foreground font-medium mb-1.5">Atalhos do Teclado</p>
                   <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                     {[
                       ['↑↓', 'Navegar fatias'],
-                      ['Scroll', 'Navegar fatias'],
-                      ['R', 'Resetar vista'],
-                      ['L', 'Labels on/off'],
-                      ['I', 'Inverter'],
+                      ['Rolar', 'Navegar fatias'],
+                      ['L', 'Linhas on/off'],
+                      ['I', 'Inverter tons'],
                       ['F', 'Tela cheia'],
                     ].map(([key, desc]) => (
                       <div key={key} className="flex items-center gap-1.5">
@@ -843,7 +833,8 @@ function ConrademiaViewer() {
                   </div>
                 </div>
               </motion.div>
-            )}
+            </>
+          )}
           </AnimatePresence>
         </div>
       </div>

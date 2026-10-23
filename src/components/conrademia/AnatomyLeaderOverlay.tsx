@@ -182,23 +182,23 @@ export const AnatomyLeaderOverlay: React.FC<AnatomyLeaderOverlayProps> = ({
           const pinY = label.coords.pinY;
 
           const opacity = isActive ? 1 : anyActive ? 0.3 : 0.85;
-          const strokeWidth = isActive ? 2.5 : 1.5;
+          const strokeWidth = isActive ? 1.5 : 0.75;
 
           return (
             <g key={`leader-left-${label.id}`}>
-              {/* High-contrast underlay halo line (prevents SVG filter clipping) */}
+              {/* High-contrast subtle underlay halo */}
               <line
                 x1={LEFT_ANCHOR_X}
                 y1={labelY}
                 x2={pinX}
                 y2={pinY}
                 stroke="#000000"
-                strokeWidth={strokeWidth + 2.2}
-                strokeOpacity={opacity * 0.95}
+                strokeWidth={strokeWidth + 1.2}
+                strokeOpacity={opacity * 0.9}
                 strokeLinecap="round"
                 vectorEffect="non-scaling-stroke"
               />
-              {/* Crisp colored leader line */}
+              {/* Thin crisp colored leader line */}
               <line
                 x1={LEFT_ANCHOR_X}
                 y1={labelY}
@@ -215,7 +215,7 @@ export const AnatomyLeaderOverlay: React.FC<AnatomyLeaderOverlayProps> = ({
               <circle
                 cx={pinX}
                 cy={pinY}
-                r={isActive ? 0.75 : 0.42}
+                r={isActive ? 0.5 : 0.28}
                 fill="#000000"
                 opacity={0.8}
                 vectorEffect="non-scaling-stroke"
@@ -224,10 +224,10 @@ export const AnatomyLeaderOverlay: React.FC<AnatomyLeaderOverlayProps> = ({
               <circle
                 cx={pinX}
                 cy={pinY}
-                r={isActive ? 0.55 : 0.3}
+                r={isActive ? 0.38 : 0.20}
                 fill={label.color}
                 stroke="#ffffff"
-                strokeWidth={isActive ? 0.9 : 0.6}
+                strokeWidth={isActive ? 0.6 : 0.35}
                 vectorEffect="non-scaling-stroke"
                 className="cursor-pointer pointer-events-auto transition-transform duration-150"
                 onMouseEnter={() => onHoverLabel(label.id)}
@@ -254,23 +254,23 @@ export const AnatomyLeaderOverlay: React.FC<AnatomyLeaderOverlayProps> = ({
           const pinY = label.coords.pinY;
 
           const opacity = isActive ? 1 : anyActive ? 0.3 : 0.85;
-          const strokeWidth = isActive ? 2.5 : 1.5;
+          const strokeWidth = isActive ? 1.5 : 0.75;
 
           return (
             <g key={`leader-right-${label.id}`}>
-              {/* High-contrast underlay halo line */}
+              {/* High-contrast subtle underlay halo */}
               <line
                 x1={RIGHT_ANCHOR_X}
                 y1={labelY}
                 x2={pinX}
                 y2={pinY}
                 stroke="#000000"
-                strokeWidth={strokeWidth + 2.2}
-                strokeOpacity={opacity * 0.95}
+                strokeWidth={strokeWidth + 1.2}
+                strokeOpacity={opacity * 0.9}
                 strokeLinecap="round"
                 vectorEffect="non-scaling-stroke"
               />
-              {/* Crisp colored leader line */}
+              {/* Thin crisp colored leader line */}
               <line
                 x1={RIGHT_ANCHOR_X}
                 y1={labelY}
@@ -287,7 +287,7 @@ export const AnatomyLeaderOverlay: React.FC<AnatomyLeaderOverlayProps> = ({
               <circle
                 cx={pinX}
                 cy={pinY}
-                r={isActive ? 0.75 : 0.42}
+                r={isActive ? 0.5 : 0.28}
                 fill="#000000"
                 opacity={0.8}
                 vectorEffect="non-scaling-stroke"
@@ -296,10 +296,10 @@ export const AnatomyLeaderOverlay: React.FC<AnatomyLeaderOverlayProps> = ({
               <circle
                 cx={pinX}
                 cy={pinY}
-                r={isActive ? 0.55 : 0.3}
+                r={isActive ? 0.38 : 0.20}
                 fill={label.color}
                 stroke="#ffffff"
-                strokeWidth={isActive ? 0.9 : 0.6}
+                strokeWidth={isActive ? 0.6 : 0.35}
                 vectorEffect="non-scaling-stroke"
                 className="cursor-pointer pointer-events-auto transition-transform duration-150"
                 onMouseEnter={() => onHoverLabel(label.id)}
@@ -350,7 +350,7 @@ export const AnatomyLeaderOverlay: React.FC<AnatomyLeaderOverlayProps> = ({
             >
               {/* Organ Name in Portuguese */}
               <span
-                className={`text-[12px] font-medium tracking-tight whitespace-nowrap select-none transition-colors duration-150 ${
+                className={`text-[10px] sm:text-[11px] lg:text-[12px] font-medium tracking-tight whitespace-nowrap select-none transition-colors duration-150 max-w-[120px] sm:max-w-[180px] truncate ${
                   isActive ? 'text-white font-semibold' : 'text-white/85 hover:text-white'
                 }`}
                 style={{
@@ -362,11 +362,11 @@ export const AnatomyLeaderOverlay: React.FC<AnatomyLeaderOverlayProps> = ({
 
               {/* Anchor Bullet Dot */}
               <span
-                className="w-2.5 h-2.5 rounded-full shrink-0 border border-white/60 transition-transform duration-150"
+                className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full shrink-0 border border-white/60 transition-transform duration-150"
                 style={{
                   backgroundColor: label.color,
                   boxShadow: isActive ? `0 0 10px ${label.color}, 0 0 4px #ffffff` : `0 0 4px ${label.color}80`,
-                  transform: isActive ? 'scale(1.25)' : 'scale(1)',
+                  transform: isActive ? 'scale(1.2)' : 'scale(1)',
                 }}
               />
             </div>
@@ -379,20 +379,20 @@ export const AnatomyLeaderOverlay: React.FC<AnatomyLeaderOverlayProps> = ({
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 6, scale: 0.96 }}
                   transition={{ duration: 0.15 }}
-                  className="mt-1 p-3 rounded-lg bg-neutral-950/95 border backdrop-blur-md shadow-2xl max-w-[240px] text-left"
+                  className="mt-1 p-2.5 sm:p-3 rounded-lg bg-neutral-950/95 border backdrop-blur-md shadow-2xl max-w-[200px] sm:max-w-[240px] text-left"
                   style={{ borderColor: `${label.color}60` }}
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <div className="flex items-center justify-between pb-1.5 border-b border-white/10 mb-1.5">
+                  <div className="flex items-center justify-between pb-1 border-b border-white/10 mb-1">
                     <span className="text-xs font-bold text-white">{label.namePt}</span>
                     <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-white/10 text-white/70">
                       {label.category || 'Anatomia'}
                     </span>
                   </div>
-                  <p className="text-[11px] text-white/80 leading-relaxed font-sans">
+                  <p className="text-[10px] sm:text-[11px] text-white/80 leading-relaxed font-sans">
                     {label.description}
                   </p>
-                  <div className="mt-2 pt-1.5 border-t border-white/10 flex items-center justify-between text-[10px] text-white/50">
+                  <div className="mt-1.5 pt-1 border-t border-white/10 flex items-center justify-between text-[10px] text-white/50">
                     <span>Cortes: {label.sliceRange[0] + 1} - {label.sliceRange[1] + 1}</span>
                     <button
                       onClick={() => onSelectLabel(null)}
@@ -444,17 +444,17 @@ export const AnatomyLeaderOverlay: React.FC<AnatomyLeaderOverlayProps> = ({
             >
               {/* Anchor Bullet Dot */}
               <span
-                className="w-2.5 h-2.5 rounded-full shrink-0 border border-white/60 transition-transform duration-150"
+                className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full shrink-0 border border-white/60 transition-transform duration-150"
                 style={{
                   backgroundColor: label.color,
                   boxShadow: isActive ? `0 0 10px ${label.color}, 0 0 4px #ffffff` : `0 0 4px ${label.color}80`,
-                  transform: isActive ? 'scale(1.25)' : 'scale(1)',
+                  transform: isActive ? 'scale(1.2)' : 'scale(1)',
                 }}
               />
 
               {/* Organ Name in Portuguese */}
               <span
-                className={`text-[12px] font-medium tracking-tight whitespace-nowrap select-none transition-colors duration-150 ${
+                className={`text-[10px] sm:text-[11px] lg:text-[12px] font-medium tracking-tight whitespace-nowrap select-none transition-colors duration-150 max-w-[120px] sm:max-w-[180px] truncate ${
                   isActive ? 'text-white font-semibold' : 'text-white/85 hover:text-white'
                 }`}
                 style={{

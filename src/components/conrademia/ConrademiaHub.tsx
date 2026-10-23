@@ -36,11 +36,11 @@ const EXAMS_CATALOG: ExamCardItem[] = [
     sliceCount: '331 Cortes (Triplanar)',
     thickness: '5.0mm • MPR',
     structuresCount: '62 Estruturas Individuais',
-    description: 'Atlas tomográfico triplanar (Axial, Coronal, Sagital) completo com todas as 62 estruturas individuais do TotalSegmentator (sem costelas). Todas as vértebras T6 a S1 individualizadas, músculos, lobos pulmonares, vísceras, bexiga, pelve e grandes vasos.',
+    description: 'Atlas tomográfico triplanar (Axial, Coronal e Sagital) em alta definição. Mapeamento detalhado de 62 estruturas anatômicas: vértebras de T6 a S1 individualizadas, órgãos viscerais, pelve, musculatura e grandes vasos.',
     image: '/slices/axial/colored/slice_045.webp',
-    tags: ['Abdome', 'TotalSegmentator', 'MPR Triplanar', '62 Estruturas'],
+    tags: ['Abdome', 'Atlas Anatômico', 'MPR Triplanar', '62 Estruturas'],
     gradient: 'from-amber-500/20 via-rose-500/10 to-transparent',
-    highlights: ['Reconstrução Triplanar (Axial, Coronal, Sagital)', '62 Estruturas Individuais (T6 a S1, Pelve, Músculos)', 'Janelamento Dinâmico e Cores Ajustáveis'],
+    highlights: ['Reconstrução Triplanar (Axial, Coronal, Sagital)', '62 Estruturas Anatômicas (T6 a S1, Pelve, Músculos)', 'Janelamento Dinâmico e Cores Ajustáveis'],
   },
   {
     id: 'cranio',
@@ -190,31 +190,6 @@ export function ConrademiaHub({ onSelectExam }: ConrademiaHubProps) {
             Explore exames tomográficos e ressonâncias em alta definição. 
             Cortes axiais com segmentações anatômicas em cores, pontinhos de referência e legendas interativas para o aprendizado médico.
           </motion.p>
-
-          {/* Quick Metrics Bar */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.96 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.25 }}
-            className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-3xl mx-auto p-2 bg-surface/70 border border-border/60 rounded-2xl backdrop-blur-md mb-8"
-          >
-            <div className="p-3 text-center border-r border-border/40 last:border-none">
-              <div className="text-xl sm:text-2xl font-bold font-mono text-primary">331</div>
-              <div className="text-[11px] text-muted-foreground mt-0.5">Cortes Triplanares</div>
-            </div>
-            <div className="p-3 text-center border-r border-border/40 last:border-none">
-              <div className="text-xl sm:text-2xl font-bold font-mono text-foreground">80</div>
-              <div className="text-[11px] text-muted-foreground mt-0.5">Estruturas Individuais</div>
-            </div>
-            <div className="p-3 text-center border-r border-border/40 last:border-none">
-              <div className="text-xl sm:text-2xl font-bold font-mono text-emerald-400">TotalSeg</div>
-              <div className="text-[11px] text-muted-foreground mt-0.5">Segmentação IA</div>
-            </div>
-            <div className="p-3 text-center">
-              <div className="text-xl sm:text-2xl font-bold font-mono text-foreground">6 Exames</div>
-              <div className="text-[11px] text-muted-foreground mt-0.5">Catálogo Geral</div>
-            </div>
-          </motion.div>
 
           {/* Search & Modality Filters */}
           <motion.div
