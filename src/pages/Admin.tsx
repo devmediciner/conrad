@@ -24,6 +24,7 @@ import { createClient } from '@supabase/supabase-js'; // ← Adicione esta impor
 import { ArticleEditor } from '@/components/ArticleEditor';
 import { classifyArticle, getMetadataFromContent, injectMetadataIntoContent, stripMetadataFromContent, SYSTEM_LABELS, SystemType } from '@/utils/articleClassifier';
 import { isProfessorCoordenador, isDiretoria } from '@/components/LeagueMembers';
+import { ConrademiaAdminEditor } from '@/components/admin/ConrademiaAdminEditor';
 
 const Admin = () => {
   const { user, isAdmin, loading: authLoading } = useAuth(); // Certifique-se de que o useAuth retorne o 'user' logado
@@ -39,13 +40,21 @@ const Admin = () => {
   const [casesSearchQuery, setCasesSearchQuery] = useState('');
   const [articlesSearchQuery, setArticlesSearchQuery] = useState('');
   
-  const [activeTab, setActiveTab] = useState<'casos' | 'artigos' | 'config'>('casos');
+  const [activeTab, setActiveTab] = useState<'casos' | 'artigos' | 'conrademia' | 'config'>('casos');
   const [activeCasesModality, setActiveCasesModality] = useState<'all' | 'RX' | 'TC' | 'USG' | 'RM'>('all');
   const [activeArticlesModality, setActiveArticlesModality] = useState<'all' | 'rx' | 'tc' | 'usg' | 'rm'>('all');
   const [articles, setArticles] = useState<Article[]>([]);
   const [users, setUsers] = useState<Record<string, unknown>[]>([]);
   const [loadingArticles, setLoadingArticles] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0); // Força um refetch ao postar artigo novo
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get('tab');
+    if (tab === 'conrademia' || tab === 'casos' || tab === 'artigos' || tab === 'config') {
+      setActiveTab(tab as any);
+    }
+  }, []);
   
   
   // Estados para Membros da Liga
@@ -572,6 +581,7 @@ const Admin = () => {
           {[
             { id: 'casos', label: 'Casos' },
             { id: 'artigos', label: 'Artigos' },
+            { id: 'conrademia', label: 'Atlas Conrademia' },
             // Abas restritas a administradores
             ...(isAdmin ? [
               { id: 'config', label: 'Configurações' },
@@ -579,7 +589,7 @@ const Admin = () => {
           ].map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as 'casos' | 'artigos' | 'config')}
+              onClick={() => setActiveTab(tab.id as 'casos' | 'artigos' | 'conrademia' | 'config')}
               className={`pb-3 px-2 text-sm font-semibold transition-colors border-b-2 whitespace-nowrap ${activeTab === tab.id ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground'}`}
             >
               {tab.label}
@@ -1225,6 +1235,11 @@ const Admin = () => {
                 </div>
               </div>
             </div>
+          )}
+
+          {/* CONTEÚDO: ABA CONRADEMIA (ATLAS) */}
+          {activeTab === 'conrademia' && (
+            <ConrademiaAdminEditor />
           )}
         </div>
       </div>

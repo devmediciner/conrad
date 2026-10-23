@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/authContent';
-import { Menu, X, LogOut, Shield, User, Activity } from 'lucide-react';
+import { Menu, X, LogOut, Shield, User, Activity, BookOpen } from 'lucide-react';
 import logo from '@/assets/logo.png';
 
 export function Navbar() {
@@ -44,6 +44,9 @@ export function Navbar() {
           <Link to="/game" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
             <Activity className="w-4 h-4" /> Quiz
           </Link>
+          <Link to="/conrademia" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
+            <BookOpen className="w-4 h-4" /> Conrademia
+          </Link>
           {user && (
             <Button variant="outline" size="sm" onClick={() => navigate('/admin')}>
               {isAdmin ? <Shield className="w-4 h-4 mr-1" /> : <User className="w-4 h-4 mr-1" />} Painel
@@ -82,6 +85,9 @@ export function Navbar() {
               <Link to="/privacidade" className="block text-sm text-muted-foreground px-4 py-2" onClick={() => setMenuOpen(false)}>Privacidade</Link>
               <Link to="/game" className="flex items-center gap-1.5 text-sm text-muted-foreground px-4 py-2" onClick={() => setMenuOpen(false)}>
                 <Activity className="w-4 h-4" /> Quiz
+              </Link>
+              <Link to="/conrademia" className="flex items-center gap-1.5 text-sm text-muted-foreground px-4 py-2" onClick={() => setMenuOpen(false)}>
+                <BookOpen className="w-4 h-4" /> Conrademia
               </Link>
               {user && (
                 <Button variant="outline" className="w-full justify-start" onClick={() => { navigate('/admin'); setMenuOpen(false); }}>

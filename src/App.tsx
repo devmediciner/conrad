@@ -12,6 +12,7 @@ import LerCaso from "./pages/LerCaso.tsx";
 import Login from "./pages/Login.tsx";
 import Admin from "./pages/Admin.tsx";
 import RadioGame from "./pages/RadioGame.tsx";
+import Conrademia from "./pages/Conrademia.tsx";
 import Privacy from "./pages/Privacy.tsx";
 import Sobre from "./pages/Sobre.tsx";
 import TutorialCasos from "./pages/TutorialCasos.tsx";
@@ -41,6 +42,8 @@ const App = () => (
             <Route path="/tutorial-casos" element={<TutorialCasos />} />
             <Route path="/tutorial-artigos" element={<TutorialArtigos />} />
             <Route path="/game" element={<RadioGame />} />
+            <Route path="/conrademia" element={<Conrademia />} />
+            <Route path="/conrademia/:examId" element={<Conrademia />} />
             <Route path="/sobre" element={<Sobre />} />
             <Route path="/privacidade" element={<Privacy />} />
             <Route path="*" element={<Navigate to="/" replace />} />

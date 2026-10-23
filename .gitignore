@@ -46,3 +46,7 @@ service-account*.json
 
 # Vite timestamps
 vite.config.ts.timestamp-*
+
+# 3D Slicer raw exports & raw input scans
+slicer_export/
+ABDOME/
