@@ -263,6 +263,11 @@ function ConrademiaViewer() {
     );
   }, [anatomyLabels, currentSlice]);
 
+  const selectedLabelData = useMemo(
+    () => anatomyLabels.find(l => l.id === selectedLabel),
+    [anatomyLabels, selectedLabel]
+  );
+
   // ─── Filtered Labels for Search ────────────────────────────────────────
   const filteredLabels = useMemo(() => {
     if (!searchTerm) return anatomyLabels;
@@ -647,7 +652,7 @@ function ConrademiaViewer() {
           <div className="flex-1 relative bg-black flex items-center justify-center overflow-hidden">
             {/* Canvas / Image Container with strict 1:1 aspect ratio */}
             <div
-              className={`relative aspect-square max-h-[calc(100vh-115px)] max-w-[88vw] h-[calc(100vh-115px)] w-auto select-none ${cursorClass}`}
+              className={`relative aspect-square max-h-[calc(100vh-185px)] md:max-h-[calc(100vh-115px)] max-w-[94vw] md:max-w-[88vw] h-[calc(100vh-185px)] md:h-[calc(100vh-115px)] w-auto select-none ${cursorClass}`}
               style={{
                 transform: `scale(${zoom}) translate(${panOffset.x / zoom}px, ${panOffset.y / zoom}px)`,
                 transition: isDragging.current ? 'none' : 'transform 0.1s ease-out',
@@ -761,13 +766,90 @@ function ConrademiaViewer() {
               </p>
             </div>
 
-            {/* ─── Bottom Horizontal Slice Control Bar (Mobile only) ──────────────── */}
-            <div className="md:hidden absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/75 to-transparent px-3 py-2 z-20 pointer-events-none">
-              <div className="flex items-center justify-between gap-2 max-w-md mx-auto pointer-events-auto bg-black/60 border border-white/10 rounded-full px-3 py-1.5 backdrop-blur-md shadow-lg">
+            {/* ─── Bottom Mobile Controls & Anatomy Bar ──────────────── */}
+            <div className="md:hidden absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/95 to-transparent px-3 pb-3 pt-6 z-30 pointer-events-none flex flex-col gap-2">
+              {/* Selected Structure Details Card (Mobile) */}
+              <AnimatePresence>
+                {selectedLabelData && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.98 }}
+                    transition={{ duration: 0.15 }}
+                    className="p-3 bg-neutral-950/95 border rounded-2xl backdrop-blur-md shadow-2xl pointer-events-auto flex items-start justify-between gap-3 max-w-md mx-auto w-full"
+                    style={{ borderColor: `${selectedLabelData.color}80` }}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="w-2.5 h-2.5 rounded-full shrink-0"
+                          style={{
+                            backgroundColor: selectedLabelData.color,
+                            boxShadow: `0 0 8px ${selectedLabelData.color}`,
+                          }}
+                        />
+                        <h4 className="text-sm font-bold text-white truncate">
+                          {selectedLabelData.namePt}
+                        </h4>
+                        <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-white/10 text-white/70 shrink-0">
+                          {selectedLabelData.category || 'Anatomia'}
+                        </span>
+                      </div>
+                      {selectedLabelData.description && (
+                        <p className="text-[11px] text-white/80 mt-1 line-clamp-2 leading-relaxed">
+                          {selectedLabelData.description}
+                        </p>
+                      )}
+                      <div className="text-[10px] text-white/50 mt-1 flex items-center justify-between">
+                        <span>Cortes: {selectedLabelData.sliceRange[0] + 1} - {selectedLabelData.sliceRange[1] + 1}</span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setSelectedLabel(null)}
+                      className="text-white/60 hover:text-white p-1 rounded-full hover:bg-white/10 shrink-0"
+                      title="Fechar"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Mobile Organ Chips Carousel (Horizontally scrollable list of organs in current cut) */}
+              {showLabels && visibleLabels.length > 0 && (
+                <div className="flex items-center gap-1.5 overflow-x-auto py-1 px-1 scrollbar-none pointer-events-auto max-w-md mx-auto w-full">
+                  <span className="text-[9px] uppercase font-bold text-white/50 tracking-wider shrink-0 pl-1">
+                    Corte ({visibleLabels.length}):
+                  </span>
+                  {visibleLabels.map(label => {
+                    const isSel = selectedLabel === label.id;
+                    return (
+                      <button
+                        key={label.id}
+                        onClick={() => setSelectedLabel(isSel ? null : label.id)}
+                        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs whitespace-nowrap transition-all shrink-0 ${
+                          isSel
+                            ? 'bg-primary text-primary-foreground font-bold shadow-md scale-105'
+                            : 'bg-black/70 border border-white/15 text-white/90 hover:text-white active:scale-95'
+                        }`}
+                      >
+                        <span
+                          className="w-2 h-2 rounded-full shrink-0"
+                          style={{ backgroundColor: label.color }}
+                        />
+                        <span>{label.namePt}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Mobile Slice Slider */}
+              <div className="flex items-center justify-between gap-2 max-w-md mx-auto w-full pointer-events-auto bg-black/70 border border-white/10 rounded-full px-3 py-1.5 backdrop-blur-md shadow-lg">
                 <button
                   onClick={() => setCurrentSlice(prev => Math.max(0, prev - 1))}
                   className="w-7 h-7 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-colors shrink-0"
-                  title="Corte anterior (← ou ↓)"
+                  title="Corte anterior (←)"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
@@ -784,7 +866,7 @@ function ConrademiaViewer() {
                 <button
                   onClick={() => setCurrentSlice(prev => Math.min(totalSlices - 1, prev + 1))}
                   className="w-7 h-7 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-colors shrink-0"
-                  title="Próximo corte (→ ou ↑)"
+                  title="Próximo corte (→)"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>

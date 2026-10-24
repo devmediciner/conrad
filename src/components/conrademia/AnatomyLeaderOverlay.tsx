@@ -155,6 +155,8 @@ export const AnatomyLeaderOverlay: React.FC<AnatomyLeaderOverlayProps> = ({
   const LEFT_ANCHOR_X = -7;
   const RIGHT_ANCHOR_X = 107;
 
+  const allAugmented = useMemo(() => [...leftLabels, ...rightLabels], [leftLabels, rightLabels]);
+
   const anyActive = !!(selectedLabelId || hoveredLabelId);
 
   return (
@@ -162,14 +164,109 @@ export const AnatomyLeaderOverlay: React.FC<AnatomyLeaderOverlayProps> = ({
       className="absolute inset-0 pointer-events-none select-none"
       style={{ overflow: 'visible' }}
     >
-      {/* ─── SVG Leader Lines & Structure Pins ────────────────── */}
-      <svg
-        className="absolute inset-0 w-full h-full pointer-events-none"
-        viewBox="0 0 100 100"
-        preserveAspectRatio="none"
-        style={{ overflow: 'visible' }}
-      >
-        {/* Left column leader lines */}
+      {/* ─── Desktop Side Leader Lines & Side Columns (Hidden on mobile < md) ─── */}
+      <div className="hidden md:block">
+        {/* SVG Leader Lines */}
+        <svg
+          className="absolute inset-0 w-full h-full pointer-events-none"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          style={{ overflow: 'visible' }}
+        >
+          {/* Left column leader lines */}
+          {leftLabels.map((label, idx) => {
+            const isSelected = selectedLabelId === label.id;
+            const isHovered = hoveredLabelId === label.id;
+            const isActive = isSelected || isHovered;
+
+            if (!showAllAlways && !isActive) return null;
+
+            const labelY = leftYPositions[idx];
+            const pinX = label.coords.pinX;
+            const pinY = label.coords.pinY;
+
+            const opacity = isActive ? 1 : anyActive ? 0.3 : 0.85;
+            const strokeWidth = isActive ? 1.5 : 0.75;
+
+            return (
+              <g key={`leader-left-${label.id}`}>
+                {/* High-contrast subtle underlay halo */}
+                <line
+                  x1={LEFT_ANCHOR_X}
+                  y1={labelY}
+                  x2={pinX}
+                  y2={pinY}
+                  stroke="#000000"
+                  strokeWidth={strokeWidth + 1.2}
+                  strokeOpacity={opacity * 0.9}
+                  strokeLinecap="round"
+                  vectorEffect="non-scaling-stroke"
+                />
+                {/* Thin crisp colored leader line */}
+                <line
+                  x1={LEFT_ANCHOR_X}
+                  y1={labelY}
+                  x2={pinX}
+                  y2={pinY}
+                  stroke={label.color}
+                  strokeWidth={strokeWidth}
+                  strokeOpacity={opacity}
+                  strokeLinecap="round"
+                  vectorEffect="non-scaling-stroke"
+                  className="transition-all duration-150"
+                />
+              </g>
+            );
+          })}
+
+          {/* Right column leader lines */}
+          {rightLabels.map((label, idx) => {
+            const isSelected = selectedLabelId === label.id;
+            const isHovered = hoveredLabelId === label.id;
+            const isActive = isSelected || isHovered;
+
+            if (!showAllAlways && !isActive) return null;
+
+            const labelY = rightYPositions[idx];
+            const pinX = label.coords.pinX;
+            const pinY = label.coords.pinY;
+
+            const opacity = isActive ? 1 : anyActive ? 0.3 : 0.85;
+            const strokeWidth = isActive ? 1.5 : 0.75;
+
+            return (
+              <g key={`leader-right-${label.id}`}>
+                {/* High-contrast subtle underlay halo */}
+                <line
+                  x1={RIGHT_ANCHOR_X}
+                  y1={labelY}
+                  x2={pinX}
+                  y2={pinY}
+                  stroke="#000000"
+                  strokeWidth={strokeWidth + 1.2}
+                  strokeOpacity={opacity * 0.9}
+                  strokeLinecap="round"
+                  vectorEffect="non-scaling-stroke"
+                />
+                {/* Thin crisp colored leader line */}
+                <line
+                  x1={RIGHT_ANCHOR_X}
+                  y1={labelY}
+                  x2={pinX}
+                  y2={pinY}
+                  stroke={label.color}
+                  strokeWidth={strokeWidth}
+                  strokeOpacity={opacity}
+                  strokeLinecap="round"
+                  vectorEffect="non-scaling-stroke"
+                  className="transition-all duration-150"
+                />
+              </g>
+            );
+          })}
+        </svg>
+
+        {/* ─── Left Side Margin Labels (Desktop) ──────────────────────────── */}
         {leftLabels.map((label, idx) => {
           const isSelected = selectedLabelId === label.id;
           const isHovered = hoveredLabelId === label.id;
@@ -178,70 +275,92 @@ export const AnatomyLeaderOverlay: React.FC<AnatomyLeaderOverlayProps> = ({
           if (!showAllAlways && !isActive) return null;
 
           const labelY = leftYPositions[idx];
-          const pinX = label.coords.pinX;
-          const pinY = label.coords.pinY;
-
-          const opacity = isActive ? 1 : anyActive ? 0.3 : 0.85;
-          const strokeWidth = isActive ? 1.5 : 0.75;
+          const opacity = isActive ? 1 : anyActive ? 0.35 : 0.9;
 
           return (
-            <g key={`leader-left-${label.id}`}>
-              {/* High-contrast subtle underlay halo */}
-              <line
-                x1={LEFT_ANCHOR_X}
-                y1={labelY}
-                x2={pinX}
-                y2={pinY}
-                stroke="#000000"
-                strokeWidth={strokeWidth + 1.2}
-                strokeOpacity={opacity * 0.9}
-                strokeLinecap="round"
-                vectorEffect="non-scaling-stroke"
-              />
-              {/* Thin crisp colored leader line */}
-              <line
-                x1={LEFT_ANCHOR_X}
-                y1={labelY}
-                x2={pinX}
-                y2={pinY}
-                stroke={label.color}
-                strokeWidth={strokeWidth}
-                strokeOpacity={opacity}
-                strokeLinecap="round"
-                vectorEffect="non-scaling-stroke"
-                className="transition-all duration-150"
-              />
-              {/* Dark halo under pin */}
-              <circle
-                cx={pinX}
-                cy={pinY}
-                r={isActive ? 0.5 : 0.28}
-                fill="#000000"
-                opacity={0.8}
-                vectorEffect="non-scaling-stroke"
-              />
-              {/* Pin dot on the organ */}
-              <circle
-                cx={pinX}
-                cy={pinY}
-                r={isActive ? 0.38 : 0.20}
-                fill={label.color}
-                stroke="#ffffff"
-                strokeWidth={isActive ? 0.6 : 0.35}
-                vectorEffect="non-scaling-stroke"
-                className="cursor-pointer pointer-events-auto transition-transform duration-150"
-                onMouseEnter={() => onHoverLabel(label.id)}
-                onMouseLeave={() => onHoverLabel(null)}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onSelectLabel(isSelected ? null : label.id);
-                }}
-              />
-            </g>
+            <div
+              key={`text-left-${label.id}`}
+              className="absolute pointer-events-auto z-30 transition-opacity duration-150"
+              style={{
+                left: `${LEFT_ANCHOR_X}%`,
+                top: `${labelY}%`,
+                transform: 'translate(-100%, -50%)',
+                opacity,
+              }}
+              onMouseEnter={() => onHoverLabel(label.id)}
+              onMouseLeave={() => onHoverLabel(null)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onSelectLabel(isSelected ? null : label.id);
+              }}
+            >
+              {/* Label Row: [Text in Portuguese] [Bullet Dot] */}
+              <div
+                className={`flex items-center gap-2 cursor-pointer py-0.5 px-1.5 rounded transition-all duration-150 ${
+                  isActive ? 'scale-105' : 'hover:scale-102'
+                }`}
+              >
+                {/* Organ Name in Portuguese */}
+                <span
+                  className={`text-[10px] sm:text-[11px] lg:text-[12px] font-medium tracking-tight whitespace-nowrap select-none transition-colors duration-150 max-w-[120px] sm:max-w-[180px] truncate ${
+                    isActive ? 'text-white font-semibold' : 'text-white/85 hover:text-white'
+                  }`}
+                  style={{
+                    textShadow: '0 1px 4px rgba(0,0,0,0.95), 0 0 8px rgba(0,0,0,0.8)',
+                  }}
+                >
+                  {label.namePt}
+                </span>
+
+                {/* Anchor Bullet Dot */}
+                <span
+                  className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full shrink-0 border border-white/60 transition-transform duration-150"
+                  style={{
+                    backgroundColor: label.color,
+                    boxShadow: isActive ? `0 0 10px ${label.color}, 0 0 4px #ffffff` : `0 0 4px ${label.color}80`,
+                    transform: isActive ? 'scale(1.2)' : 'scale(1)',
+                  }}
+                />
+              </div>
+
+              {/* Selected Popover Card */}
+              <AnimatePresence>
+                {isSelected && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 6, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 6, scale: 0.96 }}
+                    transition={{ duration: 0.15 }}
+                    className="mt-1 p-2.5 sm:p-3 rounded-lg bg-neutral-950/95 border backdrop-blur-md shadow-2xl max-w-[200px] sm:max-w-[240px] text-left"
+                    style={{ borderColor: `${label.color}60` }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="flex items-center justify-between pb-1 border-b border-white/10 mb-1">
+                      <span className="text-xs font-bold text-white">{label.namePt}</span>
+                      <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-white/10 text-white/70">
+                        {label.category || 'Anatomia'}
+                      </span>
+                    </div>
+                    <p className="text-[10px] sm:text-[11px] text-white/80 leading-relaxed font-sans">
+                      {label.description}
+                    </p>
+                    <div className="mt-1.5 pt-1 border-t border-white/10 flex items-center justify-between text-[10px] text-white/50">
+                      <span>Cortes: {label.sliceRange[0] + 1} - {label.sliceRange[1] + 1}</span>
+                      <button
+                        onClick={() => onSelectLabel(null)}
+                        className="text-primary hover:underline text-[10px]"
+                      >
+                        Fechar
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           );
         })}
 
-        {/* Right column leader lines */}
+        {/* ─── Right Side Margin Labels (Desktop) ─────────────────────────── */}
         {rightLabels.map((label, idx) => {
           const isSelected = selectedLabelId === label.id;
           const isHovered = hoveredLabelId === label.id;
@@ -250,254 +369,151 @@ export const AnatomyLeaderOverlay: React.FC<AnatomyLeaderOverlayProps> = ({
           if (!showAllAlways && !isActive) return null;
 
           const labelY = rightYPositions[idx];
-          const pinX = label.coords.pinX;
-          const pinY = label.coords.pinY;
-
-          const opacity = isActive ? 1 : anyActive ? 0.3 : 0.85;
-          const strokeWidth = isActive ? 1.5 : 0.75;
+          const opacity = isActive ? 1 : anyActive ? 0.35 : 0.9;
 
           return (
-            <g key={`leader-right-${label.id}`}>
-              {/* High-contrast subtle underlay halo */}
-              <line
-                x1={RIGHT_ANCHOR_X}
-                y1={labelY}
-                x2={pinX}
-                y2={pinY}
-                stroke="#000000"
-                strokeWidth={strokeWidth + 1.2}
-                strokeOpacity={opacity * 0.9}
-                strokeLinecap="round"
-                vectorEffect="non-scaling-stroke"
-              />
-              {/* Thin crisp colored leader line */}
-              <line
-                x1={RIGHT_ANCHOR_X}
-                y1={labelY}
-                x2={pinX}
-                y2={pinY}
-                stroke={label.color}
-                strokeWidth={strokeWidth}
-                strokeOpacity={opacity}
-                strokeLinecap="round"
-                vectorEffect="non-scaling-stroke"
-                className="transition-all duration-150"
-              />
-              {/* Dark halo under pin */}
-              <circle
-                cx={pinX}
-                cy={pinY}
-                r={isActive ? 0.5 : 0.28}
-                fill="#000000"
-                opacity={0.8}
-                vectorEffect="non-scaling-stroke"
-              />
-              {/* Pin dot on the organ */}
-              <circle
-                cx={pinX}
-                cy={pinY}
-                r={isActive ? 0.38 : 0.20}
-                fill={label.color}
-                stroke="#ffffff"
-                strokeWidth={isActive ? 0.6 : 0.35}
-                vectorEffect="non-scaling-stroke"
-                className="cursor-pointer pointer-events-auto transition-transform duration-150"
-                onMouseEnter={() => onHoverLabel(label.id)}
-                onMouseLeave={() => onHoverLabel(null)}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onSelectLabel(isSelected ? null : label.id);
-                }}
-              />
-            </g>
+            <div
+              key={`text-right-${label.id}`}
+              className="absolute pointer-events-auto z-30 transition-opacity duration-150"
+              style={{
+                left: `${RIGHT_ANCHOR_X}%`,
+                top: `${labelY}%`,
+                transform: 'translate(0, -50%)',
+                opacity,
+              }}
+              onMouseEnter={() => onHoverLabel(label.id)}
+              onMouseLeave={() => onHoverLabel(null)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onSelectLabel(isSelected ? null : label.id);
+              }}
+            >
+              {/* Label Row: [Bullet Dot] [Text in Portuguese] */}
+              <div
+                className={`flex items-center gap-2 cursor-pointer py-0.5 px-1.5 rounded transition-all duration-150 ${
+                  isActive ? 'scale-105' : 'hover:scale-102'
+                }`}
+              >
+                {/* Anchor Bullet Dot */}
+                <span
+                  className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full shrink-0 border border-white/60 transition-transform duration-150"
+                  style={{
+                    backgroundColor: label.color,
+                    boxShadow: isActive ? `0 0 10px ${label.color}, 0 0 4px #ffffff` : `0 0 4px ${label.color}80`,
+                    transform: isActive ? 'scale(1.2)' : 'scale(1)',
+                  }}
+                />
+
+                {/* Organ Name in Portuguese */}
+                <span
+                  className={`text-[10px] sm:text-[11px] lg:text-[12px] font-medium tracking-tight whitespace-nowrap select-none transition-colors duration-150 max-w-[120px] sm:max-w-[180px] truncate ${
+                    isActive ? 'text-white font-semibold' : 'text-white/85 hover:text-white'
+                  }`}
+                  style={{
+                    textShadow: '0 1px 4px rgba(0,0,0,0.95), 0 0 8px rgba(0,0,0,0.8)',
+                  }}
+                >
+                  {label.namePt}
+                </span>
+              </div>
+
+              {/* Selected Popover Card */}
+              <AnimatePresence>
+                {isSelected && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 6, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 6, scale: 0.96 }}
+                    transition={{ duration: 0.15 }}
+                    className="mt-1 p-3 rounded-lg bg-neutral-950/95 border backdrop-blur-md shadow-2xl max-w-[240px] text-left"
+                    style={{ borderColor: `${label.color}60` }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="flex items-center justify-between pb-1.5 border-b border-white/10 mb-1.5">
+                      <span className="text-xs font-bold text-white">{label.namePt}</span>
+                      <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-white/10 text-white/70">
+                        {label.category || 'Anatomia'}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-white/80 leading-relaxed font-sans">
+                      {label.description}
+                    </p>
+                    <div className="mt-2 pt-1.5 border-t border-white/10 flex items-center justify-between text-[10px] text-white/50">
+                      <span>Cortes: {label.sliceRange[0] + 1} - {label.sliceRange[1] + 1}</span>
+                      <button
+                        onClick={() => onSelectLabel(null)}
+                        className="text-primary hover:underline text-[10px]"
+                      >
+                        Fechar
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           );
         })}
-      </svg>
+      </div>
 
-      {/* ─── Left Side Margin Labels ──────────────────────────── */}
-      {leftLabels.map((label, idx) => {
+      {/* ─── Organ Pins Layer (Always visible, responsive, crisp round circles) ─── */}
+      {allAugmented.map(label => {
         const isSelected = selectedLabelId === label.id;
         const isHovered = hoveredLabelId === label.id;
         const isActive = isSelected || isHovered;
-
-        if (!showAllAlways && !isActive) return null;
-
-        const labelY = leftYPositions[idx];
-        const opacity = isActive ? 1 : anyActive ? 0.35 : 0.9;
+        const pinX = label.coords.pinX;
+        const pinY = label.coords.pinY;
 
         return (
           <div
-            key={`text-left-${label.id}`}
-            className="absolute pointer-events-auto z-30 transition-opacity duration-150"
+            key={`pin-dot-${label.id}`}
+            className="absolute pointer-events-auto z-20 -translate-x-1/2 -translate-y-1/2 cursor-pointer group"
             style={{
-              left: `${LEFT_ANCHOR_X}%`,
-              top: `${labelY}%`,
-              transform: 'translate(-100%, -50%)',
-              opacity,
+              left: `${pinX}%`,
+              top: `${pinY}%`,
             }}
-            onMouseEnter={() => onHoverLabel(label.id)}
-            onMouseLeave={() => onHoverLabel(null)}
             onClick={(e) => {
               e.stopPropagation();
               onSelectLabel(isSelected ? null : label.id);
             }}
-          >
-            {/* Label Row: [Text in Portuguese] [Bullet Dot] */}
-            <div
-              className={`flex items-center gap-2 cursor-pointer py-0.5 px-1.5 rounded transition-all duration-150 ${
-                isActive ? 'scale-105' : 'hover:scale-102'
-              }`}
-            >
-              {/* Organ Name in Portuguese */}
-              <span
-                className={`text-[10px] sm:text-[11px] lg:text-[12px] font-medium tracking-tight whitespace-nowrap select-none transition-colors duration-150 max-w-[120px] sm:max-w-[180px] truncate ${
-                  isActive ? 'text-white font-semibold' : 'text-white/85 hover:text-white'
-                }`}
-                style={{
-                  textShadow: '0 1px 4px rgba(0,0,0,0.95), 0 0 8px rgba(0,0,0,0.8)',
-                }}
-              >
-                {label.namePt}
-              </span>
-
-              {/* Anchor Bullet Dot */}
-              <span
-                className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full shrink-0 border border-white/60 transition-transform duration-150"
-                style={{
-                  backgroundColor: label.color,
-                  boxShadow: isActive ? `0 0 10px ${label.color}, 0 0 4px #ffffff` : `0 0 4px ${label.color}80`,
-                  transform: isActive ? 'scale(1.2)' : 'scale(1)',
-                }}
-              />
-            </div>
-
-            {/* Selected Popover Card */}
-            <AnimatePresence>
-              {isSelected && (
-                <motion.div
-                  initial={{ opacity: 0, y: 6, scale: 0.96 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 6, scale: 0.96 }}
-                  transition={{ duration: 0.15 }}
-                  className="mt-1 p-2.5 sm:p-3 rounded-lg bg-neutral-950/95 border backdrop-blur-md shadow-2xl max-w-[200px] sm:max-w-[240px] text-left"
-                  style={{ borderColor: `${label.color}60` }}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div className="flex items-center justify-between pb-1 border-b border-white/10 mb-1">
-                    <span className="text-xs font-bold text-white">{label.namePt}</span>
-                    <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-white/10 text-white/70">
-                      {label.category || 'Anatomia'}
-                    </span>
-                  </div>
-                  <p className="text-[10px] sm:text-[11px] text-white/80 leading-relaxed font-sans">
-                    {label.description}
-                  </p>
-                  <div className="mt-1.5 pt-1 border-t border-white/10 flex items-center justify-between text-[10px] text-white/50">
-                    <span>Cortes: {label.sliceRange[0] + 1} - {label.sliceRange[1] + 1}</span>
-                    <button
-                      onClick={() => onSelectLabel(null)}
-                      className="text-primary hover:underline text-[10px]"
-                    >
-                      Fechar
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        );
-      })}
-
-      {/* ─── Right Side Margin Labels ─────────────────────────── */}
-      {rightLabels.map((label, idx) => {
-        const isSelected = selectedLabelId === label.id;
-        const isHovered = hoveredLabelId === label.id;
-        const isActive = isSelected || isHovered;
-
-        if (!showAllAlways && !isActive) return null;
-
-        const labelY = rightYPositions[idx];
-        const opacity = isActive ? 1 : anyActive ? 0.35 : 0.9;
-
-        return (
-          <div
-            key={`text-right-${label.id}`}
-            className="absolute pointer-events-auto z-30 transition-opacity duration-150"
-            style={{
-              left: `${RIGHT_ANCHOR_X}%`,
-              top: `${labelY}%`,
-              transform: 'translate(0, -50%)',
-              opacity,
-            }}
             onMouseEnter={() => onHoverLabel(label.id)}
             onMouseLeave={() => onHoverLabel(null)}
-            onClick={(e) => {
-              e.stopPropagation();
-              onSelectLabel(isSelected ? null : label.id);
-            }}
           >
-            {/* Label Row: [Bullet Dot] [Text in Portuguese] */}
-            <div
-              className={`flex items-center gap-2 cursor-pointer py-0.5 px-1.5 rounded transition-all duration-150 ${
-                isActive ? 'scale-105' : 'hover:scale-102'
-              }`}
-            >
-              {/* Anchor Bullet Dot */}
+            {/* Touch expansion hit area (32px on mobile, 24px on desktop) */}
+            <div className="absolute -inset-3 sm:-inset-2 rounded-full" />
+
+            {/* Outer glowing pulsing ring when active */}
+            {isActive && (
               <span
-                className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full shrink-0 border border-white/60 transition-transform duration-150"
-                style={{
-                  backgroundColor: label.color,
-                  boxShadow: isActive ? `0 0 10px ${label.color}, 0 0 4px #ffffff` : `0 0 4px ${label.color}80`,
-                  transform: isActive ? 'scale(1.2)' : 'scale(1)',
-                }}
+                className="absolute -inset-1.5 rounded-full animate-ping opacity-75 pointer-events-none"
+                style={{ backgroundColor: label.color }}
               />
+            )}
 
-              {/* Organ Name in Portuguese */}
-              <span
-                className={`text-[10px] sm:text-[11px] lg:text-[12px] font-medium tracking-tight whitespace-nowrap select-none transition-colors duration-150 max-w-[120px] sm:max-w-[180px] truncate ${
-                  isActive ? 'text-white font-semibold' : 'text-white/85 hover:text-white'
-                }`}
-                style={{
-                  textShadow: '0 1px 4px rgba(0,0,0,0.95), 0 0 8px rgba(0,0,0,0.8)',
-                }}
+            {/* Crisp round pin dot with white border */}
+            <div
+              className={`rounded-full transition-all duration-150 border-2 shadow-lg ${
+                isActive
+                  ? 'w-4 h-4 scale-125 border-white ring-2 ring-primary ring-offset-1 ring-offset-black'
+                  : 'w-3 h-3 sm:w-2.5 sm:h-2.5 border-white/90 group-hover:scale-125 group-hover:border-white'
+              }`}
+              style={{
+                backgroundColor: label.color,
+                boxShadow: `0 0 10px ${label.color}, 0 2px 6px rgba(0,0,0,0.9)`,
+              }}
+            />
+
+            {/* Mobile-only Floating Name Tooltip (appears over the pin when selected or hovered) */}
+            {(isActive || isSelected) && (
+              <div
+                className="md:hidden absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1 rounded-full bg-neutral-950/95 border border-white/30 backdrop-blur-md shadow-2xl text-center whitespace-nowrap z-50 pointer-events-none flex items-center gap-1.5 animate-in fade-in zoom-in-95 duration-150"
+                style={{ borderColor: label.color }}
               >
-                {label.namePt}
-              </span>
-            </div>
-
-            {/* Selected Popover Card */}
-            <AnimatePresence>
-              {isSelected && (
-                <motion.div
-                  initial={{ opacity: 0, y: 6, scale: 0.96 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 6, scale: 0.96 }}
-                  transition={{ duration: 0.15 }}
-                  className="mt-1 p-3 rounded-lg bg-neutral-950/95 border backdrop-blur-md shadow-2xl max-w-[240px] text-left"
-                  style={{ borderColor: `${label.color}60` }}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div className="flex items-center justify-between pb-1.5 border-b border-white/10 mb-1.5">
-                    <span className="text-xs font-bold text-white">{label.namePt}</span>
-                    <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-white/10 text-white/70">
-                      {label.category || 'Anatomia'}
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-white/80 leading-relaxed font-sans">
-                    {label.description}
-                  </p>
-                  <div className="mt-2 pt-1.5 border-t border-white/10 flex items-center justify-between text-[10px] text-white/50">
-                    <span>Cortes: {label.sliceRange[0] + 1} - {label.sliceRange[1] + 1}</span>
-                    <button
-                      onClick={() => onSelectLabel(null)}
-                      className="text-primary hover:underline text-[10px]"
-                    >
-                      Fechar
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: label.color }} />
+                <span className="text-[11px] font-bold text-white tracking-tight">
+                  {label.namePt}
+                </span>
+              </div>
+            )}
           </div>
         );
       })}
