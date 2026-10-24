@@ -454,4 +454,18 @@
   display: inline-block !important;
 }
 
+/* Strict 1:1 square container for Atlas Radiológico viewer (guarantees pixel-perfect pin alignment) */
+.atlas-canvas-container {
+  width: min(calc(100vh - 210px), 94vw);
+  height: min(calc(100vh - 210px), 94vw);
+  aspect-ratio: 1 / 1;
+}
+
+@media (min-width: 768px) {
+  .atlas-canvas-container {
+    width: min(calc(100vh - 115px), 88vw);
+    height: min(calc(100vh - 115px), 88vw);
+  }
+}
+
 

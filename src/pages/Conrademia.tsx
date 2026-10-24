@@ -652,7 +652,7 @@ function ConrademiaViewer() {
           <div className="flex-1 relative bg-black flex items-center justify-center overflow-hidden">
             {/* Canvas / Image Container with strict 1:1 aspect ratio */}
             <div
-              className={`relative aspect-square max-h-[calc(100vh-185px)] md:max-h-[calc(100vh-115px)] max-w-[94vw] md:max-w-[88vw] h-[calc(100vh-185px)] md:h-[calc(100vh-115px)] w-auto select-none ${cursorClass}`}
+              className={`relative atlas-canvas-container shrink-0 select-none ${cursorClass}`}
               style={{
                 transform: `scale(${zoom}) translate(${panOffset.x / zoom}px, ${panOffset.y / zoom}px)`,
                 transition: isDragging.current ? 'none' : 'transform 0.1s ease-out',
@@ -667,7 +667,7 @@ function ConrademiaViewer() {
               <img
                 src={`/slices/${currentPlane}/plain/slice_${String(currentSlice).padStart(3, '0')}.webp`}
                 alt={`Corte ${planeInfo.name} ${currentSlice + 1}`}
-                className="w-full h-full block aspect-square object-contain shadow-2xl pointer-events-none select-none transition-[filter] duration-150"
+                className="w-full h-full block object-cover shadow-2xl pointer-events-none select-none transition-[filter] duration-150"
                 style={{
                   filter: ctFilterStyle,
                 }}
@@ -678,7 +678,7 @@ function ConrademiaViewer() {
                 <img
                   src={`/slices/${currentPlane}/colored/slice_${String(currentSlice).padStart(3, '0')}.webp`}
                   alt={`Cores ${planeInfo.name} ${currentSlice + 1}`}
-                  className="absolute inset-0 w-full h-full block aspect-square object-contain pointer-events-none select-none transition-opacity duration-100 transition-[filter] duration-150"
+                  className="absolute inset-0 w-full h-full block object-cover pointer-events-none select-none transition-opacity duration-100 transition-[filter] duration-150"
                   style={{
                     opacity: colorOpacity,
                     filter: ctFilterStyle,
