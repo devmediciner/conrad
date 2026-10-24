@@ -344,6 +344,51 @@ function ConrademiaViewer() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [totalSlices]);
 
+  // ─── Ultra-thin PC Scrubber Handlers (PACS style) ──────────────────────
+  const scrubberTrackRef = useRef<HTMLDivElement>(null);
+  const [isScrubbing, setIsScrubbing] = useState(false);
+  const [isHoveringScrubber, setIsHoveringScrubber] = useState(false);
+
+  const updateSliceFromPointer = useCallback((clientY: number) => {
+    if (!scrubberTrackRef.current) return;
+    const rect = scrubberTrackRef.current.getBoundingClientRect();
+    const clampedY = Math.max(0, Math.min(rect.height, clientY - rect.top));
+    const pct = clampedY / rect.height;
+    const slice = Math.round(pct * (totalSlices - 1));
+    setCurrentSlice(Math.max(0, Math.min(totalSlices - 1, slice)));
+  }, [totalSlices]);
+
+  const handleScrubberPointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsScrubbing(true);
+    e.currentTarget.setPointerCapture(e.pointerId);
+    updateSliceFromPointer(e.clientY);
+  }, [updateSliceFromPointer]);
+
+  const handleScrubberPointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isScrubbing) return;
+    e.preventDefault();
+    e.stopPropagation();
+    updateSliceFromPointer(e.clientY);
+  }, [isScrubbing, updateSliceFromPointer]);
+
+  const handleScrubberPointerUp = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (isScrubbing) {
+      setIsScrubbing(false);
+      try {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      } catch {}
+    }
+  }, [isScrubbing]);
+
+  const handleScrubberWheel = useCallback((e: React.WheelEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const delta = e.deltaY > 0 ? 1 : -1;
+    setCurrentSlice(prev => Math.max(0, Math.min(totalSlices - 1, prev + delta)));
+  }, [totalSlices]);
+
   // ─── Actions ───────────────────────────────────────────────────────────
   const resetView = () => {
     setZoom(1.15);
@@ -651,44 +696,58 @@ function ConrademiaViewer() {
               )}
             </div>
 
-            {/* ─── Vertical Slice Scrollbar on PC (Professional PACS style) ─── */}
-            <div className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 z-30 flex-col items-center gap-2 py-3 px-2 bg-black/60 hover:bg-black/80 border border-white/10 hover:border-white/20 rounded-2xl backdrop-blur-md shadow-2xl transition-all select-none">
-              <button
-                onClick={() => setCurrentSlice(prev => Math.max(0, prev - 1))}
-                className="w-8 h-8 rounded-xl flex items-center justify-center text-white/70 hover:text-white hover:bg-white/15 active:scale-95 transition-all"
-                title="Corte anterior (↑ ou Rolar para cima)"
+            {/* ─── Ultra-thin Vertical Slice Scrollbar on PC (Far corner PACS style) ─── */}
+            <div
+              className="hidden md:flex absolute right-1.5 md:right-2 top-1/2 -translate-y-1/2 z-40 flex-col items-center select-none"
+              onMouseEnter={() => setIsHoveringScrubber(true)}
+              onMouseLeave={() => setIsHoveringScrubber(false)}
+            >
+              {/* Rail hit area with subtle 3px track */}
+              <div
+                ref={scrubberTrackRef}
+                onPointerDown={handleScrubberPointerDown}
+                onPointerMove={handleScrubberPointerMove}
+                onPointerUp={handleScrubberPointerUp}
+                onPointerCancel={handleScrubberPointerUp}
+                onWheel={handleScrubberWheel}
+                className="relative w-4 h-[55vh] max-h-[480px] min-h-[220px] flex items-center justify-center cursor-pointer group touch-none"
+                title="Rolar cortes (arraste ou role a roda do mouse)"
               >
-                <ChevronUp className="w-5 h-5" />
-              </button>
+                {/* 3px Ultra-thin background track */}
+                <div className="relative w-[3px] h-full bg-white/15 group-hover:bg-white/30 rounded-full transition-colors overflow-hidden">
+                  {/* Active fill from top to current slice */}
+                  <div
+                    className="absolute top-0 left-0 right-0 bg-primary/80 transition-none"
+                    style={{
+                      height: `${(currentSlice / Math.max(1, totalSlices - 1)) * 100}%`,
+                    }}
+                  />
+                </div>
 
-              <div className="h-[260px] lg:h-[340px] xl:h-[400px] max-h-[50vh] py-1 flex items-center justify-center">
-                <Slider
-                  orientation="vertical"
-                  inverted={true}
-                  value={[currentSlice]}
-                  onValueChange={([v]) => setCurrentSlice(v)}
-                  min={0}
-                  max={totalSlices - 1}
-                  step={1}
-                  className="h-full"
+                {/* Ultra-slim thumb indicator pill */}
+                <div
+                  className="absolute left-1/2 -translate-x-1/2 w-[7px] h-6 rounded-full bg-primary shadow-[0_0_8px_hsl(var(--primary))] transition-transform duration-75 group-hover:scale-110 pointer-events-none"
+                  style={{
+                    top: `calc(${(currentSlice / Math.max(1, totalSlices - 1)) * 100}% - 12px)`,
+                  }}
                 />
-              </div>
 
-              <button
-                onClick={() => setCurrentSlice(prev => Math.min(totalSlices - 1, prev + 1))}
-                className="w-8 h-8 rounded-xl flex items-center justify-center text-white/70 hover:text-white hover:bg-white/15 active:scale-95 transition-all"
-                title="Próximo corte (↓ ou Rolar para baixo)"
-              >
-                <ChevronDown className="w-5 h-5" />
-              </button>
-
-              <div className="flex flex-col items-center pt-1.5 border-t border-white/10 text-center font-mono">
-                <span className="text-xs font-bold text-white tracking-tight">
-                  {currentSlice + 1}
-                </span>
-                <span className="text-[10px] text-white/50 leading-tight">
-                  /{totalSlices}
-                </span>
+                {/* Floating slice tooltip badge: only visible on hover or drag */}
+                <div
+                  className={`absolute right-5 pointer-events-none transition-all duration-150 px-2 py-0.5 rounded-md bg-black/90 border border-white/20 backdrop-blur-md shadow-2xl text-center font-mono whitespace-nowrap z-50 ${
+                    isScrubbing || isHoveringScrubber ? 'opacity-100 scale-100 translate-x-0' : 'opacity-0 scale-95 translate-x-2'
+                  }`}
+                  style={{
+                    top: `calc(${(currentSlice / Math.max(1, totalSlices - 1)) * 100}% - 12px)`,
+                  }}
+                >
+                  <span className="text-[11px] font-bold text-white tracking-tight">
+                    {currentSlice + 1}
+                  </span>
+                  <span className="text-[9px] text-white/50 ml-1">
+                    / {totalSlices}
+                  </span>
+                </div>
               </div>
             </div>
 
