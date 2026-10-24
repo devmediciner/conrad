@@ -581,7 +581,7 @@ const Admin = () => {
           {[
             { id: 'casos', label: 'Casos' },
             { id: 'artigos', label: 'Artigos' },
-            { id: 'conrademia', label: 'Atlas Conrademia' },
+            { id: 'conrademia', label: 'Atlas Radiológico' },
             // Abas restritas a administradores
             ...(isAdmin ? [
               { id: 'config', label: 'Configurações' },
@@ -1237,7 +1237,7 @@ const Admin = () => {
             </div>
           )}
 
-          {/* CONTEÚDO: ABA CONRADEMIA (ATLAS) */}
+          {/* CONTEÚDO: ABA ATLAS RADIOLÓGICO */}
           {activeTab === 'conrademia' && (
             <ConrademiaAdminEditor />
           )}

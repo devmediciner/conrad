@@ -371,7 +371,7 @@ function ConrademiaViewer() {
 
   // ─── Set page title ────────────────────────────────────────────────────
   useEffect(() => {
-    document.title = 'Conrademia - Atlas de Anatomia Radiológica | CONRAD';
+    document.title = 'Atlas Radiológico | CONRAD';
     return () => { document.title = 'CONRAD - Galeria Radiológica'; };
   }, []);
 
@@ -393,9 +393,9 @@ function ConrademiaViewer() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate('/conrademia')}
+            onClick={() => navigate('/atlas')}
             className="text-muted-foreground hover:text-foreground mr-2 gap-1.5"
-            title="Voltar ao catálogo de exames do Conrademia"
+            title="Voltar ao catálogo do Atlas Radiológico"
           >
             <ArrowLeft className="w-4 h-4" />
             <span className="text-xs font-semibold">Catálogo</span>
@@ -405,8 +405,8 @@ function ConrademiaViewer() {
 
           {/* Title */}
           <div className="flex items-center gap-2 mr-2">
-            <span className="text-sm font-heading font-bold text-gold-DEFAULT" style={{ color: 'hsl(48 100% 50%)' }}>
-              CONRADEMIA
+            <span className="text-sm font-heading font-bold text-gold-DEFAULT tracking-wide" style={{ color: 'hsl(48 100% 50%)' }}>
+              ATLAS RADIOLÓGICO
             </span>
           </div>
 
@@ -920,11 +920,11 @@ export default function Conrademia() {
 
   const activeExam = examId || searchParams.get('exam');
 
-  // If no exam selected (e.g. visiting /conrademia directly), show the Exams Hub Grid
+  // If no exam selected (e.g. visiting /atlas directly), show the Exams Hub Grid
   if (!activeExam) {
     return (
       <ConrademiaHub
-        onSelectExam={(selectedId) => navigate(`/conrademia/${selectedId}`)}
+        onSelectExam={(selectedId) => navigate(`/atlas/${selectedId}`)}
       />
     );
   }

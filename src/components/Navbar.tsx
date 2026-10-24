@@ -44,8 +44,8 @@ export function Navbar() {
           <Link to="/game" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
             <Activity className="w-4 h-4" /> Quiz
           </Link>
-          <Link to="/conrademia" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
-            <BookOpen className="w-4 h-4" /> Conrademia
+          <Link to="/atlas" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
+            <BookOpen className="w-4 h-4" /> Atlas Radiológico
           </Link>
           {user && (
             <Button variant="outline" size="sm" onClick={() => navigate('/admin')}>
@@ -86,8 +86,8 @@ export function Navbar() {
               <Link to="/game" className="flex items-center gap-1.5 text-sm text-muted-foreground px-4 py-2" onClick={() => setMenuOpen(false)}>
                 <Activity className="w-4 h-4" /> Quiz
               </Link>
-              <Link to="/conrademia" className="flex items-center gap-1.5 text-sm text-muted-foreground px-4 py-2" onClick={() => setMenuOpen(false)}>
-                <BookOpen className="w-4 h-4" /> Conrademia
+              <Link to="/atlas" className="flex items-center gap-1.5 text-sm text-muted-foreground px-4 py-2" onClick={() => setMenuOpen(false)}>
+                <BookOpen className="w-4 h-4" /> Atlas Radiológico
               </Link>
               {user && (
                 <Button variant="outline" className="w-full justify-start" onClick={() => { navigate('/admin'); setMenuOpen(false); }}>

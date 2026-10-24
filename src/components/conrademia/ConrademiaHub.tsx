@@ -144,7 +144,7 @@ export function ConrademiaHub({ onSelectExam }: ConrademiaHubProps) {
       if (onSelectExam) {
         onSelectExam(exam.id);
       } else {
-        navigate(`/conrademia/${exam.id}`);
+        navigate(`/atlas/${exam.id}`);
       }
     }
   };
@@ -178,7 +178,7 @@ export function ConrademiaHub({ onSelectExam }: ConrademiaHubProps) {
             transition={{ delay: 0.1 }}
             className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight font-heading mb-5"
           >
-            Conrad<span className="text-primary">emia</span>
+            Atlas <span className="text-primary">Radiológico</span>
           </motion.h1>
 
           <motion.p
@@ -384,7 +384,7 @@ export function ConrademiaHub({ onSelectExam }: ConrademiaHubProps) {
 
       {/* Footer */}
       <footer className="border-t border-border/40 py-8 bg-surface/30 text-center text-xs text-muted-foreground">
-        <p>Conrademia • Atlas de Anatomia Radiológica da Liga de Radiologia — UFSJ CCO</p>
+        <p>Atlas Radiológico da Liga de Radiologia — UFSJ CCO</p>
         <p className="mt-1 text-[11px] text-muted-foreground/60">
           Imagens e dados didáticos para fins de aprendizado acadêmico.
         </p>

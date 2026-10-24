@@ -223,12 +223,12 @@ const Index = () => {
             </button>
           </motion.div>
 
-          {/* Jogar Quiz Action */}
+          {/* Actions: Quiz Radiológico & Atlas Radiológico */}
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 0.8 }}
-            className="mt-16 flex justify-center w-full"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.8 }}
+            className="mt-14 flex flex-wrap items-center justify-center gap-4 w-full px-4"
           >
             <Button
               size="lg"
@@ -236,7 +236,16 @@ const Index = () => {
               onClick={() => navigate('/game')}
             >
               <Activity className="w-5 h-5" />
-              Desafie-se no Quiz Radiológico
+              Quiz Radiológico
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="h-14 px-8 rounded-full border-border/80 bg-background/60 hover:bg-card/90 text-foreground hover:text-primary hover:border-primary/50 hover:scale-105 transition-all duration-300 font-semibold text-base gap-3 backdrop-blur-md shadow-lg"
+              onClick={() => navigate('/atlas')}
+            >
+              <BookOpen className="w-5 h-5 text-primary" />
+              Atlas Radiológico
             </Button>
           </motion.div>
         </div>

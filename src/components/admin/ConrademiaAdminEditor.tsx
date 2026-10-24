@@ -261,7 +261,7 @@ export const ConrademiaAdminEditor: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `conrademia_anatomia_${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `atlas_radiologico_anatomia_${new Date().toISOString().split('T')[0]}.json`;
     a.click();
     URL.revokeObjectURL(url);
 
@@ -403,7 +403,7 @@ export const ConrademiaAdminEditor: React.FC = () => {
                 <Compass className="w-5 h-5" />
               </span>
               <h2 className="text-xl font-heading font-bold text-foreground">
-                Editor de Anatomia Radiológica - Conrademia
+                Editor do Atlas Radiológico
               </h2>
             </div>
             <p className="text-sm text-muted-foreground mt-1">
@@ -418,7 +418,7 @@ export const ConrademiaAdminEditor: React.FC = () => {
               size="sm"
               onClick={() => {
                 conrademiaService.saveLabels(labels);
-                window.open(`/conrademia?slice=${currentSlice}`, '_blank');
+                window.open(`/atlas?slice=${currentSlice}`, '_blank');
               }}
               className="text-xs flex items-center gap-1.5"
             >
