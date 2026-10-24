@@ -45,7 +45,7 @@ export const ConrademiaAdminEditor: React.FC = () => {
   // ─── Estados Principais ──────────────────────────────────────────────────
   const [labels, setLabels] = useState<AnatomyLabel[]>([]);
   const [loadingLabels, setLoadingLabels] = useState(true);
-  const [currentSlice, setCurrentSlice] = useState(24); // Corte padrão com boa anatomia
+  const [currentSlice, setCurrentSlice] = useState(147); // Corte padrão com boa anatomia (1.5mm)
   const [selectedLabelId, setSelectedLabelId] = useState<string | null>('liver');
   const [hoveredLabelId, setHoveredLabelId] = useState<string | null>(null);
 
@@ -74,12 +74,12 @@ export const ConrademiaAdminEditor: React.FC = () => {
   const [importJsonText, setImportJsonText] = useState('');
   const [editingLabelData, setEditingLabelData] = useState<Partial<AnatomyLabel> | null>(null);
 
-  // Lista de 91 arquivos DICOM
+  // Lista de 295 arquivos DICOM (1.5mm)
   const dicomFiles = useMemo(() => {
     const list: string[] = [];
-    for (let i = 4; i <= 94; i++) {
+    for (let i = 95; i <= 389; i++) {
       const num = String(i).padStart(4, '0');
-      list.push(`/dicom/Abdome_5.0_B20s-CT-2-${num}.dcm`);
+      list.push(`/dicom/Abdome_1.5_B20s-CT-3-${num}.dcm`);
     }
     return list;
   }, []);

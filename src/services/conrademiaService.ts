@@ -11,7 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 export type { ViewingPlane, PlaneInfo };
 export { PLANE_CONFIG };
 
-const STORAGE_KEY_PREFIX = 'conrademia_labels_v11_';
+const STORAGE_KEY_PREFIX = 'conrademia_labels_v12_';
 const EVENT_NAME = 'conrademia_labels_updated';
 
 /**

@@ -7,6 +7,7 @@ import { Slider } from '@/components/ui/slider';
 import {
   ArrowLeft, Sun, Contrast, ZoomIn, ZoomOut, RotateCcw, Move,
   Crosshair, Eye, EyeOff, MapPin, Search, ChevronLeft, ChevronRight,
+  ChevronUp, ChevronDown,
   Layers, Maximize2, Minimize2, MousePointer, Hand, Info, X,
   Compass, Edit2, Sparkles, Tag, Palette
 } from 'lucide-react';
@@ -650,50 +651,87 @@ function ConrademiaViewer() {
               )}
             </div>
 
-            {/* ─── Bottom Horizontal Slice Control Bar ──────────────── */}
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/75 to-transparent px-3 py-2 sm:px-6 sm:py-3.5 z-20 pointer-events-none">
-              <div className="flex items-center justify-between gap-3 max-w-5xl mx-auto pointer-events-auto">
-                {/* Left info - hidden on mobile to avoid covering anatomy */}
-                <div className="hidden lg:block text-xs text-white/70 space-y-0.5 min-w-[200px]">
-                  <p className="font-medium text-white/95">TC Abdome e Pelve • Plano {planeInfo.name}</p>
-                  <p className="text-white/50 text-[11px] truncate">{showColors ? 'Cores Anatômicas' : 'TC Pura'}</p>
-                </div>
+            {/* ─── Vertical Slice Scrollbar on PC (Professional PACS style) ─── */}
+            <div className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 z-30 flex-col items-center gap-2 py-3 px-2 bg-black/60 hover:bg-black/80 border border-white/10 hover:border-white/20 rounded-2xl backdrop-blur-md shadow-2xl transition-all select-none">
+              <button
+                onClick={() => setCurrentSlice(prev => Math.max(0, prev - 1))}
+                className="w-8 h-8 rounded-xl flex items-center justify-center text-white/70 hover:text-white hover:bg-white/15 active:scale-95 transition-all"
+                title="Corte anterior (↑ ou Rolar para cima)"
+              >
+                <ChevronUp className="w-5 h-5" />
+              </button>
 
-                {/* Dedicated Horizontal Slice Slider */}
-                <div className="flex-1 flex items-center gap-2 sm:gap-3 bg-black/50 border border-white/10 rounded-full px-3 py-1.5 backdrop-blur-md shadow-lg">
-                  <button
-                    onClick={() => setCurrentSlice(prev => Math.max(0, prev - 1))}
-                    className="w-7 h-7 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-colors shrink-0"
-                    title="Corte anterior (← ou ↓)"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-                  <div className="flex-1 py-1">
-                    <Slider
-                      value={[currentSlice]}
-                      onValueChange={([v]) => setCurrentSlice(v)}
-                      min={0}
-                      max={totalSlices - 1}
-                      step={1}
-                      className="w-full"
-                    />
-                  </div>
-                  <button
-                    onClick={() => setCurrentSlice(prev => Math.min(totalSlices - 1, prev + 1))}
-                    className="w-7 h-7 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-colors shrink-0"
-                    title="Próximo corte (→ ou ↑)"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                  <span className="text-xs sm:text-sm text-white/90 font-mono font-semibold min-w-[65px] text-center shrink-0">
-                    {currentSlice + 1} / {totalSlices}
-                  </span>
-                </div>
+              <div className="h-[260px] lg:h-[340px] xl:h-[400px] max-h-[50vh] py-1 flex items-center justify-center">
+                <Slider
+                  orientation="vertical"
+                  inverted={true}
+                  value={[currentSlice]}
+                  onValueChange={([v]) => setCurrentSlice(v)}
+                  min={0}
+                  max={totalSlices - 1}
+                  step={1}
+                  className="h-full"
+                />
+              </div>
 
-                {/* Right info - clean zoom indicator, zero WC/WW */}
-                <div className="hidden sm:block text-xs text-white/50 text-right min-w-[70px]">
-                  <span>Zoom: {(zoom * 100).toFixed(0)}%</span>
+              <button
+                onClick={() => setCurrentSlice(prev => Math.min(totalSlices - 1, prev + 1))}
+                className="w-8 h-8 rounded-xl flex items-center justify-center text-white/70 hover:text-white hover:bg-white/15 active:scale-95 transition-all"
+                title="Próximo corte (↓ ou Rolar para baixo)"
+              >
+                <ChevronDown className="w-5 h-5" />
+              </button>
+
+              <div className="flex flex-col items-center pt-1.5 border-t border-white/10 text-center font-mono">
+                <span className="text-xs font-bold text-white tracking-tight">
+                  {currentSlice + 1}
+                </span>
+                <span className="text-[10px] text-white/50 leading-tight">
+                  /{totalSlices}
+                </span>
+              </div>
+            </div>
+
+            {/* ─── Desktop Viewport Info (Discreet in corner) ─── */}
+            <div className="hidden md:flex absolute bottom-4 left-5 z-20 pointer-events-none flex-col gap-0.5 text-xs text-white/70 select-none">
+              <p className="font-semibold text-white/95 drop-shadow-md">
+                TC Abdome e Pelve • Plano {planeInfo.name}
+              </p>
+              <p className="text-white/50 text-[11px] drop-shadow-md">
+                {showColors ? 'Cores Anatômicas' : 'TC Pura'} • Zoom: {(zoom * 100).toFixed(0)}%
+              </p>
+            </div>
+
+            {/* ─── Bottom Horizontal Slice Control Bar (Mobile only) ──────────────── */}
+            <div className="md:hidden absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/75 to-transparent px-3 py-2 z-20 pointer-events-none">
+              <div className="flex items-center justify-between gap-2 max-w-md mx-auto pointer-events-auto bg-black/60 border border-white/10 rounded-full px-3 py-1.5 backdrop-blur-md shadow-lg">
+                <button
+                  onClick={() => setCurrentSlice(prev => Math.max(0, prev - 1))}
+                  className="w-7 h-7 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-colors shrink-0"
+                  title="Corte anterior (← ou ↓)"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <div className="flex-1 py-1">
+                  <Slider
+                    value={[currentSlice]}
+                    onValueChange={([v]) => setCurrentSlice(v)}
+                    min={0}
+                    max={totalSlices - 1}
+                    step={1}
+                    className="w-full"
+                  />
                 </div>
+                <button
+                  onClick={() => setCurrentSlice(prev => Math.min(totalSlices - 1, prev + 1))}
+                  className="w-7 h-7 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-colors shrink-0"
+                  title="Próximo corte (→ ou ↑)"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+                <span className="text-xs text-white/90 font-mono font-semibold min-w-[55px] text-center shrink-0">
+                  {currentSlice + 1}/{totalSlices}
+                </span>
               </div>
             </div>
           </div>
